@@ -1,72 +1,54 @@
 import { Smile, Users, Brain, Sunset } from "lucide-react";
+const C = {
+  deep:  "oklch(0.09 0.04 295)",
+  dark:  "oklch(0.13 0.05 295)",
+  mid:   "oklch(0.20 0.08 295)",
+  vivid: "oklch(0.52 0.28 295)",
+  pink:  "oklch(0.72 0.22 320)",
+};
 
 const benefits = [
-  {
-    icon: Smile,
-    label: "Elevated Mood",
-    desc: "Feel genuinely uplifted and positive throughout your day.",
-    color: "oklch(0.92_0.18_95)",
-  },
-  {
-    icon: Users,
-    label: "Social Ease",
-    desc: "Connect more naturally and comfortably with those around you.",
-    color: "oklch(0.62_0.25_340)",
-  },
-  {
-    icon: Brain,
-    label: "Sharp Focus",
-    desc: "Stay clear-headed and mentally sharp when it matters most.",
-    color: "oklch(0.65_0.18_185)",
-  },
-  {
-    icon: Sunset,
-    label: "Happy Landings",
-    desc: "A smooth, gentle come-down with no crash or jitters.",
-    color: "oklch(0.72_0.18_55)",
-  },
+  { icon: Smile,  title: "Elevated Mood",  desc: "Kanna's active alkaloids interact with serotonin receptors to naturally lift your mood and bring genuine happiness.", accent: C.vivid },
+  { icon: Users,  title: "Social Ease",    desc: "Feel more open, confident, and connected. Perfect for social settings, events, and meeting new people.", accent: C.pink },
+  { icon: Brain,  title: "Sharp Focus",    desc: "Enhanced mental clarity and concentration without the jitters or crash of stimulants.", accent: "oklch(0.60 0.25 185)" },
+  { icon: Sunset, title: "Happy Landings", desc: "A smooth, gentle comedown that leaves you feeling refreshed — not depleted. Wake up feeling great.", accent: "oklch(0.75 0.20 55)" },
 ];
 
 export default function BenefitsSection() {
   return (
-    <section className="py-16 md:py-24 bg-white">
-      <div className="max-w-[1280px] mx-auto px-4 sm:px-6">
-        <div className="text-center mb-12">
-          <p className="text-sm font-bold tracking-widest uppercase text-[oklch(0.62_0.25_340)] mb-3">
-            ✨ Ride the Feeling of kanna ✨
-          </p>
-          <h2 className="font-condensed font-black text-4xl md:text-5xl text-[oklch(0.22_0.08_265)] tracking-tight mb-4">
-            What to Expect
-          </h2>
-          <p className="text-gray-500 max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
-            At the heart of every Ferris Wheel product is KANNA — an incredible plant that delivers
-            a natural, feel-good experience unlike anything else.
+    <section className="py-24 px-4" style={{ background: C.dark }}>
+      <div className="max-w-[1280px] mx-auto">
+        <div className="text-center mb-16">
+          <p className="text-sm font-bold uppercase tracking-widest mb-3" style={{ color: C.pink }}>Why Kanna?</p>
+          <h2 className="text-5xl sm:text-6xl font-extrabold font-condensed text-white">Feel the Difference</h2>
+          <p className="mt-4 text-lg max-w-xl mx-auto" style={{ color: "oklch(0.68 0.07 295)" }}>
+            Purple Organics uses premium Kanna extract — a natural plant used for centuries for its mood-enhancing properties.
           </p>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-5 md:gap-6">
-          {benefits.map(({ icon: Icon, label, desc, color }) => (
-            <div key={label}
-              className="flex flex-col items-center text-center p-6 rounded-3xl bg-[oklch(0.97_0.005_265)] hover:shadow-lg transition-shadow duration-200 group">
-              <div
-                className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-transform duration-200 group-hover:scale-110"
-                style={{ backgroundColor: `${color.replace('oklch(', 'oklch(').replace(')', '/15)')}`, color: `oklch(${color.slice(6, -1)})` }}>
-                <Icon size={28} strokeWidth={2} />
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {benefits.map(({ icon: Icon, title, desc, accent }) => (
+            <div key={title} className="rounded-3xl p-8 flex flex-col items-center text-center transition-all duration-300 hover:-translate-y-1"
+              style={{ background: C.deep, border: `1px solid ${C.mid}` }}>
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5"
+                style={{ background: `${accent}20`, color: accent }}>
+                <Icon size={28} strokeWidth={1.8} />
               </div>
-              <h3 className="font-extrabold text-base text-[oklch(0.22_0.08_265)] mb-2">{label}</h3>
-              <p className="text-sm text-gray-500 leading-snug">{desc}</p>
+              <h3 className="font-extrabold font-condensed text-xl text-white mb-3">{title}</h3>
+              <p className="text-sm leading-relaxed" style={{ color: "oklch(0.65 0.07 295)" }}>{desc}</p>
             </div>
           ))}
         </div>
-        {/* Trust badges */}
-        <div className="flex flex-wrap justify-center gap-6 mt-12 pt-10 border-t border-gray-100">
+        <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { icon: "🌿", label: "100% Natural Ingredients" },
-            { icon: "🇺🇸", label: "Federally Legal in the US" },
-            { icon: "🔬", label: "Third-Party Lab Tested" },
-          ].map(({ icon, label }) => (
-            <div key={label} className="flex items-center gap-2.5 text-sm font-semibold text-[oklch(0.22_0.08_265)]">
-              <span className="text-xl">{icon}</span>
-              <span>{label}</span>
+            { value: "2400mg", label: "Per Tablet" },
+            { value: "6",      label: "Servings Per Pack" },
+            { value: "3",      label: "Flavors Available" },
+            { value: "100%",   label: "Lab Tested" },
+          ].map(stat => (
+            <div key={stat.label} className="rounded-2xl p-6 text-center"
+              style={{ background: `${C.vivid}15`, border: `1px solid ${C.vivid}30` }}>
+              <p className="text-3xl font-extrabold font-condensed" style={{ color: C.pink }}>{stat.value}</p>
+              <p className="text-sm font-semibold mt-1" style={{ color: "oklch(0.68 0.07 295)" }}>{stat.label}</p>
             </div>
           ))}
         </div>
@@ -74,4 +56,3 @@ export default function BenefitsSection() {
     </section>
   );
 }
-

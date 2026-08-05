@@ -2,79 +2,54 @@ import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { Link } from "wouter";
 
+const C = {
+  deep: "oklch(0.09 0.04 295)",
+  dark: "oklch(0.13 0.05 295)",
+  mid:  "oklch(0.20 0.08 295)",
+  vivid:"oklch(0.52 0.28 295)",
+  pink: "oklch(0.72 0.22 320)",
+};
+
 const faqs = [
-  {
-    q: "Is Kanna Legal?",
-    a: "Yes! Kanna (Sceletium tortuosum) is federally legal in the United States and most countries worldwide. It is not a controlled substance and is not on any banned substance list. Ferris Wheel products are manufactured in the USA in cGMP-certified facilities and are compliant with all applicable federal regulations.",
-  },
-  {
-    q: "Is Kanna Safe?",
-    a: "Kanna has been used safely for centuries by indigenous communities in South Africa. Modern research supports its safety profile when used responsibly by healthy adults. All Ferris Wheel products are third-party lab tested for purity and potency. As with any supplement, consult your physician before use if you have a medical condition or take prescription medications.",
-  },
-  {
-    q: "How Does Kanna Make You Feel?",
-    a: "Kanna is known for producing a natural sense of euphoria, elevated mood, social ease, and mental clarity. Users often report feeling more open, positive, and connected — without the negative side effects associated with alcohol or other substances. The experience is smooth, clean, and balanced from start to finish.",
-  },
-  {
-    q: "How Long Do the Effects Last?",
-    a: "The effects of Ferris Wheel products typically last between 2 to 4 hours, depending on individual factors such as body weight, metabolism, and tolerance. Most users experience a gradual onset within 20–45 minutes, a peak period, and a smooth, gentle landing with no crash.",
-  },
-  {
-    q: "How Long Does It Take Ferris Wheel Tablets to Work?",
-    a: "Most users begin to feel the effects within 20 to 45 minutes of taking Ferris Wheel Party Tablets. Factors such as whether you've eaten recently, your body weight, and individual metabolism can affect onset time. We recommend starting with the suggested serving size and waiting at least 60 minutes before considering an additional serving.",
-  },
-  {
-    q: "How Much Should I Take?",
-    a: "We recommend starting with the suggested serving size listed on the product label. For Party Tablets, that is typically 2 tablets. For Daily Mood Gummies, start with 1–2 gummies. Do not exceed the recommended serving size. Individual responses to kanna vary, so it's best to start low and go slow.",
-  },
-  {
-    q: "When Should I Take Them?",
-    a: "Party Tablets are designed for social situations, nights out, events, or any time you want a higher-energy, more immersive experience. Daily Mood Gummies are formulated for everyday use — take them in the morning or afternoon for balanced mood support, social ease, and focus throughout the day.",
-  },
+  { q: "What is Kanna?", a: "Kanna (Sceletium tortuosum) is a succulent plant native to South Africa that has been used for centuries by indigenous peoples for its mood-enhancing and stress-relieving properties. It works by interacting with serotonin transporters and PDE4 inhibitors in the brain." },
+  { q: "What are Super Silly Dots?", a: "Super Silly Dots are our premium chewable Kanna tablets. Each tablet contains 2400mg of high-quality Kanna extract and comes in 3 delicious flavors: Natural, Blue Razz, and Cherry Berry. Each pack contains 6 servings." },
+  { q: "How long does it take to feel the effects?", a: "Most users begin to feel the effects within 20–45 minutes of taking a Super Silly Dot. Effects typically last 2–4 hours depending on individual metabolism and dosage." },
+  { q: "Is Kanna safe?", a: "Kanna has a long history of safe use when consumed responsibly. Our products are lab-tested for purity and potency. However, Kanna is intended for adults 21+ only. Do not combine with MAOIs, SSRIs, or other serotonergic substances without consulting a healthcare professional." },
+  { q: "Can I take Kanna every day?", a: "While Kanna can be used daily, we recommend cycling usage (e.g., 5 days on, 2 days off) to maintain sensitivity and prevent tolerance buildup. Always start with the lowest effective dose." },
+  { q: "What flavors are available?", a: "Super Silly Dots currently come in three flavors: Natural (original earthy Kanna taste), Blue Razz (sweet blue raspberry), and Cherry Berry (bold cherry-berry blend). All flavors contain the same 2400mg Kanna formula." },
+  { q: "Do you ship internationally?", a: "We currently ship within the United States. International shipping availability varies by country due to local regulations around Kanna. Please check your local laws before ordering." },
 ];
 
-function FAQItem({ q, a }: { q: string; a: string }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className={`border border-gray-200 rounded-2xl overflow-hidden transition-all duration-200 ${open ? "border-[oklch(0.62_0.25_340)]" : "hover:border-gray-300"}`}>
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between gap-4 p-5 text-left"
-        aria-expanded={open}>
-        <span className="font-bold text-base text-[oklch(0.22_0.08_265)]">{q}</span>
-        <ChevronDown
-          size={18}
-          className={`flex-shrink-0 text-[oklch(0.62_0.25_340)] transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
-      </button>
-      {open && (
-        <div className="px-5 pb-5">
-          <p className="text-gray-600 text-sm leading-relaxed">{a}</p>
-        </div>
-      )}
-    </div>
-  );
-}
-
 export default function FAQSection() {
+  const [open, setOpen] = useState<number | null>(null);
   return (
-    <section className="py-16 md:py-24 bg-white">
-      <div className="max-w-[860px] mx-auto px-4 sm:px-6">
-        <div className="text-center mb-10">
-          <h2 className="font-condensed font-black text-4xl md:text-5xl text-[oklch(0.22_0.08_265)] tracking-tight mb-2">
-            Got Questions?
-          </h2>
-          <p className="text-gray-500 text-base">
-            Everything you need to know about Ferris Wheel and Kanna.
-          </p>
+    <section className="py-24 px-4" style={{ background: C.deep }}>
+      <div className="max-w-[800px] mx-auto">
+        <div className="text-center mb-14">
+          <p className="text-sm font-bold uppercase tracking-widest mb-3" style={{ color: C.pink }}>Got Questions?</p>
+          <h2 className="text-5xl sm:text-6xl font-extrabold font-condensed text-white">FAQ</h2>
         </div>
         <div className="space-y-3">
-          {faqs.map(({ q, a }) => (
-            <FAQItem key={q} q={q} a={a} />
+          {faqs.map((faq, i) => (
+            <div key={i} className="rounded-2xl overflow-hidden transition-all duration-200"
+              style={{ background: C.dark, border: `1px solid ${open === i ? C.vivid + "60" : C.mid}` }}>
+              <button onClick={() => setOpen(open === i ? null : i)}
+                className="w-full flex items-center justify-between px-6 py-5 text-left gap-4">
+                <span className="font-bold text-base text-white leading-snug">{faq.q}</span>
+                <ChevronDown size={18} className="flex-shrink-0 transition-transform duration-200"
+                  style={{ color: C.pink, transform: open === i ? "rotate(180deg)" : "rotate(0deg)" }} />
+              </button>
+              {open === i && (
+                <div className="px-6 pb-5">
+                  <p className="text-sm leading-relaxed" style={{ color: "oklch(0.68 0.07 295)" }}>{faq.a}</p>
+                </div>
+              )}
+            </div>
           ))}
         </div>
-        <div className="text-center mt-8">
-          <Link href="/pages/faq"
-            className="inline-flex items-center gap-2 text-sm font-bold text-[oklch(0.62_0.25_340)] hover:text-[oklch(0.22_0.08_265)] transition-colors">
+        <div className="text-center mt-10">
+          <Link href="/pages/faq" className="inline-flex items-center gap-2 text-sm font-bold transition-colors hover:opacity-80"
+            style={{ color: C.pink }}>
             View all FAQs →
           </Link>
         </div>
@@ -82,4 +57,3 @@ export default function FAQSection() {
     </section>
   );
 }
-

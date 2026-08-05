@@ -1,6 +1,14 @@
 import { useState } from "react";
 import { toast } from "sonner";
 
+const C = {
+  dark:   "oklch(0.13 0.05 295)",
+  mid:    "oklch(0.20 0.08 295)",
+  vivid:  "oklch(0.52 0.28 295)",
+  bright: "oklch(0.62 0.28 295)",
+  pink:   "oklch(0.72 0.22 320)",
+};
+
 export default function NewsletterSection() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -10,52 +18,40 @@ export default function NewsletterSection() {
     if (!email) return;
     setLoading(true);
     setTimeout(() => {
-      toast.success("You're on the list! 🎉");
-      setEmail("");
       setLoading(false);
+      setEmail("");
+      toast.success("You're on the list! 🎉", { description: "Check your inbox for a welcome gift." });
     }, 800);
   };
 
   return (
-    <section className="py-16 md:py-20 bg-[oklch(0.92_0.18_95)]">
-      <div className="max-w-[1280px] mx-auto px-4 sm:px-6">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-          <div className="text-center md:text-left">
-            <h2 className="font-condensed font-black text-3xl md:text-4xl text-[oklch(0.13_0.04_265)] tracking-tight mb-2">
-              Stay in the Loop
-            </h2>
-            <p className="text-[oklch(0.22_0.08_265)]/70 text-base font-medium">
-              Get exclusive deals, new product drops, and Kanna education.
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-            {/* Email form */}
-            <form onSubmit={handleSubmit} className="flex gap-2 flex-1 md:w-80">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                required
-                className="flex-1 px-4 py-3 rounded-xl border-2 border-[oklch(0.22_0.08_265)]/20 bg-white text-[oklch(0.22_0.08_265)] placeholder-[oklch(0.22_0.08_265)]/40 text-sm font-medium focus:outline-none focus:border-[oklch(0.22_0.08_265)] transition-colors"
-              />
-              <button
-                type="submit"
-                disabled={loading}
-                className="bg-[oklch(0.22_0.08_265)] text-white px-5 py-3 rounded-xl font-bold text-sm hover:bg-[oklch(0.15_0.04_265)] transition-colors active:scale-[0.97] disabled:opacity-60 whitespace-nowrap">
-                Subscribe
-              </button>
-            </form>
-            {/* SMS button */}
-            <button
-              onClick={() => toast.info("SMS sign-up coming soon!")}
-              className="bg-[oklch(0.62_0.25_340)] text-white px-6 py-3 rounded-xl font-extrabold text-sm hover:bg-[oklch(0.55_0.25_340)] transition-colors active:scale-[0.97] tracking-wide whitespace-nowrap">
-              SIGN UP FOR TEXTS
-            </button>
-          </div>
-        </div>
+    <section className="py-24 px-4" style={{ background: C.dark }}>
+      <div className="max-w-[680px] mx-auto text-center">
+        <p className="text-sm font-bold uppercase tracking-widest mb-3" style={{ color: C.pink }}>Stay in the Loop</p>
+        <h2 className="text-4xl sm:text-5xl font-extrabold font-condensed text-white mb-4">Join the Purple Family</h2>
+        <p className="text-base leading-relaxed mb-10" style={{ color: "oklch(0.68 0.07 295)" }}>
+          Get exclusive deals, new flavor drops, and Kanna education straight to your inbox. Plus 10% off your first order.
+        </p>
+        <form onSubmit={handleSubmit} className="flex gap-2 mb-4 max-w-md mx-auto">
+          <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+            placeholder="Enter your email"
+            className="flex-1 px-5 py-3.5 rounded-full text-sm font-medium text-white placeholder-white/40 outline-none transition-all"
+            style={{ background: C.mid, border: `1px solid oklch(0.30 0.10 295)` }} />
+          <button type="submit" disabled={loading}
+            className="px-6 py-3.5 rounded-full font-extrabold text-sm text-white transition-all hover:scale-105 active:scale-95 disabled:opacity-60 whitespace-nowrap"
+            style={{ background: `linear-gradient(135deg, ${C.bright}, ${C.pink})` }}>
+            {loading ? "..." : "Subscribe"}
+          </button>
+        </form>
+        <button onClick={() => toast.info("Text PURPLE to 55555 to sign up for SMS updates!")}
+          className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full font-extrabold text-sm text-white border-2 transition-all hover:bg-white/10"
+          style={{ borderColor: C.vivid }}>
+          📱 SIGN UP FOR TEXTS
+        </button>
+        <p className="mt-6 text-xs" style={{ color: "oklch(0.50 0.06 295)" }}>
+          By subscribing you agree to our Privacy Policy. Unsubscribe at any time.
+        </p>
       </div>
     </section>
   );
 }
-

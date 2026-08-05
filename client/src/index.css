@@ -4,33 +4,36 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --color-background: oklch(1 0 0);
-  --color-foreground: oklch(0.13 0.02 265);
-  --color-card: oklch(1 0 0);
-  --color-card-foreground: oklch(0.13 0.02 265);
-  --color-popover: oklch(1 0 0);
-  --color-popover-foreground: oklch(0.13 0.02 265);
+  /* Purple Organics — Dark Purple Theme */
+  --color-background: oklch(0.09 0.04 295);
+  --color-foreground: oklch(0.97 0.01 295);
+  --color-card: oklch(0.13 0.05 295);
+  --color-card-foreground: oklch(0.97 0.01 295);
+  --color-popover: oklch(0.13 0.05 295);
+  --color-popover-foreground: oklch(0.97 0.01 295);
 
-  /* Ferris Wheel Brand Colors */
-  --color-fw-yellow: oklch(0.92 0.18 95);
-  --color-fw-navy: oklch(0.22 0.08 265);
-  --color-fw-pink: oklch(0.62 0.25 340);
-  --color-fw-teal: oklch(0.65 0.18 185);
-  --color-fw-purple: oklch(0.45 0.18 290);
-  --color-fw-dark: oklch(0.15 0.04 265);
+  /* Purple Organics Brand Colors */
+  --color-po-deep:   oklch(0.09 0.04 295);
+  --color-po-dark:   oklch(0.13 0.05 295);
+  --color-po-mid:    oklch(0.20 0.08 295);
+  --color-po-vivid:  oklch(0.52 0.28 295);
+  --color-po-bright: oklch(0.62 0.28 295);
+  --color-po-light:  oklch(0.75 0.18 295);
+  --color-po-pink:   oklch(0.72 0.22 320);
+  --color-po-yellow: oklch(0.88 0.20 95);
 
-  --color-primary: oklch(0.22 0.08 265);
-  --color-primary-foreground: oklch(1 0 0);
-  --color-secondary: oklch(0.96 0.01 265);
-  --color-secondary-foreground: oklch(0.22 0.08 265);
-  --color-muted: oklch(0.96 0.01 265);
-  --color-muted-foreground: oklch(0.55 0.02 265);
-  --color-accent: oklch(0.92 0.18 95);
-  --color-accent-foreground: oklch(0.13 0.02 265);
+  --color-primary: oklch(0.62 0.28 295);
+  --color-primary-foreground: oklch(0.99 0 0);
+  --color-secondary: oklch(0.20 0.08 295);
+  --color-secondary-foreground: oklch(0.97 0.01 295);
+  --color-muted: oklch(0.18 0.06 295);
+  --color-muted-foreground: oklch(0.60 0.08 295);
+  --color-accent: oklch(0.72 0.22 320);
+  --color-accent-foreground: oklch(0.99 0 0);
   --color-destructive: oklch(0.577 0.245 27.325);
-  --color-border: oklch(0.92 0.005 265);
-  --color-input: oklch(0.92 0.005 265);
-  --color-ring: oklch(0.22 0.08 265);
+  --color-border: oklch(0.22 0.08 295);
+  --color-input: oklch(0.20 0.08 295);
+  --color-ring: oklch(0.62 0.28 295);
 
   --radius-sm: 0.5rem;
   --radius-md: 0.75rem;

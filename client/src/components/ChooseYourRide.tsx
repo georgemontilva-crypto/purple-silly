@@ -1,76 +1,93 @@
 import { Link } from "wouter";
 
-// Placeholder dimensions: 800×600px each column image
-const COL_W = 800;
-const COL_H = 600;
+const BLUE_RAZZ = "/manus-storage/SuperSillyDotsbluerazz_582d558a.webp";
+const CHERRY    = "/manus-storage/SuperSillyDotsCherryBerry_44c53bd2.webp";
+const NATURAL   = "/manus-storage/SuperSillyDotsnatural_d5a216cf.webp";
 
-function RideCard({
-  href,
-  label,
-  emoji,
-  accentColor,
-}: {
-  href: string;
-  label: string;
-  emoji: string;
-  accentColor: string;
-}) {
-  return (
-    <Link href={href}
-      className="group relative overflow-hidden rounded-3xl block"
-      style={{ minHeight: "400px" }}>
-      {/* Gray placeholder */}
-      <div
-        className="absolute inset-0 bg-gray-300 flex items-center justify-center text-gray-500 text-sm font-medium"
-        title={`Collection image placeholder — ${COL_W}×${COL_H}px`}>
-        <span className="bg-white/60 px-3 py-1.5 rounded-xl text-xs font-semibold">
-          {COL_W}×{COL_H}px
-        </span>
-      </div>
-      {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-      {/* Label */}
-      <div className="absolute bottom-0 left-0 right-0 p-6">
-        <p className="font-condensed font-black text-3xl md:text-4xl text-white uppercase tracking-tight">
-          {label} {emoji}
-        </p>
-        <div className="mt-3 inline-flex items-center gap-2 text-white font-bold text-sm opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-200">
-          <span>Shop Now</span>
-          <span>→</span>
-        </div>
-      </div>
-      {/* Accent border on hover */}
-      <div className={`absolute inset-0 rounded-3xl border-4 border-transparent group-hover:border-[${accentColor}] transition-all duration-200`} />
-    </Link>
-  );
-}
+const C = {
+  deep:   "oklch(0.09 0.04 295)",
+  dark:   "oklch(0.13 0.05 295)",
+  mid:    "oklch(0.20 0.08 295)",
+  vivid:  "oklch(0.52 0.28 295)",
+  bright: "oklch(0.62 0.28 295)",
+  pink:   "oklch(0.72 0.22 320)",
+};
+
+const rides = [
+  {
+    name: "Super Silly Dots",
+    sub: "Party Tablets",
+    desc: "High-energy Kanna tablets for late-night socializing and elevated euphoria. 2400mg per chewable tab.",
+    image: NATURAL,
+    href: "/collections/kanna-tablets",
+    accent: C.vivid,
+    badge: "BEST SELLER",
+  },
+  {
+    name: "Blue Razz Dots",
+    sub: "Daily Mood Gummies",
+    desc: "Smooth daily Kanna for balanced mood, social ease, and sharp focus throughout the day.",
+    image: BLUE_RAZZ,
+    href: "/collections/kanna-gummies",
+    accent: C.pink,
+    badge: "NEW",
+  },
+  {
+    name: "Cherry Berry Dots",
+    sub: "Party Tablets",
+    desc: "Bold cherry-berry flavor with the same powerful Kanna formula. Perfect for social adventures.",
+    image: CHERRY,
+    href: "/collections/kanna-tablets",
+    accent: "oklch(0.60 0.25 15)",
+    badge: "FAN FAVORITE",
+  },
+];
 
 export default function ChooseYourRide() {
   return (
-    <section className="py-16 md:py-24 bg-white">
-      <div className="max-w-[1280px] mx-auto px-4 sm:px-6">
-        <div className="text-center mb-10">
-          <h2 className="font-condensed font-black text-4xl md:text-5xl text-[oklch(0.22_0.08_265)] tracking-tight">
+    <section className="py-24 px-4" style={{ background: C.deep }}>
+      <div className="max-w-[1280px] mx-auto">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <p className="text-sm font-bold uppercase tracking-widest mb-3" style={{ color: C.pink }}>Our Products</p>
+          <h2 className="text-5xl sm:text-6xl font-extrabold font-condensed text-white leading-tight">
             Choose Your Ride
           </h2>
-          <p className="text-gray-500 mt-3 max-w-xl mx-auto text-base md:text-lg leading-relaxed">
-            Whether you're looking for a higher-energy, more immersive experience or a balanced,
-            feel-good boost for your day, Ferris Wheel has a ride for you.
+          <p className="mt-4 text-lg max-w-xl mx-auto" style={{ color: "oklch(0.68 0.07 295)" }}>
+            Whether you're looking for a higher-energy, more immersive experience or a balanced, feel-good boost — Purple Organics has a ride for you.
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <RideCard
-            href="/collections/kanna-gummies"
-            label="Daily Mood Gummies"
-            emoji="😎"
-            accentColor="oklch(0.65_0.18_185)"
-          />
-          <RideCard
-            href="/collections/kanna-tablets"
-            label="Party Tablets"
-            emoji="🎉"
-            accentColor="oklch(0.62_0.25_340)"
-          />
+
+        {/* Cards */}
+        <div className="grid md:grid-cols-3 gap-6">
+          {rides.map((r) => (
+            <Link key={r.name} href={r.href}
+              className="group relative rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-2 block"
+              style={{ background: C.dark, border: `1px solid ${C.mid}` }}>
+              {/* Badge */}
+              <div className="absolute top-4 left-4 z-10 px-3 py-1 rounded-full text-xs font-extrabold text-white"
+                style={{ background: r.accent }}>
+                {r.badge}
+              </div>
+              {/* Image */}
+              <div className="aspect-square overflow-hidden flex items-center justify-center p-8"
+                style={{ background: `radial-gradient(circle at center, ${r.accent}20, ${C.dark})` }}>
+                <img src={r.image} alt={r.name}
+                  className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
+                  style={{ filter: `drop-shadow(0 16px 40px ${r.accent}60)` }} />
+              </div>
+              {/* Content */}
+              <div className="p-6">
+                <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: r.accent }}>{r.sub}</p>
+                <h3 className="text-2xl font-extrabold font-condensed text-white mb-2">{r.name}</h3>
+                <p className="text-sm leading-relaxed mb-4" style={{ color: "oklch(0.65 0.07 295)" }}>{r.desc}</p>
+                <div className="flex items-center gap-2 font-bold text-sm text-white transition-all group-hover:gap-3">
+                  <span>Shop Now</span>
+                  <span style={{ color: r.accent }}>→</span>
+                </div>
+              </div>
+            </Link>
+          ))}
         </div>
       </div>
     </section>
