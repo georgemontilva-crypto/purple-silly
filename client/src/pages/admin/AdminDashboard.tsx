@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Link, useLocation } from "wouter";
@@ -133,10 +133,15 @@ function Overview() {
 
 export default function AdminDashboard() {
   const { user, loading } = useAuth();
+  const [, setLocation] = useLocation();
   const [tab, setTab] = useState<AdminTab>("overview");
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  if (loading) {
+  useEffect(() => {
+    if (!loading && !user) setLocation("/login");
+  }, [loading, user, setLocation]);
+
+  if (loading || !user) {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: C.bg }}>
         <div style={{ color: C.vivid, fontSize: "1.5rem", fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800 }}>Loading...</div>
@@ -144,7 +149,7 @@ export default function AdminDashboard() {
     );
   }
 
-  if (!user || user.role !== "admin") {
+  if (user.role !== "admin") {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: C.bg, flexDirection: "column", gap: "1rem" }}>
         <div style={{ color: C.pink, fontSize: "3rem" }}>⛔</div>
