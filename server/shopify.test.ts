@@ -122,7 +122,7 @@ describe("Shopify Client ID validation", () => {
   });
 
   it("client secret has expected shpss_ prefix", () => {
-    const secret = "shpss_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+    const secret = "shpss_" + "x".repeat(32); // placeholder — never hardcode real secrets
     expect(secret.startsWith("shpss_")).toBe(true);
   });
 
