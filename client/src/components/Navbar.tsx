@@ -251,7 +251,7 @@ export default function Navbar() {
           </div>
 
           {[
-            { label: "WHAT IS KANNA?", href: "/what-is-kanna" },
+            { label: "WHAT IS SILLY?", href: "/what-is-silly" },
             { label: "BLOG", href: "/blogs/news" },
             { label: "FAQ", href: "/faq" },
           ].map((item) => (
@@ -352,7 +352,7 @@ export default function Navbar() {
             </Link>
             <hr style={{ border: "none", borderTop: "1px solid oklch(0.22 0.08 295)", margin: "0.75rem 0" }} />
             {[
-              { label: "What is Kanna?", href: "/what-is-kanna" },
+              { label: "What is Silly?", href: "/what-is-silly" },
               { label: "Blog", href: "/blogs/news" },
               { label: "FAQ", href: "/faq" },
             ].map((item) => (

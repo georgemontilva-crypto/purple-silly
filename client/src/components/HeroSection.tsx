@@ -11,21 +11,16 @@ const C = {
 
 export default function HeroSection() {
   return (
-    <section className="relative min-h-[88vh] flex items-center overflow-hidden" style={{ background: C.deep }}>
-      {/* Full-width background placeholder (replace with real image) */}
-      <div
-        className="absolute inset-0"
-        style={{ background: "linear-gradient(135deg, #374151 0%, #4b5563 50%, #6b7280 100%)" }}
-      />
-      {/* Placeholder label */}
-      <div className="absolute inset-0 flex items-center justify-end pr-16 pointer-events-none" style={{ opacity: 0.12 }}>
+    <section className="relative min-h-[88vh] flex items-center overflow-hidden" style={{ background: "transparent" }}>
+      {/* Subtle dark overlay so text stays legible over the ambient orbs */}
+      <div className="absolute inset-0 pointer-events-none"
+        style={{ background: `linear-gradient(135deg, rgba(9,4,30,0.82) 0%, rgba(9,4,30,0.55) 60%, rgba(9,4,30,0.30) 100%)` }} />
+      {/* Placeholder label (remove when real image is uploaded) */}
+      <div className="absolute inset-0 flex items-center justify-end pr-16 pointer-events-none" style={{ opacity: 0.08 }}>
         <span style={{ color: "white", fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800, fontSize: "clamp(0.75rem, 2.5vw, 1.5rem)", letterSpacing: "0.15em", textTransform: "uppercase" }}>
           Hero Background Image · 1920 × 1080 px
         </span>
       </div>
-      {/* Purple gradient overlay — left side for text legibility */}
-      <div className="absolute inset-0 pointer-events-none"
-        style={{ background: `linear-gradient(90deg, ${C.deep}f2 0%, ${C.deep}cc 50%, ${C.deep}44 100%)` }} />
 
       {/* Content */}
       <div className="max-w-[1280px] mx-auto px-4 sm:px-8 w-full py-24 relative z-10">

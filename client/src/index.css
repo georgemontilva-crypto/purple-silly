@@ -107,3 +107,55 @@ button:active, a:active {
   transform: scale(0.97);
   transition: transform 160ms var(--ease-out);
 }
+
+/* ─── Global ambient orbs ─── */
+#ambient-orbs {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0;
+  animation: orbFloat linear infinite;
+}
+
+.orb-1 {
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle, rgba(139,92,246,0.75) 0%, rgba(109,40,217,0.35) 55%, transparent 100%);
+  animation-duration: 22s;
+  animation-delay: 0s;
+}
+.orb-2 {
+  width: 580px;
+  height: 580px;
+  background: radial-gradient(circle, rgba(236,72,153,0.70) 0%, rgba(168,85,247,0.30) 55%, transparent 100%);
+  animation-duration: 28s;
+  animation-delay: -8s;
+}
+.orb-3 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(192,132,252,0.60) 0%, rgba(236,72,153,0.25) 55%, transparent 100%);
+  animation-duration: 18s;
+  animation-delay: -14s;
+}
+.orb-4 {
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle, rgba(168,85,247,0.65) 0%, rgba(139,92,246,0.28) 55%, transparent 100%);
+  animation-duration: 32s;
+  animation-delay: -5s;
+}
+
+@keyframes orbFloat {
+  0%   { opacity: 0.85; transform: translate(var(--ox0), var(--oy0)) scale(1);     }
+  50%  { opacity: 1;    transform: translate(var(--ox1), var(--oy1)) scale(1.18);  }
+  100% { opacity: 0.85; transform: translate(var(--ox0), var(--oy0)) scale(1);     }
+}

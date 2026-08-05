@@ -15,11 +15,13 @@ import FAQPage from "./pages/FAQPage";
 import ContactPage from "./pages/ContactPage";
 import PolicyPage from "./pages/PolicyPage";
 import CustomCursor from "./components/CustomCursor";
+import WhatIsSilly from "./pages/WhatIsSilly";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/what-is-silly" component={WhatIsSilly} />
       <Route path="/collections/all" component={ShopPage} />
       <Route path="/collections/:handle" component={ShopPage} />
       <Route path="/products/:handle" component={ProductDetailPage} />
