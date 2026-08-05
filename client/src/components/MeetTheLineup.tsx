@@ -1,59 +1,47 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "wouter";
 import { Star, ChevronLeft, ChevronRight, ShoppingCart } from "lucide-react";
-import { getCollectionByHandle, ShopifyProduct, formatPrice, isShopifyConfigured } from "@/lib/shopify";
+import { formatPrice } from "@/lib/shopify";
+import { trpc } from "@/lib/trpc";
 import { useCart } from "@/contexts/CartContext";
 
-// Placeholder product data shown when Shopify is not yet configured
-const PLACEHOLDER_PRODUCTS: ShopifyProduct[] = [
-  {
-    id: "placeholder-1", handle: "blue-razz-kanna-tablets", title: "Party Tablets - Blue Razz",
-    description: "High-energy euphoria for late-night socializing.", descriptionHtml: "",
-    featuredImage: null, images: { nodes: [] },
-    priceRange: { minVariantPrice: { amount: "24.99", currencyCode: "USD" }, maxVariantPrice: { amount: "24.99", currencyCode: "USD" } },
-    variants: { nodes: [{ id: "var-1", title: "Default", price: { amount: "24.99", currencyCode: "USD" }, compareAtPrice: null, availableForSale: true, selectedOptions: [] }] },
-    tags: [], vendor: "Ferris Wheel", productType: "Tablets",
-  },
-  {
-    id: "placeholder-2", handle: "pink-stardust-kanna-tablets", title: "Party Tablets - Pink Stardust",
-    description: "High-energy euphoria for late-night socializing.", descriptionHtml: "",
-    featuredImage: null, images: { nodes: [] },
-    priceRange: { minVariantPrice: { amount: "24.99", currencyCode: "USD" }, maxVariantPrice: { amount: "24.99", currencyCode: "USD" } },
-    variants: { nodes: [{ id: "var-2", title: "Default", price: { amount: "24.99", currencyCode: "USD" }, compareAtPrice: null, availableForSale: true, selectedOptions: [] }] },
-    tags: [], vendor: "Ferris Wheel", productType: "Tablets",
-  },
-  {
-    id: "placeholder-3", handle: "juicy-apple-kanna-tablets", title: "Party Tablets - Juicy Apple",
-    description: "High-energy euphoria for late-night socializing.", descriptionHtml: "",
-    featuredImage: null, images: { nodes: [] },
-    priceRange: { minVariantPrice: { amount: "24.99", currencyCode: "USD" }, maxVariantPrice: { amount: "24.99", currencyCode: "USD" } },
-    variants: { nodes: [{ id: "var-3", title: "Default", price: { amount: "24.99", currencyCode: "USD" }, compareAtPrice: null, availableForSale: true, selectedOptions: [] }] },
-    tags: [], vendor: "Ferris Wheel", productType: "Tablets",
-  },
-  {
-    id: "placeholder-4", handle: "citrus-twist-kanna-tablets", title: "Party Tablets - Citrus Twist",
-    description: "High-energy euphoria for late-night socializing.", descriptionHtml: "",
-    featuredImage: null, images: { nodes: [] },
-    priceRange: { minVariantPrice: { amount: "24.99", currencyCode: "USD" }, maxVariantPrice: { amount: "24.99", currencyCode: "USD" } },
-    variants: { nodes: [{ id: "var-4", title: "Default", price: { amount: "24.99", currencyCode: "USD" }, compareAtPrice: null, availableForSale: true, selectedOptions: [] }] },
-    tags: [], vendor: "Ferris Wheel", productType: "Tablets",
-  },
-  {
-    id: "placeholder-5", handle: "blue-razz-gummies", title: "Daily Mood Gummies - Blue Razz",
-    description: "Daily mood support, social ease, and focus.", descriptionHtml: "",
-    featuredImage: null, images: { nodes: [] },
-    priceRange: { minVariantPrice: { amount: "29.99", currencyCode: "USD" }, maxVariantPrice: { amount: "29.99", currencyCode: "USD" } },
-    variants: { nodes: [{ id: "var-5", title: "Default", price: { amount: "29.99", currencyCode: "USD" }, compareAtPrice: null, availableForSale: true, selectedOptions: [] }] },
-    tags: [], vendor: "Ferris Wheel", productType: "Gummies",
-  },
-  {
-    id: "placeholder-6", handle: "sour-cherry-gummies", title: "Daily Mood Gummies - Sour Cherry",
-    description: "Daily mood support, social ease, and focus.", descriptionHtml: "",
-    featuredImage: null, images: { nodes: [] },
-    priceRange: { minVariantPrice: { amount: "29.99", currencyCode: "USD" }, maxVariantPrice: { amount: "29.99", currencyCode: "USD" } },
-    variants: { nodes: [{ id: "var-6", title: "Default", price: { amount: "29.99", currencyCode: "USD" }, compareAtPrice: null, availableForSale: true, selectedOptions: [] }] },
-    tags: [], vendor: "Ferris Wheel", productType: "Gummies",
-  },
+// Server-side product type (from Admin API via tRPC)
+type ServerProduct = {
+  id: string;
+  handle: string;
+  title: string;
+  description: string;
+  priceRange: {
+    minVariantPrice: { amount: string; currencyCode: string };
+    maxVariantPrice: { amount: string; currencyCode: string };
+  };
+  images: { edges: Array<{ node: { url: string; altText: string | null } }> };
+  variants: {
+    edges: Array<{
+      node: {
+        id: string;
+        title: string;
+        price: { amount: string; currencyCode: string };
+        compareAtPrice?: { amount: string; currencyCode: string } | null;
+        availableForSale: boolean;
+        selectedOptions: Array<{ name: string; value: string }>;
+      };
+    }>;
+  };
+  tags: string[];
+  availableForSale: boolean;
+};
+
+// Placeholder product data shown when Shopify app is not yet installed on the store
+const PLACEHOLDER_TABLETS: ServerProduct[] = [
+  { id: "ph-1", handle: "blue-razz-kanna-tablets", title: "Party Tablets — Blue Razz", tags: ["tablets"], availableForSale: true, description: "High-energy euphoria for late-night socializing.", images: { edges: [] }, priceRange: { minVariantPrice: { amount: "24.99", currencyCode: "USD" }, maxVariantPrice: { amount: "24.99", currencyCode: "USD" } }, variants: { edges: [{ node: { id: "v1", title: "Default", price: { amount: "24.99", currencyCode: "USD" }, compareAtPrice: null, availableForSale: true, selectedOptions: [] } }] } },
+  { id: "ph-2", handle: "pink-stardust-kanna-tablets", title: "Party Tablets — Pink Stardust", tags: ["tablets"], availableForSale: true, description: "High-energy euphoria for late-night socializing.", images: { edges: [] }, priceRange: { minVariantPrice: { amount: "24.99", currencyCode: "USD" }, maxVariantPrice: { amount: "24.99", currencyCode: "USD" } }, variants: { edges: [{ node: { id: "v2", title: "Default", price: { amount: "24.99", currencyCode: "USD" }, compareAtPrice: null, availableForSale: true, selectedOptions: [] } }] } },
+  { id: "ph-3", handle: "juicy-apple-kanna-tablets", title: "Party Tablets — Juicy Apple", tags: ["tablets"], availableForSale: true, description: "High-energy euphoria for late-night socializing.", images: { edges: [] }, priceRange: { minVariantPrice: { amount: "24.99", currencyCode: "USD" }, maxVariantPrice: { amount: "24.99", currencyCode: "USD" } }, variants: { edges: [{ node: { id: "v3", title: "Default", price: { amount: "24.99", currencyCode: "USD" }, compareAtPrice: null, availableForSale: true, selectedOptions: [] } }] } },
+  { id: "ph-4", handle: "citrus-twist-kanna-tablets", title: "Party Tablets — Citrus Twist", tags: ["tablets"], availableForSale: true, description: "High-energy euphoria for late-night socializing.", images: { edges: [] }, priceRange: { minVariantPrice: { amount: "24.99", currencyCode: "USD" }, maxVariantPrice: { amount: "24.99", currencyCode: "USD" } }, variants: { edges: [{ node: { id: "v4", title: "Default", price: { amount: "24.99", currencyCode: "USD" }, compareAtPrice: null, availableForSale: true, selectedOptions: [] } }] } },
+];
+const PLACEHOLDER_GUMMIES: ServerProduct[] = [
+  { id: "ph-5", handle: "blue-razz-gummies", title: "Daily Mood Gummies — Blue Razz", tags: ["gummies"], availableForSale: true, description: "Daily mood support, social ease, and focus.", images: { edges: [] }, priceRange: { minVariantPrice: { amount: "29.99", currencyCode: "USD" }, maxVariantPrice: { amount: "29.99", currencyCode: "USD" } }, variants: { edges: [{ node: { id: "v5", title: "Default", price: { amount: "29.99", currencyCode: "USD" }, compareAtPrice: null, availableForSale: true, selectedOptions: [] } }] } },
+  { id: "ph-6", handle: "sour-cherry-gummies", title: "Daily Mood Gummies — Sour Cherry", tags: ["gummies"], availableForSale: true, description: "Daily mood support, social ease, and focus.", images: { edges: [] }, priceRange: { minVariantPrice: { amount: "29.99", currencyCode: "USD" }, maxVariantPrice: { amount: "29.99", currencyCode: "USD" } }, variants: { edges: [{ node: { id: "v6", title: "Default", price: { amount: "29.99", currencyCode: "USD" }, compareAtPrice: null, availableForSale: true, selectedOptions: [] } }] } },
 ];
 
 function StarRating({ rating = 4.5 }: { rating?: number }) {
@@ -69,14 +57,15 @@ function StarRating({ rating = 4.5 }: { rating?: number }) {
   );
 }
 
-function ProductCard({ product, isPlaceholder }: { product: ShopifyProduct; isPlaceholder: boolean }) {
+function ProductCard({ product, isPlaceholder }: { product: ServerProduct; isPlaceholder: boolean }) {
   const { addItem, isLoading } = useCart();
-  const firstVariant = product.variants.nodes[0];
+  const firstVariant = product.variants.edges[0]?.node;
   const price = product.priceRange.minVariantPrice;
   const compareAt = firstVariant?.compareAtPrice;
   const discount = compareAt
     ? Math.round((1 - parseFloat(price.amount) / parseFloat(compareAt.amount)) * 100)
     : null;
+  const featuredImage = product.images.edges[0]?.node ?? null;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -87,16 +76,14 @@ function ProductCard({ product, isPlaceholder }: { product: ShopifyProduct; isPl
     <div className="product-card group flex-shrink-0 w-64 md:w-72">
       <Link href={`/products/${product.handle}`}>
         {/* Image area */}
-        <div className="relative overflow-hidden rounded-2xl bg-gray-100 mb-4"
-          style={{ aspectRatio: "1 / 1" }}>
+        <div className="relative overflow-hidden rounded-2xl bg-gray-100 mb-4" style={{ aspectRatio: "1 / 1" }}>
           {discount && (
             <span className="absolute top-3 left-3 z-10 bg-[oklch(0.62_0.25_340)] text-white text-xs font-bold px-2.5 py-1 rounded-full">
               -{discount}%
             </span>
           )}
-          {product.featuredImage ? (
-            <img src={product.featuredImage.url}
-              alt={product.featuredImage.altText ?? product.title}
+          {featuredImage ? (
+            <img src={featuredImage.url} alt={featuredImage.altText ?? product.title}
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 gap-2">
@@ -109,9 +96,7 @@ function ProductCard({ product, isPlaceholder }: { product: ShopifyProduct; isPl
         <div className="px-1">
           <div className="flex items-center gap-2 mb-1">
             <StarRating rating={4.5} />
-            {isPlaceholder && (
-              <span className="text-xs text-gray-400 font-medium">— reviews</span>
-            )}
+            {isPlaceholder && <span className="text-xs text-gray-400 font-medium">— reviews</span>}
           </div>
           <h3 className="font-bold text-sm text-[oklch(0.22_0.08_265)] leading-snug mb-1 line-clamp-2">
             {product.title}
@@ -121,9 +106,7 @@ function ProductCard({ product, isPlaceholder }: { product: ShopifyProduct; isPl
               {formatPrice(price)}
             </span>
             {compareAt && (
-              <span className="text-sm text-gray-400 line-through">
-                {formatPrice(compareAt)}
-              </span>
+              <span className="text-sm text-gray-400 line-through">{formatPrice(compareAt)}</span>
             )}
           </div>
         </div>
@@ -143,29 +126,28 @@ type Tab = "tablets" | "gummies";
 
 export default function MeetTheLineup() {
   const [activeTab, setActiveTab] = useState<Tab>("tablets");
-  const [tabletsProducts, setTabletsProducts] = useState<ShopifyProduct[]>([]);
-  const [gummiesProducts, setGummiesProducts] = useState<ShopifyProduct[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [scrollIndex, setScrollIndex] = useState(0);
-  const configured = isShopifyConfigured();
 
-  useEffect(() => {
-    if (!configured) {
-      // Use placeholder split: first 4 are tablets, last 2 are gummies
-      setTabletsProducts(PLACEHOLDER_PRODUCTS.filter(p => p.productType === "Tablets"));
-      setGummiesProducts(PLACEHOLDER_PRODUCTS.filter(p => p.productType === "Gummies"));
-      return;
-    }
-    setIsLoading(true);
-    Promise.all([
-      getCollectionByHandle("kanna-tablets", 10),
-      getCollectionByHandle("kanna-gummies", 10),
-    ]).then(([tablets, gummies]) => {
-      setTabletsProducts(tablets?.products.nodes ?? []);
-      setGummiesProducts(gummies?.products.nodes ?? []);
-    }).catch(console.error)
-      .finally(() => setIsLoading(false));
-  }, [configured]);
+  // Fetch products server-side via tRPC (Client Credentials Grant — no frontend secrets)
+  const { data: tabletsData, isLoading: tabletsLoading } = trpc.shopify.products.useQuery(
+    { first: 10, collection: "kanna-tablets" },
+    { retry: 1, staleTime: 5 * 60 * 1000 }
+  );
+  const { data: gummiesData, isLoading: gummiesLoading } = trpc.shopify.products.useQuery(
+    { first: 10, collection: "kanna-gummies" },
+    { retry: 1, staleTime: 5 * 60 * 1000 }
+  );
+
+  const isLoading = tabletsLoading || gummiesLoading;
+
+  // Fall back to placeholders if no live data yet
+  const tabletsProducts: ServerProduct[] = (tabletsData && tabletsData.length > 0)
+    ? (tabletsData as unknown as ServerProduct[])
+    : PLACEHOLDER_TABLETS;
+  const gummiesProducts: ServerProduct[] = (gummiesData && gummiesData.length > 0)
+    ? (gummiesData as unknown as ServerProduct[])
+    : PLACEHOLDER_GUMMIES;
+  const isPlaceholder = !tabletsData || tabletsData.length === 0;
 
   const products = activeTab === "tablets" ? tabletsProducts : gummiesProducts;
   const visibleCount = 4;
@@ -198,9 +180,9 @@ export default function MeetTheLineup() {
           </div>
         </div>
 
-        {!configured && (
+        {isPlaceholder && !isLoading && (
           <div className="mb-6 bg-[oklch(0.92_0.18_95)]/20 border border-[oklch(0.92_0.18_95)] rounded-2xl px-5 py-3 text-sm text-[oklch(0.22_0.08_265)] font-medium">
-            ⚡ Connect your Shopify store to display real products. Showing placeholder data.
+            ⚡ Install your Shopify app on the store to display real products. Showing placeholder data.
           </div>
         )}
 
@@ -219,7 +201,7 @@ export default function MeetTheLineup() {
             <div className="flex gap-5 overflow-hidden"
               style={{ transform: `translateX(calc(-${scrollIndex} * (${288 + 20}px)))`, transition: "transform 300ms cubic-bezier(0.23,1,0.32,1)" }}>
               {products.map((product) => (
-                <ProductCard key={product.id} product={product} isPlaceholder={!configured} />
+                <ProductCard key={product.id} product={product} isPlaceholder={isPlaceholder} />
               ))}
             </div>
             {/* Navigation */}
@@ -249,4 +231,3 @@ export default function MeetTheLineup() {
     </section>
   );
 }
-

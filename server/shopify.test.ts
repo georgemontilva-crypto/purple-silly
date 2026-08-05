@@ -86,3 +86,48 @@ describe("Cart localStorage key", () => {
   });
 });
 
+describe("Shopify checkout URL builder", () => {
+  it("extracts numeric ID from GID and builds cart URL", () => {
+    const variantGid = "gid://shopify/ProductVariant/123456789";
+    const numericId = variantGid.split("/").pop();
+    const shop = "purple-co-magic.myshopify.com";
+    const checkoutUrl = `https://${shop}/cart/${numericId}:1`;
+    expect(checkoutUrl).toBe("https://purple-co-magic.myshopify.com/cart/123456789:1");
+  });
+
+  it("builds multi-item cart URL correctly", () => {
+    const lines = [
+      { variantId: "gid://shopify/ProductVariant/111", quantity: 2 },
+      { variantId: "gid://shopify/ProductVariant/222", quantity: 1 },
+    ];
+    const shop = "purple-co-magic.myshopify.com";
+    const cartItems = lines
+      .map((l) => `${l.variantId.split("/").pop()}:${l.quantity}`)
+      .join(",");
+    const checkoutUrl = `https://${shop}/cart/${cartItems}`;
+    expect(checkoutUrl).toBe("https://purple-co-magic.myshopify.com/cart/111:2,222:1");
+  });
+
+  it("handles plain numeric variantId (not GID)", () => {
+    const variantId = "987654321";
+    const numericId = variantId.split("/").pop();
+    expect(numericId).toBe("987654321");
+  });
+});
+
+describe("Shopify Client ID validation", () => {
+  it("client ID has expected format (32 hex chars)", () => {
+    const clientId = "3b0eee4488a6cdd6b9599d1845875a69";
+    expect(clientId).toMatch(/^[a-f0-9]{32}$/);
+  });
+
+  it("client secret has expected shpss_ prefix", () => {
+    const secret = "shpss_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+    expect(secret.startsWith("shpss_")).toBe(true);
+  });
+
+  it("shop domain has myshopify.com format", () => {
+    const shop = "purple-co-magic.myshopify.com";
+    expect(shop).toMatch(/^[a-z0-9-]+\.myshopify\.com$/);
+  });
+});

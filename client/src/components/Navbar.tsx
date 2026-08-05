@@ -40,7 +40,7 @@ function ShopDropdown({ onClose }: { onClose: () => void }) {
 }
 
 function CartDrawer() {
-  const { isOpen, closeCart, lines, totalQuantity, cart, updateItem, removeItem, goToCheckout, isLoading } = useCart();
+  const { isOpen, closeCart, lines, totalQuantity, subtotal, updateItem, removeItem, goToCheckout, isLoading } = useCart();
 
   if (!isOpen) return null;
 
@@ -71,19 +71,19 @@ function CartDrawer() {
             lines.map((line) => (
               <div key={line.id} className="flex gap-4 p-3 bg-gray-50 rounded-2xl">
                 <div className="w-20 h-20 bg-gray-200 rounded-xl overflow-hidden flex-shrink-0">
-                  {line.merchandise.product.featuredImage && (
-                    <img src={line.merchandise.product.featuredImage.url}
-                      alt={line.merchandise.product.title}
+                  {line.image && (
+                    <img src={line.image.url}
+                      alt={line.image.altText ?? line.title}
                       className="w-full h-full object-cover" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-bold text-sm text-[oklch(0.22_0.08_265)] truncate">
-                    {line.merchandise.product.title}
+                    {line.title}
                   </p>
-                  <p className="text-xs text-gray-500">{line.merchandise.title}</p>
+                  <p className="text-xs text-gray-500">{line.variantTitle !== "Default" ? line.variantTitle : ""}</p>
                   <p className="text-sm font-bold text-[oklch(0.62_0.25_340)] mt-1">
-                    {formatPrice(line.cost.totalAmount)}
+                    {formatPrice({ amount: String(parseFloat(line.price.amount) * line.quantity), currencyCode: line.price.currencyCode })}
                   </p>
                   <div className="flex items-center gap-2 mt-2">
                     <button onClick={() => updateItem(line.id, line.quantity - 1)}
@@ -113,7 +113,7 @@ function CartDrawer() {
             <div className="flex justify-between text-sm font-medium text-gray-600">
               <span>Subtotal</span>
               <span className="font-bold text-[oklch(0.22_0.08_265)]">
-                {cart?.cost.subtotalAmount ? formatPrice(cart.cost.subtotalAmount) : "—"}
+                {formatPrice({ amount: subtotal.toFixed(2), currencyCode: lines[0]?.price.currencyCode ?? "USD" })}
               </span>
             </div>
             <button onClick={goToCheckout}
@@ -211,4 +211,3 @@ export default function Navbar() {
     </>
   );
 }
-

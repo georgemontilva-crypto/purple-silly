@@ -24,6 +24,11 @@
 - [x] Redirect a checkout de Shopify
 - [x] Storefront Access Token como variable de entorno VITE_SHOPIFY_STOREFRONT_TOKEN
 - [x] SHOPIFY_STORE_DOMAIN como variable de entorno
+- [x] Integración Shopify server-side con Client Credentials Grant (Admin API)
+- [x] tRPC router shopify: products, product, collections, createCheckout
+- [x] CartContext refactorizado para usar tRPC server-side (sin secrets en frontend)
+- [x] MeetTheLineup actualizado para consumir datos via tRPC
+- [x] Credenciales configuradas: SHOPIFY_SHOP=purple-co-magic.myshopify.com
 
 ## Páginas Adicionales
 - [x] Página /collections/all - catálogo completo de productos
