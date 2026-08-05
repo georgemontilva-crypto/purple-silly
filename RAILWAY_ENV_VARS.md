@@ -9,14 +9,6 @@ Agrega estas variables en el tab **Variables** de tu servicio en Railway.
 | `DATABASE_URL` | MySQL/PlanetScale connection string | `mysql://user:pass@host:3306/db?ssl={"rejectUnauthorized":true}` |
 | `JWT_SECRET` | Secreto para firmar cookies de sesión (64 chars random) | `openssl rand -hex 32` |
 
-## Shopify
-
-| Variable | Descripción | Dónde obtenerla |
-|---|---|---|
-| `SHOPIFY_SHOP` | Dominio de tu tienda | `your-store.myshopify.com` |
-| `SHOPIFY_CLIENT_ID` | Storefront API Client ID | Shopify Admin → Apps → Develop apps |
-| `SHOPIFY_CLIENT_SECRET` | Storefront API Access Token | Shopify Admin → Apps → Develop apps |
-
 ## Cloudflare R2 (Assets Manager)
 
 | Variable | Descripción | Dónde obtenerla |

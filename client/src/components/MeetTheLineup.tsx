@@ -1,7 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { Star, ShoppingCart } from "lucide-react";
-import { trpc } from "@/lib/trpc";
 import { useCart } from "@/contexts/CartContext";
 
 const BLUE_RAZZ = "/manus-storage/SuperSillyDotsbluerazz_58830613.webp";
@@ -132,7 +131,7 @@ function ProductCard({ product }: { product: FallbackProduct }) {
     e.preventDefault();
     setAdding(true);
     addItem(
-      `gid://shopify/ProductVariant/${product.id}`,
+      product.id,
       1,
       { title: product.title, variantTitle: "Default", price: product.price, image: { url: product.image, altText: product.title } }
     );
@@ -194,28 +193,8 @@ function ProductCard({ product }: { product: FallbackProduct }) {
 
 /* ─── Main section ─── */
 export default function MeetTheLineup() {
-  const { data: shopifyProducts, isLoading } = trpc.shopify.products.useQuery(
-    { first: 9 },
-    { retry: 1, staleTime: 5 * 60 * 1000 }
-  );
-
-  const products: FallbackProduct[] = (shopifyProducts && shopifyProducts.length > 0)
-    ? (shopifyProducts as unknown as Array<{
-        id: string;
-        title: string;
-        handle: string;
-        priceRange: { minVariantPrice: { amount: string; currencyCode: string } };
-        featuredImage?: { url: string } | null;
-      }>).map((p) => ({
-        id: p.id,
-        title: p.title,
-        handle: p.handle,
-        price: p.priceRange.minVariantPrice,
-        image: p.featuredImage?.url ?? NATURAL,
-        rating: 4.8,
-        reviews: 100,
-      }))
-    : FALLBACK;
+  // TODO: reemplazar por catálogo propio (tablas locales) cuando esté listo.
+  const products: FallbackProduct[] = FALLBACK;
 
   return (
     <section
@@ -245,25 +224,9 @@ export default function MeetTheLineup() {
         </div>
 
         {/* Products grid */}
-        {isLoading ? (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1,2,3].map(i => (
-              <div
-                key={i}
-                className="rounded-3xl aspect-[3/4] animate-pulse"
-                style={{
-                  background: "rgba(255,255,255,0.04)",
-                  backdropFilter: "blur(12px)",
-                  border: "1px solid rgba(168,85,247,0.15)",
-                }}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.map(p => <ProductCard key={p.id} product={p} />)}
-          </div>
-        )}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {products.map(p => <ProductCard key={p.id} product={p} />)}
+        </div>
 
         <div className="text-center mt-12">
           <Link

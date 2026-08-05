@@ -1,21 +1,39 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "wouter";
 import { Star, ShoppingCart } from "lucide-react";
-import { getProducts, ShopifyProduct, formatPrice, isShopifyConfigured } from "@/lib/shopify";
 import { useCart } from "@/contexts/CartContext";
 import AnnouncementBar from "@/components/AnnouncementBar";
 import NewsletterSection from "@/components/NewsletterSection";
 
-const PLACEHOLDER_PRODUCTS: ShopifyProduct[] = [
-  { id: "p1", handle: "party-tablets-blue-razz", title: "Party Tablets - Blue Razz", description: "High-energy euphoria for late-night socializing.", descriptionHtml: "", featuredImage: null, images: { nodes: [] }, priceRange: { minVariantPrice: { amount: "24.99", currencyCode: "USD" }, maxVariantPrice: { amount: "24.99", currencyCode: "USD" } }, variants: { nodes: [{ id: "v1", title: "Default", price: { amount: "24.99", currencyCode: "USD" }, compareAtPrice: null, availableForSale: true, selectedOptions: [] }] }, tags: ["tablets"], vendor: "Ferris Wheel", productType: "Tablets" },
-  { id: "p2", handle: "party-tablets-pink-stardust", title: "Party Tablets - Pink Stardust", description: "High-energy euphoria for late-night socializing.", descriptionHtml: "", featuredImage: null, images: { nodes: [] }, priceRange: { minVariantPrice: { amount: "24.99", currencyCode: "USD" }, maxVariantPrice: { amount: "24.99", currencyCode: "USD" } }, variants: { nodes: [{ id: "v2", title: "Default", price: { amount: "24.99", currencyCode: "USD" }, compareAtPrice: null, availableForSale: true, selectedOptions: [] }] }, tags: ["tablets"], vendor: "Ferris Wheel", productType: "Tablets" },
-  { id: "p3", handle: "party-tablets-citrus-twist", title: "Party Tablets - Citrus Twist", description: "High-energy euphoria for late-night socializing.", descriptionHtml: "", featuredImage: null, images: { nodes: [] }, priceRange: { minVariantPrice: { amount: "24.99", currencyCode: "USD" }, maxVariantPrice: { amount: "24.99", currencyCode: "USD" } }, variants: { nodes: [{ id: "v3", title: "Default", price: { amount: "24.99", currencyCode: "USD" }, compareAtPrice: null, availableForSale: true, selectedOptions: [] }] }, tags: ["tablets"], vendor: "Ferris Wheel", productType: "Tablets" },
-  { id: "p4", handle: "daily-mood-gummies-blue-razz", title: "Daily Mood Gummies - Blue Razz", description: "Daily mood support, social ease, and focus.", descriptionHtml: "", featuredImage: null, images: { nodes: [] }, priceRange: { minVariantPrice: { amount: "29.99", currencyCode: "USD" }, maxVariantPrice: { amount: "29.99", currencyCode: "USD" } }, variants: { nodes: [{ id: "v4", title: "Default", price: { amount: "29.99", currencyCode: "USD" }, compareAtPrice: null, availableForSale: true, selectedOptions: [] }] }, tags: ["gummies"], vendor: "Ferris Wheel", productType: "Gummies" },
-  { id: "p5", handle: "daily-mood-gummies-sour-cherry", title: "Daily Mood Gummies - Sour Cherry", description: "Daily mood support, social ease, and focus.", descriptionHtml: "", featuredImage: null, images: { nodes: [] }, priceRange: { minVariantPrice: { amount: "29.99", currencyCode: "USD" }, maxVariantPrice: { amount: "29.99", currencyCode: "USD" } }, variants: { nodes: [{ id: "v5", title: "Default", price: { amount: "29.99", currencyCode: "USD" }, compareAtPrice: null, availableForSale: true, selectedOptions: [] }] }, tags: ["gummies"], vendor: "Ferris Wheel", productType: "Gummies" },
-  { id: "p6", handle: "daily-mood-gummies-watermelon", title: "Daily Mood Gummies - Watermelon", description: "Daily mood support, social ease, and focus.", descriptionHtml: "", featuredImage: null, images: { nodes: [] }, priceRange: { minVariantPrice: { amount: "29.99", currencyCode: "USD" }, maxVariantPrice: { amount: "29.99", currencyCode: "USD" } }, variants: { nodes: [{ id: "v6", title: "Default", price: { amount: "29.99", currencyCode: "USD" }, compareAtPrice: null, availableForSale: true, selectedOptions: [] }] }, tags: ["gummies"], vendor: "Ferris Wheel", productType: "Gummies" },
+// TODO: reemplazar por catálogo propio (tablas locales) cuando esté listo.
+interface CatalogProduct {
+  id: string;
+  handle: string;
+  title: string;
+  description: string;
+  featuredImage: { url: string; altText: string | null } | null;
+  priceRange: { minVariantPrice: { amount: string; currencyCode: string } };
+  variants: { nodes: Array<{ id: string; availableForSale: boolean }> };
+  productType: string;
+}
+
+function formatPrice(price: { amount: string; currencyCode: string }): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: price.currencyCode,
+  }).format(parseFloat(price.amount));
+}
+
+const PLACEHOLDER_PRODUCTS: CatalogProduct[] = [
+  { id: "p1", handle: "party-tablets-blue-razz", title: "Party Tablets - Blue Razz", description: "High-energy euphoria for late-night socializing.", featuredImage: null, priceRange: { minVariantPrice: { amount: "24.99", currencyCode: "USD" } }, variants: { nodes: [{ id: "v1", availableForSale: true }] }, productType: "Tablets" },
+  { id: "p2", handle: "party-tablets-pink-stardust", title: "Party Tablets - Pink Stardust", description: "High-energy euphoria for late-night socializing.", featuredImage: null, priceRange: { minVariantPrice: { amount: "24.99", currencyCode: "USD" } }, variants: { nodes: [{ id: "v2", availableForSale: true }] }, productType: "Tablets" },
+  { id: "p3", handle: "party-tablets-citrus-twist", title: "Party Tablets - Citrus Twist", description: "High-energy euphoria for late-night socializing.", featuredImage: null, priceRange: { minVariantPrice: { amount: "24.99", currencyCode: "USD" } }, variants: { nodes: [{ id: "v3", availableForSale: true }] }, productType: "Tablets" },
+  { id: "p4", handle: "daily-mood-gummies-blue-razz", title: "Daily Mood Gummies - Blue Razz", description: "Daily mood support, social ease, and focus.", featuredImage: null, priceRange: { minVariantPrice: { amount: "29.99", currencyCode: "USD" } }, variants: { nodes: [{ id: "v4", availableForSale: true }] }, productType: "Gummies" },
+  { id: "p5", handle: "daily-mood-gummies-sour-cherry", title: "Daily Mood Gummies - Sour Cherry", description: "Daily mood support, social ease, and focus.", featuredImage: null, priceRange: { minVariantPrice: { amount: "29.99", currencyCode: "USD" } }, variants: { nodes: [{ id: "v5", availableForSale: true }] }, productType: "Gummies" },
+  { id: "p6", handle: "daily-mood-gummies-watermelon", title: "Daily Mood Gummies - Watermelon", description: "Daily mood support, social ease, and focus.", featuredImage: null, priceRange: { minVariantPrice: { amount: "29.99", currencyCode: "USD" } }, variants: { nodes: [{ id: "v6", availableForSale: true }] }, productType: "Gummies" },
 ];
 
-function ProductCard({ product }: { product: ShopifyProduct }) {
+function ProductCard({ product }: { product: CatalogProduct }) {
   const { addItem, isLoading } = useCart();
   const firstVariant = product.variants.nodes[0];
   const price = product.priceRange.minVariantPrice;
@@ -53,19 +71,11 @@ function ProductCard({ product }: { product: ShopifyProduct }) {
 }
 
 export default function ShopPage() {
-  const [products, setProducts] = useState<ShopifyProduct[]>([]);
-  const [loading, setLoading] = useState(false);
+  // TODO: reemplazar por catálogo propio (tablas locales) cuando esté listo.
   const [filter, setFilter] = useState<"all" | "tablets" | "gummies">("all");
-  const configured = isShopifyConfigured();
 
-  useEffect(() => {
-    if (!configured) { setProducts(PLACEHOLDER_PRODUCTS); return; }
-    setLoading(true);
-    getProducts(24).then(setProducts).catch(console.error).finally(() => setLoading(false));
-  }, [configured]);
-
-  const filtered = filter === "all" ? products
-    : products.filter(p => filter === "tablets" ? p.productType === "Tablets" : p.productType === "Gummies");
+  const filtered = filter === "all" ? PLACEHOLDER_PRODUCTS
+    : PLACEHOLDER_PRODUCTS.filter(p => filter === "tablets" ? p.productType === "Tablets" : p.productType === "Gummies");
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -83,28 +93,9 @@ export default function ShopPage() {
               ))}
             </div>
           </div>
-          {!configured && (
-            <div className="mb-6 bg-[oklch(0.92_0.18_95)]/20 border border-[oklch(0.92_0.18_95)] rounded-2xl px-5 py-3 text-sm text-[oklch(0.22_0.08_265)] font-medium">
-              ⚡ Connect your Shopify store to display real products. Showing placeholder data.
-            </div>
-          )}
-          {loading ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-              {[1,2,3,4,5,6,7,8].map(i => (
-                <div key={i} className="rounded-3xl overflow-hidden">
-                  <div className="aspect-square bg-gray-200 animate-pulse" />
-                  <div className="p-4 space-y-2">
-                    <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4" />
-                    <div className="h-4 bg-gray-200 rounded animate-pulse w-1/2" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-              {filtered.map(p => <ProductCard key={p.id} product={p} />)}
-            </div>
-          )}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+            {filtered.map(p => <ProductCard key={p.id} product={p} />)}
+          </div>
         </div>
       </main>
       <NewsletterSection />
