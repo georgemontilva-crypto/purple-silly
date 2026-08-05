@@ -55,7 +55,7 @@ export default function ContactPage() {
             </div>
             <div>
               <p className="font-bold text-[oklch(0.22_0.08_265)] mb-1">Email</p>
-              <a href="mailto:info@getferriswheel.com" className="hover:text-[oklch(0.62_0.25_340)] transition-colors">info@getferriswheel.com</a>
+              <a href="mailto:info@purple-co.com" className="hover:text-[oklch(0.62_0.25_340)] transition-colors">info@purple-co.com</a>
             </div>
             <div>
               <p className="font-bold text-[oklch(0.22_0.08_265)] mb-1">Address</p>
@@ -63,8 +63,8 @@ export default function ContactPage() {
             </div>
             <div>
               <p className="font-bold text-[oklch(0.22_0.08_265)] mb-1">Help Center</p>
-              <a href="http://help.getferriswheel.com/" target="_blank" rel="noopener noreferrer"
-                className="hover:text-[oklch(0.62_0.25_340)] transition-colors">help.getferriswheel.com</a>
+              <a href="http://help.purple-co.com/" target="_blank" rel="noopener noreferrer"
+                className="hover:text-[oklch(0.62_0.25_340)] transition-colors">help.purple-co.com</a>
             </div>
           </div>
         </div>

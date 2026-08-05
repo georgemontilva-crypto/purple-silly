@@ -75,9 +75,9 @@ export default function ProductDetailPage() {
   const discount = compareAt ? Math.round((1 - parseFloat(price.amount) / parseFloat(compareAt.amount)) * 100) : null;
 
   const productFaqs = [
-    { q: "What's in it?", a: "Ferris Wheel products contain premium Kanna extract (Sceletium tortuosum), caffeine, and L-Theanine — all natural, third-party lab tested ingredients." },
+    { q: "What's in it?", a: "Purple Organics products contain premium Kanna extract (Sceletium tortuosum), caffeine, and L-Theanine — all natural, third-party lab tested ingredients." },
     { q: "How do I take it?", a: "Take the suggested serving size listed on the label. For tablets, allow them to dissolve under your tongue for best results. For gummies, chew thoroughly." },
-    { q: "Is it safe to mix with alcohol?", a: "We recommend avoiding mixing Ferris Wheel products with alcohol or other substances. Always use responsibly." },
+    { q: "Is it safe to mix with alcohol?", a: "We recommend avoiding mixing Purple Organics products with alcohol or other substances. Always use responsibly." },
     { q: "Will it show up on a drug test?", a: "Kanna (Sceletium tortuosum) is not a controlled substance and is not tested for in standard drug screenings. However, we always recommend consulting your employer or testing provider." },
   ];
 
