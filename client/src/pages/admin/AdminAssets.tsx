@@ -1,42 +1,36 @@
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 import { trpc } from "@/lib/trpc";
+import {
+  ASSET_SECTION_KEYS,
+  ASSET_SECTIONS,
+  type AssetSectionKey,
+} from "@shared/assetSections";
+import type { SiteAsset } from "../../../../drizzle/schema";
+import {
+  Check,
+  Copy,
+  ExternalLink,
+  ImageOff,
+  ImagePlus,
+  Loader2,
+  Trash2,
+  UploadCloud,
+} from "lucide-react";
 
 const C = {
-  bg:     "oklch(0.07 0.04 295)",
-  dark:   "oklch(0.10 0.05 295)",
-  mid:    "oklch(0.18 0.06 295)",
+  dark: "oklch(0.10 0.05 295)",
+  mid: "oklch(0.18 0.06 295)",
   border: "oklch(0.18 0.06 295)",
-  vivid:  "oklch(0.52 0.28 295)",
+  vivid: "oklch(0.52 0.28 295)",
   bright: "oklch(0.62 0.28 295)",
-  pink:   "oklch(0.72 0.22 320)",
-  green:  "oklch(0.60 0.25 160)",
-  text:   "oklch(0.92 0.02 295)",
-  muted:  "oklch(0.55 0.07 295)",
+  pink: "oklch(0.72 0.22 320)",
+  green: "oklch(0.60 0.25 160)",
+  text: "oklch(0.92 0.02 295)",
+  muted: "oklch(0.55 0.07 295)",
 };
 
-// Sections of the site that need images
-const SITE_SECTIONS = [
-  { id: "hero",                   label: "Hero Banner",                  desc: "Imagen de fondo principal (1920×1080px recomendado)" },
-  { id: "choose-your-ride-dots",  label: "Choose Your Ride — Silly Dots", desc: "3 imágenes de producto (800×600px)" },
-  { id: "choose-your-ride-euphoria", label: "Choose Your Ride — Silly Euphoria", desc: "3 imágenes de producto (800×600px)" },
-  { id: "choose-your-ride-bites", label: "Choose Your Ride — Silly Bites", desc: "3 imágenes de producto (800×600px)" },
-  { id: "what-is-silly",          label: "What is Silly? — Secciones",   desc: "4 imágenes para la página informativa (1200×800px)" },
-  { id: "about-us",               label: "About Us",                     desc: "Imágenes para la página About (equipo, lifestyle)" },
-  { id: "navbar-logo",            label: "Navbar / Logo",                desc: "Logo alternativo o variaciones" },
-  { id: "general",                label: "General / Otros",              desc: "Recursos gráficos sin categoría específica" },
-];
-
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      resolve(result.split(",")[1]);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
+const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
+const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5MB
 
 function formatBytes(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
@@ -44,389 +38,503 @@ function formatBytes(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-interface UploadModalProps {
-  section: typeof SITE_SECTIONS[0];
-  onClose: () => void;
-  onSuccess: () => void;
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve((reader.result as string).split(",")[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }
 
-function UploadModal({ section, onClose, onSuccess }: UploadModalProps) {
-  const [file, setFile] = useState<File | null>(null);
-  const [label, setLabel] = useState("");
-  const [preview, setPreview] = useState<string | null>(null);
-  const [dragging, setDragging] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+function readImageDimensions(url: string): Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
+function validateFile(file: File): string | null {
+  if (!(ALLOWED_MIME_TYPES as readonly string[]).includes(file.type)) {
+    return "Only JPG, PNG or WebP images are allowed.";
+  }
+  if (file.size > MAX_FILE_BYTES) {
+    return `File is too large (${formatBytes(file.size)}). Max ${formatBytes(MAX_FILE_BYTES)}.`;
+  }
+  return null;
+}
+
+interface PendingUpload {
+  file: File;
+  previewUrl: string;
+  label: string;
+  width?: number;
+  height?: number;
+}
+
+function SectionCard({
+  sectionKey,
+  assets,
+  isLoading,
+}: {
+  sectionKey: AssetSectionKey;
+  assets: SiteAsset[];
+  isLoading: boolean;
+}) {
+  const meta = ASSET_SECTIONS[sectionKey];
   const utils = trpc.useUtils();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [dragging, setDragging] = useState(false);
+  const [pending, setPending] = useState<PendingUpload | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<number | null>(null);
 
   const upload = trpc.admin.assets.upload.useMutation({
     onSuccess: () => {
       utils.admin.assets.list.invalidate();
-      onSuccess();
-      onClose();
+      setPending(null);
     },
+    onError: e => setError(e.message),
   });
-
-  function handleFile(f: File) {
-    setFile(f);
-    if (!label) setLabel(f.name.replace(/\.[^.]+$/, ""));
-    const url = URL.createObjectURL(f);
-    setPreview(url);
-  }
-
-  async function handleSubmit() {
-    if (!file || !label.trim()) return;
-    const base64 = await fileToBase64(file);
-    upload.mutate({
-      section: section.id,
-      label: label.trim(),
-      fileBase64: base64,
-      fileName: file.name,
-      contentType: file.type || "application/octet-stream",
-    });
-  }
-
-  return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 1000,
-      background: "rgba(0,0,0,0.75)",
-      display: "flex", alignItems: "center", justifyContent: "center",
-      padding: "1rem",
-    }} onClick={onClose}>
-      <div style={{
-        background: C.dark, border: `1px solid ${C.border}`,
-        borderRadius: "1.25rem", padding: "2rem",
-        width: "100%", maxWidth: "480px",
-        maxHeight: "90vh", overflowY: "auto",
-      }} onClick={e => e.stopPropagation()}>
-        <h3 style={{ color: C.text, fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: "1.4rem", margin: "0 0 0.25rem" }}>
-          Subir imagen
-        </h3>
-        <p style={{ color: C.muted, fontSize: "0.85rem", margin: "0 0 1.5rem" }}>
-          Sección: <strong style={{ color: C.vivid }}>{section.label}</strong>
-        </p>
-
-        {/* Drop zone */}
-        <div
-          onDragOver={e => { e.preventDefault(); setDragging(true); }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={e => { e.preventDefault(); setDragging(false); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}
-          onClick={() => inputRef.current?.click()}
-          style={{
-            border: `2px dashed ${dragging ? C.vivid : C.border}`,
-            borderRadius: "0.75rem",
-            padding: "1.5rem",
-            textAlign: "center",
-            cursor: "pointer",
-            marginBottom: "1rem",
-            transition: "border-color 0.2s",
-            background: dragging ? `${C.vivid}08` : "transparent",
-          }}
-        >
-          {preview ? (
-            <img src={preview} alt="preview" style={{ maxHeight: "160px", maxWidth: "100%", borderRadius: "0.5rem", objectFit: "contain" }} />
-          ) : (
-            <>
-              <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>📁</div>
-              <div style={{ color: C.muted, fontSize: "0.85rem" }}>
-                Arrastra una imagen aquí o <span style={{ color: C.vivid, fontWeight: 700 }}>haz clic para seleccionar</span>
-              </div>
-              <div style={{ color: C.muted, fontSize: "0.75rem", marginTop: "0.25rem" }}>
-                PNG, JPG, WebP, SVG, GIF
-              </div>
-            </>
-          )}
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/*"
-            style={{ display: "none" }}
-            onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
-          />
-        </div>
-
-        {file && (
-          <div style={{ color: C.muted, fontSize: "0.8rem", marginBottom: "1rem" }}>
-            {file.name} · {formatBytes(file.size)}
-          </div>
-        )}
-
-        {/* Label input */}
-        <div style={{ marginBottom: "1.5rem" }}>
-          <label style={{ color: C.muted, fontSize: "0.8rem", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", display: "block", marginBottom: "0.4rem" }}>
-            Nombre / Etiqueta
-          </label>
-          <input
-            type="text"
-            value={label}
-            onChange={e => setLabel(e.target.value)}
-            placeholder="ej. Hero Background, Silly Dots Mega Dose..."
-            style={{
-              width: "100%", padding: "0.65rem 0.9rem",
-              background: C.mid, border: `1px solid ${C.border}`,
-              borderRadius: "0.5rem", color: C.text, fontSize: "0.9rem",
-              outline: "none", boxSizing: "border-box",
-            }}
-          />
-        </div>
-
-        {/* R2 warning if not configured */}
-        <div style={{
-          background: `${C.pink}10`, border: `1px solid ${C.pink}30`,
-          borderRadius: "0.5rem", padding: "0.75rem 1rem",
-          marginBottom: "1.5rem", fontSize: "0.8rem", color: C.muted,
-        }}>
-          ⚠️ Requiere <strong style={{ color: C.pink }}>Cloudflare R2</strong> configurado. Agrega las variables <code style={{ color: C.vivid }}>R2_*</code> en Railway antes de subir.
-        </div>
-
-        {upload.error && (
-          <div style={{ background: `${C.pink}15`, border: `1px solid ${C.pink}40`, borderRadius: "0.5rem", padding: "0.75rem", marginBottom: "1rem", color: C.pink, fontSize: "0.85rem" }}>
-            {upload.error.message}
-          </div>
-        )}
-
-        <div style={{ display: "flex", gap: "0.75rem" }}>
-          <button
-            onClick={onClose}
-            style={{
-              flex: 1, padding: "0.75rem",
-              background: C.mid, border: `1px solid ${C.border}`,
-              borderRadius: "0.6rem", color: C.muted,
-              cursor: "pointer", fontWeight: 600, fontSize: "0.9rem",
-            }}
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={!file || !label.trim() || upload.isPending}
-            style={{
-              flex: 2, padding: "0.75rem",
-              background: !file || !label.trim() ? C.mid : `linear-gradient(135deg, ${C.bright}, ${C.pink})`,
-              border: "none", borderRadius: "0.6rem",
-              color: !file || !label.trim() ? C.muted : "white",
-              cursor: !file || !label.trim() ? "not-allowed" : "pointer",
-              fontWeight: 700, fontSize: "0.9rem",
-            }}
-          >
-            {upload.isPending ? "Subiendo..." : "Subir imagen"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default function AdminAssets() {
-  const [activeSection, setActiveSection] = useState(SITE_SECTIONS[0].id);
-  const [uploadModal, setUploadModal] = useState<typeof SITE_SECTIONS[0] | null>(null);
-  const [copiedUrl, setCopiedUrl] = useState<number | null>(null);
-  const utils = trpc.useUtils();
-
-  const { data: assets, isLoading } = trpc.admin.assets.list.useQuery({ section: activeSection });
   const deleteAsset = trpc.admin.assets.delete.useMutation({
     onSuccess: () => utils.admin.assets.list.invalidate(),
   });
 
-  const section = SITE_SECTIONS.find(s => s.id === activeSection)!;
+  const atLimit = assets.length >= meta.maxImages;
+
+  async function handleFile(file: File) {
+    setError(null);
+    const validationError = validateFile(file);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    const previewUrl = URL.createObjectURL(file);
+    let dims: { width: number; height: number } | undefined;
+    try {
+      dims = await readImageDimensions(previewUrl);
+    } catch {
+      dims = undefined;
+    }
+    setPending({
+      file,
+      previewUrl,
+      label: file.name.replace(/\.[^.]+$/, ""),
+      width: dims?.width,
+      height: dims?.height,
+    });
+  }
+
+  async function confirmUpload() {
+    if (!pending) return;
+    const base64 = await fileToBase64(pending.file);
+    upload.mutate({
+      section: sectionKey,
+      label: pending.label.trim() || pending.file.name,
+      fileBase64: base64,
+      fileName: pending.file.name,
+      contentType: pending.file.type as (typeof ALLOWED_MIME_TYPES)[number],
+      width: pending.width,
+      height: pending.height,
+    });
+  }
+
+  function cancelPending() {
+    if (pending) URL.revokeObjectURL(pending.previewUrl);
+    setPending(null);
+    setError(null);
+  }
 
   function copyUrl(id: number, url: string) {
     navigator.clipboard.writeText(url);
-    setCopiedUrl(id);
-    setTimeout(() => setCopiedUrl(null), 2000);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 1800);
   }
 
   return (
-    <div>
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "1.5rem", flexWrap: "wrap", gap: "1rem" }}>
+    <div
+      style={{
+        background: C.dark,
+        border: `1px solid ${C.border}`,
+        borderRadius: "1rem",
+        padding: "1.25rem",
+      }}
+    >
+      {/* Header */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          gap: "1rem",
+          marginBottom: "1rem",
+          flexWrap: "wrap",
+        }}
+      >
         <div>
-          <h2 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: "2rem", color: C.text, margin: "0 0 0.25rem" }}>
-            Assets Manager
-          </h2>
-          <p style={{ color: C.muted, fontSize: "0.9rem", margin: 0 }}>
-            Gestiona los recursos gráficos de cada sección del sitio. Almacenados en Cloudflare R2.
-          </p>
+          <div style={{ color: C.text, fontWeight: 700, fontSize: "1rem" }}>{meta.label}</div>
+          <div style={{ color: C.muted, fontSize: "0.8rem", marginTop: "0.2rem", maxWidth: 460 }}>
+            {meta.description}
+          </div>
         </div>
-        <button
-          onClick={() => setUploadModal(section)}
+        <div style={{ textAlign: "right", flexShrink: 0 }}>
+          <div style={{ color: C.vivid, fontWeight: 700, fontSize: "0.8rem" }}>
+            {meta.width}×{meta.height}px recomendado
+          </div>
+          <div style={{ color: C.muted, fontSize: "0.75rem", marginTop: "0.15rem" }}>
+            {assets.length} / {meta.maxImages} imagen{meta.maxImages === 1 ? "" : "es"}
+          </div>
+        </div>
+      </div>
+
+      {/* Existing assets */}
+      {isLoading ? (
+        <div
           style={{
-            padding: "0.65rem 1.25rem",
-            background: `linear-gradient(135deg, ${C.bright}, ${C.pink})`,
-            border: "none", borderRadius: "0.6rem",
-            color: "white", fontWeight: 700, fontSize: "0.9rem",
-            cursor: "pointer", whiteSpace: "nowrap",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            color: C.muted,
+            fontSize: "0.85rem",
+            padding: "1rem 0",
           }}
         >
-          + Subir imagen
-        </button>
-      </div>
-
-      {/* Section tabs */}
-      <div style={{
-        display: "flex", gap: "0.5rem", flexWrap: "wrap",
-        marginBottom: "1.5rem",
-        padding: "0.75rem",
-        background: C.dark, border: `1px solid ${C.border}`,
-        borderRadius: "0.75rem",
-      }}>
-        {SITE_SECTIONS.map(s => (
-          <button
-            key={s.id}
-            onClick={() => setActiveSection(s.id)}
-            style={{
-              padding: "0.45rem 0.9rem",
-              borderRadius: "0.5rem",
-              border: "none",
-              background: activeSection === s.id ? `${C.vivid}25` : "transparent",
-              color: activeSection === s.id ? C.vivid : C.muted,
-              fontWeight: activeSection === s.id ? 700 : 500,
-              fontSize: "0.82rem",
-              cursor: "pointer",
-              transition: "all 0.15s",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {s.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Section info */}
-      <div style={{
-        background: `${C.vivid}08`, border: `1px solid ${C.vivid}20`,
-        borderRadius: "0.75rem", padding: "1rem 1.25rem",
-        marginBottom: "1.5rem",
-        display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap",
-      }}>
-        <div>
-          <div style={{ color: C.text, fontWeight: 700, fontSize: "0.95rem" }}>{section.label}</div>
-          <div style={{ color: C.muted, fontSize: "0.82rem", marginTop: "0.2rem" }}>{section.desc}</div>
+          <Loader2 size={16} className="animate-spin" /> Cargando...
         </div>
-        <div style={{ color: C.muted, fontSize: "0.8rem" }}>
-          Sección ID: <code style={{ color: C.vivid, background: `${C.vivid}15`, padding: "0.1rem 0.4rem", borderRadius: "0.3rem" }}>{section.id}</code>
-        </div>
-      </div>
-
-      {/* Assets grid */}
-      {isLoading ? (
-        <div style={{ color: C.muted, textAlign: "center", padding: "3rem" }}>Cargando...</div>
-      ) : !assets || assets.length === 0 ? (
-        <div style={{
-          textAlign: "center", padding: "4rem 2rem",
-          background: C.dark, border: `1px dashed ${C.border}`,
-          borderRadius: "1rem",
-        }}>
-          <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>🖼️</div>
-          <div style={{ color: C.text, fontWeight: 700, fontSize: "1.1rem", marginBottom: "0.5rem" }}>
-            No hay imágenes en esta sección
-          </div>
-          <div style={{ color: C.muted, fontSize: "0.9rem", marginBottom: "1.5rem" }}>
-            Sube la primera imagen para <strong>{section.label}</strong>
-          </div>
-          <button
-            onClick={() => setUploadModal(section)}
-            style={{
-              padding: "0.65rem 1.5rem",
-              background: `linear-gradient(135deg, ${C.bright}, ${C.pink})`,
-              border: "none", borderRadius: "0.6rem",
-              color: "white", fontWeight: 700, fontSize: "0.9rem",
-              cursor: "pointer",
-            }}
-          >
-            + Subir imagen
-          </button>
-        </div>
-      ) : (
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-          gap: "1rem",
-        }}>
+      ) : assets.length > 0 ? (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
+            gap: "0.75rem",
+            marginBottom: "1rem",
+          }}
+        >
           {assets.map(asset => (
-            <div key={asset.id} style={{
-              background: C.dark, border: `1px solid ${C.border}`,
-              borderRadius: "0.75rem", overflow: "hidden",
-            }}>
-              {/* Image preview */}
-              <div style={{
-                aspectRatio: "16/9",
+            <div
+              key={asset.id}
+              style={{
                 background: C.mid,
+                border: `1px solid ${C.border}`,
+                borderRadius: "0.6rem",
                 overflow: "hidden",
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}>
+              }}
+            >
+              <div
+                style={{
+                  aspectRatio: "1/1",
+                  background: `${C.vivid}10`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  overflow: "hidden",
+                }}
+              >
                 <img
                   src={asset.url}
                   alt={asset.label}
                   style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
+                  onError={e => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                  }}
                 />
               </div>
-              {/* Info */}
-              <div style={{ padding: "0.75rem" }}>
-                <div style={{ color: C.text, fontWeight: 600, fontSize: "0.85rem", marginBottom: "0.25rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <div style={{ padding: "0.6rem" }}>
+                <div
+                  style={{
+                    color: C.text,
+                    fontWeight: 600,
+                    fontSize: "0.78rem",
+                    marginBottom: "0.2rem",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                  title={asset.label}
+                >
                   {asset.label}
                 </div>
-                {asset.sizeBytes && (
-                  <div style={{ color: C.muted, fontSize: "0.75rem", marginBottom: "0.5rem" }}>
-                    {formatBytes(asset.sizeBytes)}{asset.width ? ` · ${asset.width}×${asset.height}px` : ""}
+                {asset.sizeBytes ? (
+                  <div style={{ color: C.muted, fontSize: "0.7rem", marginBottom: "0.5rem" }}>
+                    {formatBytes(asset.sizeBytes)}
+                    {asset.width ? ` · ${asset.width}×${asset.height}px` : ""}
                   </div>
-                )}
-                {/* Actions */}
-                <div style={{ display: "flex", gap: "0.4rem" }}>
+                ) : null}
+                <div style={{ display: "flex", gap: "0.3rem" }}>
                   <button
                     onClick={() => copyUrl(asset.id, asset.url)}
+                    title="Copiar URL"
                     style={{
-                      flex: 1, padding: "0.4rem 0.5rem",
-                      background: copiedUrl === asset.id ? `${C.green}20` : `${C.vivid}15`,
-                      border: `1px solid ${copiedUrl === asset.id ? C.green : C.vivid}30`,
+                      flex: 1,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: "0.35rem",
+                      background: copiedId === asset.id ? `${C.green}20` : `${C.vivid}15`,
+                      border: `1px solid ${copiedId === asset.id ? C.green : C.vivid}30`,
                       borderRadius: "0.4rem",
-                      color: copiedUrl === asset.id ? C.green : C.vivid,
-                      fontSize: "0.75rem", fontWeight: 600, cursor: "pointer",
+                      color: copiedId === asset.id ? C.green : C.vivid,
+                      cursor: "pointer",
                     }}
                   >
-                    {copiedUrl === asset.id ? "✓ Copiado" : "Copiar URL"}
+                    {copiedId === asset.id ? <Check size={13} /> : <Copy size={13} />}
                   </button>
                   <a
                     href={asset.url}
                     target="_blank"
                     rel="noreferrer"
+                    title="Abrir"
                     style={{
-                      padding: "0.4rem 0.6rem",
-                      background: `${C.mid}`,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: "0.35rem 0.5rem",
+                      background: C.dark,
                       border: `1px solid ${C.border}`,
                       borderRadius: "0.4rem",
-                      color: C.muted, fontSize: "0.75rem",
-                      textDecoration: "none",
+                      color: C.muted,
                     }}
                   >
-                    ↗
+                    <ExternalLink size={13} />
                   </a>
                   <button
-                    onClick={() => { if (confirm(`¿Eliminar "${asset.label}"?`)) deleteAsset.mutate({ id: asset.id }); }}
+                    onClick={() => {
+                      if (confirm(`¿Eliminar "${asset.label}"?`)) deleteAsset.mutate({ id: asset.id });
+                    }}
+                    title="Eliminar"
                     style={{
-                      padding: "0.4rem 0.6rem",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: "0.35rem 0.5rem",
                       background: `${C.pink}10`,
                       border: `1px solid ${C.pink}25`,
                       borderRadius: "0.4rem",
-                      color: C.pink, fontSize: "0.75rem", cursor: "pointer",
+                      color: C.pink,
+                      cursor: "pointer",
                     }}
                   >
-                    🗑
+                    <Trash2 size={13} />
                   </button>
                 </div>
               </div>
             </div>
           ))}
         </div>
+      ) : (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            color: C.muted,
+            fontSize: "0.82rem",
+            padding: "0.75rem 0",
+          }}
+        >
+          <ImageOff size={16} /> Sin imágenes todavía.
+        </div>
       )}
 
-      {/* Upload modal */}
-      {uploadModal && (
-        <UploadModal
-          section={uploadModal}
-          onClose={() => setUploadModal(null)}
-          onSuccess={() => {}}
-        />
+      {/* Upload area */}
+      {atLimit && !pending ? (
+        <div
+          style={{
+            border: `1px dashed ${C.border}`,
+            borderRadius: "0.6rem",
+            padding: "0.75rem 1rem",
+            color: C.muted,
+            fontSize: "0.8rem",
+            textAlign: "center",
+          }}
+        >
+          Sección completa ({meta.maxImages}/{meta.maxImages}). Elimina una imagen para subir otra.
+        </div>
+      ) : pending ? (
+        <div
+          style={{
+            border: `1px solid ${C.vivid}40`,
+            borderRadius: "0.6rem",
+            padding: "0.9rem",
+            background: `${C.vivid}08`,
+          }}
+        >
+          <div style={{ display: "flex", gap: "0.75rem", marginBottom: "0.75rem" }}>
+            <img
+              src={pending.previewUrl}
+              alt="preview"
+              style={{
+                width: 72,
+                height: 72,
+                objectFit: "cover",
+                borderRadius: "0.5rem",
+                border: `1px solid ${C.border}`,
+                flexShrink: 0,
+              }}
+            />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <input
+                value={pending.label}
+                onChange={e => setPending({ ...pending, label: e.target.value })}
+                placeholder="Nombre / etiqueta"
+                style={{
+                  width: "100%",
+                  padding: "0.45rem 0.65rem",
+                  background: C.mid,
+                  border: `1px solid ${C.border}`,
+                  borderRadius: "0.4rem",
+                  color: C.text,
+                  fontSize: "0.85rem",
+                  outline: "none",
+                  boxSizing: "border-box",
+                  marginBottom: "0.4rem",
+                }}
+              />
+              <div style={{ color: C.muted, fontSize: "0.75rem" }}>
+                {formatBytes(pending.file.size)}
+                {pending.width ? ` · ${pending.width}×${pending.height}px` : ""}
+                {pending.width && (pending.width !== meta.width || pending.height !== meta.height) ? (
+                  <span style={{ color: C.pink }}> (recomendado: {meta.width}×{meta.height}px)</span>
+                ) : null}
+              </div>
+            </div>
+          </div>
+          {error && (
+            <div style={{ color: C.pink, fontSize: "0.78rem", marginBottom: "0.6rem" }}>{error}</div>
+          )}
+          <div style={{ display: "flex", gap: "0.5rem" }}>
+            <button
+              onClick={cancelPending}
+              disabled={upload.isPending}
+              style={{
+                flex: 1,
+                padding: "0.5rem",
+                background: C.mid,
+                border: `1px solid ${C.border}`,
+                borderRadius: "0.5rem",
+                color: C.muted,
+                fontWeight: 600,
+                fontSize: "0.82rem",
+                cursor: "pointer",
+              }}
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={confirmUpload}
+              disabled={upload.isPending}
+              style={{
+                flex: 2,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "0.4rem",
+                padding: "0.5rem",
+                background: `linear-gradient(135deg, ${C.bright}, ${C.pink})`,
+                border: "none",
+                borderRadius: "0.5rem",
+                color: "white",
+                fontWeight: 700,
+                fontSize: "0.82rem",
+                cursor: upload.isPending ? "default" : "pointer",
+                opacity: upload.isPending ? 0.7 : 1,
+              }}
+            >
+              {upload.isPending ? <Loader2 size={14} className="animate-spin" /> : <UploadCloud size={14} />}
+              {upload.isPending ? "Subiendo..." : "Subir imagen"}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div
+          onDragOver={e => {
+            e.preventDefault();
+            setDragging(true);
+          }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={e => {
+            e.preventDefault();
+            setDragging(false);
+            const f = e.dataTransfer.files[0];
+            if (f) handleFile(f);
+          }}
+          onClick={() => inputRef.current?.click()}
+          style={{
+            border: `2px dashed ${dragging ? C.vivid : C.border}`,
+            borderRadius: "0.6rem",
+            padding: "1rem",
+            textAlign: "center",
+            cursor: "pointer",
+            background: dragging ? `${C.vivid}08` : "transparent",
+            transition: "border-color 0.15s, background 0.15s",
+          }}
+        >
+          <ImagePlus size={20} style={{ color: C.muted, marginBottom: "0.35rem" }} />
+          <div style={{ color: C.muted, fontSize: "0.82rem" }}>
+            Arrastra una imagen o <span style={{ color: C.vivid, fontWeight: 700 }}>haz clic para elegir</span>
+          </div>
+          <div style={{ color: C.muted, fontSize: "0.72rem", marginTop: "0.2rem" }}>
+            JPG, PNG o WebP · máx. {formatBytes(MAX_FILE_BYTES)}
+          </div>
+          {error && (
+            <div style={{ color: C.pink, fontSize: "0.78rem", marginTop: "0.5rem" }}>{error}</div>
+          )}
+          <input
+            ref={inputRef}
+            type="file"
+            accept={ALLOWED_MIME_TYPES.join(",")}
+            style={{ display: "none" }}
+            onChange={e => {
+              const f = e.target.files?.[0];
+              if (f) handleFile(f);
+              e.target.value = "";
+            }}
+          />
+        </div>
       )}
+    </div>
+  );
+}
+
+export default function AdminAssets() {
+  const { data: allAssets, isLoading } = trpc.admin.assets.list.useQuery({});
+
+  const bySection: Record<AssetSectionKey, SiteAsset[]> = ASSET_SECTION_KEYS.reduce(
+    (acc, key) => ({ ...acc, [key]: [] }),
+    {} as Record<AssetSectionKey, SiteAsset[]>
+  );
+  for (const asset of allAssets ?? []) {
+    if (asset.section in bySection) {
+      bySection[asset.section as AssetSectionKey].push(asset);
+    }
+  }
+
+  return (
+    <div>
+      <div style={{ marginBottom: "1.5rem" }}>
+        <h2
+          style={{
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontWeight: 900,
+            fontSize: "2rem",
+            color: C.text,
+            margin: "0 0 0.25rem",
+          }}
+        >
+          Assets Manager
+        </h2>
+        <p style={{ color: C.muted, fontSize: "0.9rem", margin: 0 }}>
+          Imágenes del storefront, agrupadas por sección. Se guardan en Cloudflare R2.
+        </p>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+        {ASSET_SECTION_KEYS.map(key => (
+          <SectionCard key={key} sectionKey={key} assets={bySection[key]} isLoading={isLoading} />
+        ))}
+      </div>
     </div>
   );
 }
