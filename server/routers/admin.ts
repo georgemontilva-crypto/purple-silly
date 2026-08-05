@@ -1,13 +1,12 @@
 import { adminProcedure, publicProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { labReportCategories, labReports, siteAssets, users } from "../../drizzle/schema";
-import { eq, desc, asc } from "drizzle-orm";
+import { count, eq, desc, asc } from "drizzle-orm";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
-import { storagePut } from "../storage";
 
-// ─── Cloudflare R2 client (falls back to Manus storage if R2 not configured) ─
+// ─── Cloudflare R2 client ─────────────────────────────────────────
 function getR2Client() {
   const accountId = process.env.R2_ACCOUNT_ID;
   const accessKeyId = process.env.R2_ACCESS_KEY_ID;
@@ -48,13 +47,13 @@ export const adminRouter = router({
   // ─── STATS ───────────────────────────────────────────────────────
   stats: adminProcedure.query(async () => {
     const d = await db();
-    const [userCount] = await d.select({ count: users.id }).from(users);
-    const [reportCount] = await d.select({ count: labReports.id }).from(labReports);
-    const [categoryCount] = await d.select({ count: labReportCategories.id }).from(labReportCategories);
+    const [userCount] = await d.select({ value: count() }).from(users);
+    const [reportCount] = await d.select({ value: count() }).from(labReports);
+    const [categoryCount] = await d.select({ value: count() }).from(labReportCategories);
     return {
-      users: userCount?.count ?? 0,
-      labReports: reportCount?.count ?? 0,
-      categories: categoryCount?.count ?? 0,
+      users: userCount?.value ?? 0,
+      labReports: reportCount?.value ?? 0,
+      categories: categoryCount?.value ?? 0,
     };
   }),
 
@@ -151,7 +150,7 @@ export const adminRouter = router({
         const d = await db();
         const buffer = Buffer.from(input.fileBase64, "base64");
         const key = `lab-reports/${input.categoryId}/${Date.now()}-${input.fileName}`;
-        const { url } = await storagePut(key, buffer, input.contentType);
+        const url = await uploadToR2(key, buffer, input.contentType);
         await d.insert(labReports).values({
           categoryId: input.categoryId,
           title: input.title,

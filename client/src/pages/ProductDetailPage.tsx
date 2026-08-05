@@ -1,25 +1,48 @@
-import { useState, useEffect } from "react";
-import { useParams, Link } from "wouter";
+import { useState } from "react";
+import { Link } from "wouter";
 import { Star, ChevronDown, ChevronUp, ShoppingCart, ArrowLeft } from "lucide-react";
-import { getProductByHandle, ShopifyProduct, ShopifyVariant, formatPrice, isShopifyConfigured } from "@/lib/shopify";
 import { useCart } from "@/contexts/CartContext";
 import AnnouncementBar from "@/components/AnnouncementBar";
 import NewsletterSection from "@/components/NewsletterSection";
 
-const PLACEHOLDER: ShopifyProduct = {
+// TODO: reemplazar por catálogo propio (tablas locales) cuando esté listo.
+interface CatalogVariant {
+  id: string;
+  title: string;
+  price: { amount: string; currencyCode: string };
+  compareAtPrice: { amount: string; currencyCode: string } | null;
+  availableForSale: boolean;
+  selectedOptions: { name: string; value: string }[];
+}
+
+interface CatalogProduct {
+  id: string;
+  handle: string;
+  title: string;
+  description: string;
+  images: { nodes: Array<{ url: string; altText: string | null }> };
+  priceRange: { minVariantPrice: { amount: string; currencyCode: string } };
+  variants: { nodes: CatalogVariant[] };
+}
+
+function formatPrice(price: { amount: string; currencyCode: string }): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: price.currencyCode,
+  }).format(parseFloat(price.amount));
+}
+
+const PLACEHOLDER: CatalogProduct = {
   id: "p1", handle: "party-tablets-blue-razz",
   title: "Party Tablets - Blue Razz",
-  description: "High-energy euphoria for late-night socializing. Ferris Wheel Party Tablets deliver a clean, plant-powered boost for your best nights out.",
-  descriptionHtml: "",
-  featuredImage: null,
+  description: "High-energy euphoria for late-night socializing. A clean, plant-powered boost for your best nights out.",
   images: { nodes: [] },
-  priceRange: { minVariantPrice: { amount: "24.99", currencyCode: "USD" }, maxVariantPrice: { amount: "24.99", currencyCode: "USD" } },
+  priceRange: { minVariantPrice: { amount: "24.99", currencyCode: "USD" } },
   variants: { nodes: [
     { id: "v1", title: "1 Pack", price: { amount: "24.99", currencyCode: "USD" }, compareAtPrice: null, availableForSale: true, selectedOptions: [{ name: "Size", value: "1 Pack" }] },
     { id: "v2", title: "3 Pack", price: { amount: "64.99", currencyCode: "USD" }, compareAtPrice: { amount: "74.97", currencyCode: "USD" }, availableForSale: true, selectedOptions: [{ name: "Size", value: "3 Pack" }] },
     { id: "v3", title: "6 Pack", price: { amount: "119.99", currencyCode: "USD" }, compareAtPrice: { amount: "149.94", currencyCode: "USD" }, availableForSale: true, selectedOptions: [{ name: "Size", value: "6 Pack" }] },
   ]},
-  tags: ["tablets", "kanna"], vendor: "Ferris Wheel", productType: "Tablets",
 };
 
 const expectations = [
@@ -32,45 +55,19 @@ const expectations = [
 ];
 
 export default function ProductDetailPage() {
-  const params = useParams<{ handle: string }>();
-  const handle = params.handle ?? "";
-  const [product, setProduct] = useState<ShopifyProduct | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [selectedVariant, setSelectedVariant] = useState<ShopifyVariant | null>(null);
+  // TODO: reemplazar por catálogo propio (tablas locales) cuando esté listo,
+  // buscando el producto real por :handle en vez de mostrar siempre el mismo.
+  const product = PLACEHOLDER;
+  const [selectedVariant, setSelectedVariant] = useState<CatalogVariant | null>(PLACEHOLDER.variants.nodes[0] ?? null);
   const [selectedImage, setSelectedImage] = useState(0);
   const [qty, setQty] = useState(1);
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
   const { addItem, isLoading: cartLoading } = useCart();
-  const configured = isShopifyConfigured();
-
-  useEffect(() => {
-    if (!configured) {
-      setProduct(PLACEHOLDER);
-      setSelectedVariant(PLACEHOLDER.variants.nodes[0]);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    getProductByHandle(handle)
-      .then(p => {
-        if (p) { setProduct(p); setSelectedVariant(p.variants.nodes[0]); }
-        else { setProduct(PLACEHOLDER); setSelectedVariant(PLACEHOLDER.variants.nodes[0]); }
-      })
-      .catch(() => { setProduct(PLACEHOLDER); setSelectedVariant(PLACEHOLDER.variants.nodes[0]); })
-      .finally(() => setLoading(false));
-  }, [handle, configured]);
 
   const handleAddToCart = async () => {
     if (!selectedVariant) return;
     for (let i = 0; i < qty; i++) await addItem(selectedVariant.id);
   };
-
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="w-12 h-12 border-4 border-[oklch(0.62_0.25_340)] border-t-transparent rounded-full animate-spin" />
-    </div>
-  );
-  if (!product) return <div className="min-h-screen flex items-center justify-center text-gray-500">Product not found.</div>;
 
   const images = product.images.nodes.length > 0 ? product.images.nodes : null;
   const price = selectedVariant?.price ?? product.priceRange.minVariantPrice;
@@ -78,9 +75,9 @@ export default function ProductDetailPage() {
   const discount = compareAt ? Math.round((1 - parseFloat(price.amount) / parseFloat(compareAt.amount)) * 100) : null;
 
   const productFaqs = [
-    { q: "What's in it?", a: "Ferris Wheel products contain premium Kanna extract (Sceletium tortuosum), caffeine, and L-Theanine — all natural, third-party lab tested ingredients." },
+    { q: "What's in it?", a: "Purple Organics products contain premium Kanna extract (Sceletium tortuosum), caffeine, and L-Theanine — all natural, third-party lab tested ingredients." },
     { q: "How do I take it?", a: "Take the suggested serving size listed on the label. For tablets, allow them to dissolve under your tongue for best results. For gummies, chew thoroughly." },
-    { q: "Is it safe to mix with alcohol?", a: "We recommend avoiding mixing Ferris Wheel products with alcohol or other substances. Always use responsibly." },
+    { q: "Is it safe to mix with alcohol?", a: "We recommend avoiding mixing Purple Organics products with alcohol or other substances. Always use responsibly." },
     { q: "Will it show up on a drug test?", a: "Kanna (Sceletium tortuosum) is not a controlled substance and is not tested for in standard drug screenings. However, we always recommend consulting your employer or testing provider." },
   ];
 

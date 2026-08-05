@@ -1,11 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Link, useLocation } from "wouter";
 import AdminUsers from "./AdminUsers";
 import AdminLabReports from "./AdminLabReports";
 import AdminCategories from "./AdminCategories";
-import AdminProducts from "./AdminProducts";
 import AdminAssets from "./AdminAssets";
 
 const C = {
@@ -19,11 +18,10 @@ const C = {
   muted:  "oklch(0.55 0.07 295)",
 };
 
-type AdminTab = "overview" | "products" | "categories" | "users" | "lab-reports" | "assets";
+type AdminTab = "overview" | "categories" | "users" | "lab-reports" | "assets";
 
 const NAV_ITEMS: { id: AdminTab; label: string; icon: string }[] = [
   { id: "overview",    label: "Overview",     icon: "◈" },
-  { id: "products",    label: "Products",     icon: "◉" },
   { id: "categories",  label: "Categories",   icon: "◆" },
   { id: "lab-reports", label: "Lab Reports",  icon: "◎" },
   { id: "assets",      label: "Assets",       icon: "🖼" },
@@ -135,10 +133,15 @@ function Overview() {
 
 export default function AdminDashboard() {
   const { user, loading } = useAuth();
+  const [, setLocation] = useLocation();
   const [tab, setTab] = useState<AdminTab>("overview");
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  if (loading) {
+  useEffect(() => {
+    if (!loading && !user) setLocation("/login");
+  }, [loading, user, setLocation]);
+
+  if (loading || !user) {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: C.bg }}>
         <div style={{ color: C.vivid, fontSize: "1.5rem", fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800 }}>Loading...</div>
@@ -146,7 +149,7 @@ export default function AdminDashboard() {
     );
   }
 
-  if (!user || user.role !== "admin") {
+  if (user.role !== "admin") {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: C.bg, flexDirection: "column", gap: "1rem" }}>
         <div style={{ color: C.pink, fontSize: "3rem" }}>⛔</div>
@@ -295,7 +298,6 @@ export default function AdminDashboard() {
 
         {/* Tab content */}
         {tab === "overview"    && <Overview />}
-        {tab === "products"    && <AdminProducts />}
         {tab === "categories"  && <AdminCategories />}
         {tab === "lab-reports" && <AdminLabReports />}
         {tab === "assets"      && <AdminAssets />}

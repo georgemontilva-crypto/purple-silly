@@ -1,8 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
-// Local cart item type (managed in React state, not Shopify cart API)
+// Local cart item type (managed in React state and persisted to localStorage)
 export interface CartLine {
   id: string; // local UUID
   variantId: string;
@@ -88,22 +87,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setLines(prev => prev.filter(l => l.id !== id));
   }, []);
 
-  const createCheckoutMutation = trpc.shopify.createCheckout.useMutation();
-
+  // TODO(fase pagos): crear una orden local con estado "pending_payment" en
+  // vez de este stub. El checkout nunca debe redirigir a un servicio externo.
   const goToCheckout = useCallback(async () => {
     if (lines.length === 0) return;
-    setIsLoading(true);
-    try {
-      const result = await createCheckoutMutation.mutateAsync({
-        lines: lines.map(l => ({ variantId: l.variantId, quantity: l.quantity })),
-      });
-      window.location.href = result.checkoutUrl;
-    } catch {
-      toast.error("Could not proceed to checkout. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [lines, createCheckoutMutation]);
+    toast.info("Checkout is coming soon.");
+  }, [lines]);
 
   const totalQuantity = lines.reduce((sum, l) => sum + l.quantity, 0);
   const subtotal = lines.reduce((sum, l) => sum + parseFloat(l.price.amount) * l.quantity, 0);

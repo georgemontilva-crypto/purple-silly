@@ -18,6 +18,7 @@ import CustomCursor from "./components/CustomCursor";
 import WhatIsSilly from "./pages/WhatIsSilly";
 import LabReportsPage from "./pages/LabReportsPage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import Login from "./pages/Login";
 
 function Router() {
   return (
@@ -26,6 +27,7 @@ function Router() {
       <Route path="/what-is-silly" component={WhatIsSilly} />
       <Route path="/lab-reports" component={LabReportsPage} />
       <Route path="/admin" component={AdminDashboard} />
+      <Route path="/login" component={Login} />
       <Route path="/collections/all" component={ShopPage} />
       <Route path="/collections/:handle" component={ShopPage} />
       <Route path="/products/:handle" component={ProductDetailPage} />

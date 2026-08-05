@@ -1,5 +1,5 @@
 {
-  "name": "ferris-wheel-clone",
+  "name": "purple-silly",
   "version": "1.0.0",
   "type": "module",
   "license": "MIT",
@@ -10,7 +10,8 @@
     "check": "tsc --noEmit",
     "format": "prettier --write .",
     "test": "vitest run",
-    "db:push": "drizzle-kit generate && drizzle-kit migrate"
+    "db:push": "drizzle-kit generate && drizzle-kit migrate",
+    "seed:admin": "tsx server/scripts/seedAdmin.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.907.0",
@@ -46,7 +47,7 @@
     "@trpc/client": "^11.6.0",
     "@trpc/react-query": "^11.6.0",
     "@trpc/server": "^11.6.0",
-    "axios": "^1.12.0",
+    "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -110,6 +111,10 @@
     },
     "overrides": {
       "tailwindcss>nanoid": "3.3.7"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "@tailwindcss/oxide",
+      "esbuild"
+    ]
   }
 }

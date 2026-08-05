@@ -1,7 +1,7 @@
-# Ferris Wheel - Project TODO
+# Purple Organics - Project TODO
 
 ## Setup & Config
-- [x] Configurar tema, fuentes (Google Fonts) y CSS global con colores de Ferris Wheel
+- [x] Configurar tema, fuentes (Google Fonts) y CSS global con colores de Purple Organics
 - [x] Configurar variables de entorno para Shopify Storefront API (pendiente token del usuario)
 - [x] Crear contexto del carrito (CartContext) con Shopify Storefront API
 
@@ -43,7 +43,7 @@
 - [x] Checkpoint final
 
 ## Cambios Purple Organics (sesión actual)
-- [x] Navbar dropdown estilo Ferris Wheel: "Get Groovy" header + 3 tarjetas (Silly Dots, Silly Euphoria, Silly Bites Gummies) con colores por producto
+- [x] Navbar dropdown estilo Purple Organics: "Get Groovy" header + 3 tarjetas (Silly Dots, Silly Euphoria, Silly Bites Gummies) con colores por producto
 - [x] AnnouncementBar: texto más grande (0.875rem), más espaciado entre items, 5 mensajes de Purple Organics
 - [x] HeroSection: fondo gris placeholder full-width (1920×1080px), sin imágenes flotantes, copy actualizado con info real de Silly Dots (mushrooms + nootropics, Mega/Hero/Super Dose)
 - [x] ChooseYourRide: 3 tarjetas de líneas de producto con placeholders grises 800×600px (Silly Dots, Silly Euphoria, Silly Bites Gummies)

@@ -22,7 +22,7 @@ export default function ComparisonSection() {
             Not All Rides Are Created Equal
           </h2>
           <p className="text-white/60 text-base max-w-xl mx-auto">
-            See how Ferris Wheel stacks up against the alternatives.
+            See how Purple Organics stacks up against the alternatives.
           </p>
         </div>
         <div className="overflow-x-auto rounded-3xl">
