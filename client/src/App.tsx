@@ -14,6 +14,7 @@ import AboutPage from "./pages/AboutPage";
 import FAQPage from "./pages/FAQPage";
 import ContactPage from "./pages/ContactPage";
 import PolicyPage from "./pages/PolicyPage";
+import CustomCursor from "./components/CustomCursor";
 
 function Router() {
   return (
@@ -51,6 +52,7 @@ function App() {
         <CartProvider>
           <TooltipProvider>
             <Toaster position="top-right" richColors />
+            <CustomCursor />
             <AppLayout />
           </TooltipProvider>
         </CartProvider>
