@@ -1,10 +1,42 @@
 import { adminProcedure, publicProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
-import { labReportCategories, labReports, users } from "../../drizzle/schema";
+import { labReportCategories, labReports, siteAssets, users } from "../../drizzle/schema";
 import { eq, desc, asc } from "drizzle-orm";
 import { z } from "zod";
-import { storagePut } from "../storage";
 import { TRPCError } from "@trpc/server";
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { storagePut } from "../storage";
+
+// ─── Cloudflare R2 client (falls back to Manus storage if R2 not configured) ─
+function getR2Client() {
+  const accountId = process.env.R2_ACCOUNT_ID;
+  const accessKeyId = process.env.R2_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
+  if (!accountId || !accessKeyId || !secretAccessKey) return null;
+  return new S3Client({
+    region: "auto",
+    endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+    credentials: { accessKeyId, secretAccessKey },
+  });
+}
+
+async function uploadToR2(key: string, buffer: Buffer, contentType: string): Promise<string> {
+  const client = getR2Client();
+  const bucket = process.env.R2_BUCKET_NAME;
+  const publicUrl = process.env.R2_PUBLIC_URL;
+  if (!client || !bucket || !publicUrl) {
+    throw new TRPCError({ code: "PRECONDITION_FAILED", message: "R2 not configured. Add R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, R2_PUBLIC_URL to your environment variables." });
+  }
+  await client.send(new PutObjectCommand({ Bucket: bucket, Key: key, Body: buffer, ContentType: contentType }));
+  return `${publicUrl.replace(/\/$/, "")}/${key}`;
+}
+
+async function deleteFromR2(key: string): Promise<void> {
+  const client = getR2Client();
+  const bucket = process.env.R2_BUCKET_NAME;
+  if (!client || !bucket) return; // silently skip if not configured
+  await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
+}
 
 async function db() {
   const d = await getDb();
@@ -153,6 +185,79 @@ export const adminRouter = router({
       .mutation(async ({ input }) => {
         const d = await db();
         await d.delete(labReports).where(eq(labReports.id, input.id));
+        return { success: true };
+      }),
+  }),
+
+  // ─── SITE ASSETS (Cloudflare R2) ─────────────────────────────────
+  assets: router({
+    list: adminProcedure
+      .input(z.object({ section: z.string().optional() }))
+      .query(async ({ input }) => {
+        const d = await db();
+        const rows = await d.select().from(siteAssets).orderBy(asc(siteAssets.section), asc(siteAssets.sortOrder));
+        if (input.section) return rows.filter(r => r.section === input.section);
+        return rows;
+      }),
+    listPublic: publicProcedure
+      .input(z.object({ section: z.string() }))
+      .query(async ({ input }) => {
+        const d = await db();
+        const rows = await d.select().from(siteAssets)
+          .orderBy(asc(siteAssets.sortOrder));
+        return rows.filter(r => r.section === input.section);
+      }),
+    upload: adminProcedure
+      .input(z.object({
+        section: z.string().min(1).max(128),
+        label: z.string().min(1).max(256),
+        fileBase64: z.string(),
+        fileName: z.string(),
+        contentType: z.string(),
+        width: z.number().optional(),
+        height: z.number().optional(),
+        sortOrder: z.number().default(0),
+      }))
+      .mutation(async ({ input }) => {
+        const d = await db();
+        const buffer = Buffer.from(input.fileBase64, "base64");
+        const ext = input.fileName.split(".").pop() ?? "bin";
+        const key = `site-assets/${input.section}/${Date.now()}-${input.label.toLowerCase().replace(/\s+/g, "-")}.${ext}`;
+        const url = await uploadToR2(key, buffer, input.contentType);
+        await d.insert(siteAssets).values({
+          section: input.section,
+          label: input.label,
+          key,
+          url,
+          mimeType: input.contentType,
+          sizeBytes: buffer.length,
+          width: input.width,
+          height: input.height,
+          sortOrder: input.sortOrder,
+        });
+        return { success: true, url, key };
+      }),
+    update: adminProcedure
+      .input(z.object({
+        id: z.number(),
+        label: z.string().optional(),
+        sortOrder: z.number().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const d = await db();
+        const { id, ...data } = input;
+        await d.update(siteAssets).set(data).where(eq(siteAssets.id, id));
+        return { success: true };
+      }),
+    delete: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        const d = await db();
+        const [asset] = await d.select().from(siteAssets).where(eq(siteAssets.id, input.id)).limit(1);
+        if (asset) {
+          await deleteFromR2(asset.key);
+          await d.delete(siteAssets).where(eq(siteAssets.id, input.id));
+        }
         return { success: true };
       }),
   }),

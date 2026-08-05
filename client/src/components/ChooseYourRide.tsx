@@ -16,10 +16,11 @@ const CATEGORIES = [
     label: "Silly Dots",
     accent: C.vivid,
     accentHex: "#7C3AED",
+    collection: "silly-dots",
     products: [
-      { name: "Silly Dots — Mega Dose", sub: "1200mg · Natural", href: "/products/silly-dots-mega", imgBg: "linear-gradient(135deg, #374151, #4b5563)" },
-      { name: "Silly Dots — Hero Dose", sub: "1800mg · Blue Razz", href: "/products/silly-dots-hero", imgBg: "linear-gradient(135deg, #1e3a5f, #2563eb40)" },
-      { name: "Silly Dots — Super Dose", sub: "2400mg · Cherry Berry", href: "/products/silly-dots-super", imgBg: "linear-gradient(135deg, #4a1942, #7c3aed40)" },
+      { name: "Silly Dots — Mega Dose",  sub: "1200mg",  href: "/products/silly-dots-mega-dose"  },
+      { name: "Silly Dots — Hero Dose",  sub: "1800mg",  href: "/products/silly-dots-hero-dose"  },
+      { name: "Silly Dots — Super Dose", sub: "2400mg",  href: "/products/silly-dots-super-dose" },
     ],
   },
   {
@@ -27,10 +28,11 @@ const CATEGORIES = [
     label: "Silly Euphoria",
     accent: C.pink,
     accentHex: "#ec4899",
+    collection: "silly-euphoria",
     products: [
-      { name: "Silly Euphoria — Original", sub: "Premium blend", href: "/collections/all", imgBg: "linear-gradient(135deg, #4c1d4b, #6b2d6b)" },
-      { name: "Silly Euphoria — Tropical", sub: "Coming soon", href: "/collections/all", imgBg: "linear-gradient(135deg, #4c1d4b, #9d174d)" },
-      { name: "Silly Euphoria — Berry", sub: "Coming soon", href: "/collections/all", imgBg: "linear-gradient(135deg, #3b0764, #6b2d6b)" },
+      { name: "Silly Euphoria — Original", sub: "Premium blend", href: "/collections/silly-euphoria" },
+      { name: "Silly Euphoria — Tropical", sub: "Coming soon",   href: "/collections/silly-euphoria" },
+      { name: "Silly Euphoria — Berry",    sub: "Coming soon",   href: "/collections/silly-euphoria" },
     ],
   },
   {
@@ -38,10 +40,11 @@ const CATEGORIES = [
     label: "Silly Bites Gummies",
     accent: "oklch(0.60 0.25 160)",
     accentHex: "#10b981",
+    collection: "silly-bites",
     products: [
-      { name: "Silly Bites — Original", sub: "10ct pouch", href: "/collections/enhanced-gm", imgBg: "linear-gradient(135deg, #064e3b, #065f46)" },
-      { name: "Silly Bites — Watermelon", sub: "Coming soon", href: "/collections/enhanced-gm", imgBg: "linear-gradient(135deg, #064e3b, #047857)" },
-      { name: "Silly Bites — Mango", sub: "Coming soon", href: "/collections/enhanced-gm", imgBg: "linear-gradient(135deg, #064e3b, #059669)" },
+      { name: "Silly Bites — Original",   sub: "10ct pouch",  href: "/collections/silly-bites" },
+      { name: "Silly Bites — Watermelon", sub: "Coming soon", href: "/collections/silly-bites" },
+      { name: "Silly Bites — Mango",      sub: "Coming soon", href: "/collections/silly-bites" },
     ],
   },
 ];
@@ -53,7 +56,6 @@ export default function ChooseYourRide() {
   return (
     <section className="py-24 px-4" style={{ background: C.deep }}>
       <div className="max-w-[1280px] mx-auto">
-        {/* Header */}
         <div className="text-center mb-10">
           <p className="text-sm font-bold uppercase tracking-widest mb-3" style={{ color: C.pink }}>Our Products</p>
           <h2 className="text-5xl sm:text-6xl font-extrabold font-condensed text-white leading-tight">
@@ -64,7 +66,6 @@ export default function ChooseYourRide() {
           </p>
         </div>
 
-        {/* Tab buttons */}
         <div className="flex justify-center mb-10">
           <div className="flex gap-1 p-1 rounded-full" style={{ background: C.mid }}>
             {CATEGORIES.map(cat => (
@@ -83,7 +84,6 @@ export default function ChooseYourRide() {
           </div>
         </div>
 
-        {/* Product cards for active category */}
         <div
           key={activeTab}
           className="grid md:grid-cols-3 gap-6"
@@ -96,23 +96,27 @@ export default function ChooseYourRide() {
               className="group relative rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-2 block"
               style={{ background: C.dark, border: `1px solid ${C.mid}` }}
             >
-              {/* Image placeholder */}
               <div
                 className="w-full overflow-hidden flex items-center justify-center"
-                style={{ aspectRatio: "4/3", background: p.imgBg }}
+                style={{
+                  aspectRatio: "4/3",
+                  background: `linear-gradient(135deg, ${category.accentHex}18, ${category.accentHex}08)`,
+                  border: `1px dashed ${category.accentHex}30`,
+                }}
               >
                 <span style={{
-                  color: "rgba(255,255,255,0.20)",
+                  color: `${category.accentHex}50`,
                   fontFamily: "'Barlow Condensed', sans-serif",
                   fontWeight: 700,
-                  fontSize: "0.75rem",
+                  fontSize: "0.72rem",
                   letterSpacing: "0.12em",
                   textTransform: "uppercase",
+                  textAlign: "center",
+                  padding: "0 1rem",
                 }}>
-                  800 × 600 px
+                  Subir imagen desde<br />Admin → Assets Manager
                 </span>
               </div>
-              {/* Content */}
               <div className="p-6">
                 <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: category.accent }}>{p.sub}</p>
                 <h3 className="text-xl font-extrabold font-condensed text-white mb-3">{p.name}</h3>
@@ -125,10 +129,9 @@ export default function ChooseYourRide() {
           ))}
         </div>
 
-        {/* View all link */}
         <div className="text-center mt-10">
           <Link
-            href={`/collections/${activeTab === "dots" ? "dots" : activeTab === "euphoria" ? "all" : "enhanced-gm"}`}
+            href={`/collections/${category.collection}`}
             className="inline-flex items-center gap-2 px-7 py-3 rounded-full font-bold text-sm text-white border transition-all hover:bg-white/10"
             style={{ borderColor: category.accent, color: category.accent }}
           >

@@ -56,3 +56,22 @@ export const labReports = mysqlTable("lab_reports", {
 
 export type LabReport = typeof labReports.$inferSelect;
 export type InsertLabReport = typeof labReports.$inferInsert;
+
+// Site Assets (managed from Admin → Assets Manager, stored in Cloudflare R2)
+export const siteAssets = mysqlTable("site_assets", {
+  id: int("id").autoincrement().primaryKey(),
+  section: varchar("section", { length: 128 }).notNull(),   // e.g. "hero", "choose-your-ride-dots"
+  label: varchar("label", { length: 256 }).notNull(),        // human-readable name
+  key: varchar("key", { length: 512 }).notNull().unique(),   // R2 object key
+  url: varchar("url", { length: 1024 }).notNull(),           // public URL
+  mimeType: varchar("mimeType", { length: 128 }),
+  sizeBytes: int("sizeBytes"),
+  width: int("width"),
+  height: int("height"),
+  sortOrder: int("sortOrder").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SiteAsset = typeof siteAssets.$inferSelect;
+export type InsertSiteAsset = typeof siteAssets.$inferInsert;

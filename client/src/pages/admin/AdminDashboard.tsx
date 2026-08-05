@@ -6,6 +6,7 @@ import AdminUsers from "./AdminUsers";
 import AdminLabReports from "./AdminLabReports";
 import AdminCategories from "./AdminCategories";
 import AdminProducts from "./AdminProducts";
+import AdminAssets from "./AdminAssets";
 
 const C = {
   bg:     "oklch(0.07 0.04 295)",
@@ -18,13 +19,14 @@ const C = {
   muted:  "oklch(0.55 0.07 295)",
 };
 
-type AdminTab = "overview" | "products" | "categories" | "users" | "lab-reports";
+type AdminTab = "overview" | "products" | "categories" | "users" | "lab-reports" | "assets";
 
 const NAV_ITEMS: { id: AdminTab; label: string; icon: string }[] = [
   { id: "overview",    label: "Overview",     icon: "◈" },
   { id: "products",    label: "Products",     icon: "◉" },
   { id: "categories",  label: "Categories",   icon: "◆" },
   { id: "lab-reports", label: "Lab Reports",  icon: "◎" },
+  { id: "assets",      label: "Assets",       icon: "🖼" },
   { id: "users",       label: "Users",        icon: "✦" },
 ];
 
@@ -296,6 +298,7 @@ export default function AdminDashboard() {
         {tab === "products"    && <AdminProducts />}
         {tab === "categories"  && <AdminCategories />}
         {tab === "lab-reports" && <AdminLabReports />}
+        {tab === "assets"      && <AdminAssets />}
         {tab === "users"       && <AdminUsers />}
       </main>
     </div>
