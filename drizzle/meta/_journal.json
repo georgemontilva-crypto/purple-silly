@@ -1,5 +1,13 @@
 {
   "version": "7",
   "dialect": "mysql",
-  "entries": []
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1785952581457,
+      "tag": "0000_military_tomas",
+      "breakpoints": true
+    }
+  ]
 }
