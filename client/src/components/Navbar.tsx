@@ -251,10 +251,11 @@ export default function Navbar() {
           </div>
 
           {[
-            { label: "WHAT IS SILLY?", href: "/what-is-silly" },
-            { label: "BLOG", href: "/blogs/news" },
-            { label: "FAQ", href: "/faq" },
-          ].map((item) => (
+          { label: "WHAT IS SILLY?", href: "/what-is-silly" },
+          { label: "BLOG", href: "/blogs/news" },
+          { label: "FAQ", href: "/faq" },
+          { label: "LAB REPORTS", href: "/lab-reports" },
+        ].map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -355,6 +356,7 @@ export default function Navbar() {
               { label: "What is Silly?", href: "/what-is-silly" },
               { label: "Blog", href: "/blogs/news" },
               { label: "FAQ", href: "/faq" },
+              { label: "Lab Reports", href: "/lab-reports" },
             ].map((item) => (
               <Link
                 key={item.href}

@@ -16,12 +16,16 @@ import ContactPage from "./pages/ContactPage";
 import PolicyPage from "./pages/PolicyPage";
 import CustomCursor from "./components/CustomCursor";
 import WhatIsSilly from "./pages/WhatIsSilly";
+import LabReportsPage from "./pages/LabReportsPage";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/what-is-silly" component={WhatIsSilly} />
+      <Route path="/lab-reports" component={LabReportsPage} />
+      <Route path="/admin" component={AdminDashboard} />
       <Route path="/collections/all" component={ShopPage} />
       <Route path="/collections/:handle" component={ShopPage} />
       <Route path="/products/:handle" component={ProductDetailPage} />

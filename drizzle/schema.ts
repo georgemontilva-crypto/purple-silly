@@ -25,4 +25,34 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// TODO: Add your tables here
+// Lab Report Categories
+export const labReportCategories = mysqlTable("lab_report_categories", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 128 }).notNull(),
+  slug: varchar("slug", { length: 128 }).notNull().unique(),
+  description: text("description"),
+  sortOrder: int("sortOrder").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type LabReportCategory = typeof labReportCategories.$inferSelect;
+export type InsertLabReportCategory = typeof labReportCategories.$inferInsert;
+
+// Lab Reports
+export const labReports = mysqlTable("lab_reports", {
+  id: int("id").autoincrement().primaryKey(),
+  categoryId: int("categoryId").notNull(),
+  title: varchar("title", { length: 256 }).notNull(),
+  productName: varchar("productName", { length: 256 }),
+  batchNumber: varchar("batchNumber", { length: 128 }),
+  testDate: varchar("testDate", { length: 32 }),
+  fileKey: varchar("fileKey", { length: 512 }).notNull(),
+  fileUrl: varchar("fileUrl", { length: 512 }).notNull(),
+  fileName: varchar("fileName", { length: 256 }).notNull(),
+  isPublished: int("isPublished").default(1).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type LabReport = typeof labReports.$inferSelect;
+export type InsertLabReport = typeof labReports.$inferInsert;
