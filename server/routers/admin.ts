@@ -5,9 +5,8 @@ import { eq, desc, asc } from "drizzle-orm";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
-import { storagePut } from "../storage";
 
-// ─── Cloudflare R2 client (falls back to Manus storage if R2 not configured) ─
+// ─── Cloudflare R2 client ─────────────────────────────────────────
 function getR2Client() {
   const accountId = process.env.R2_ACCOUNT_ID;
   const accessKeyId = process.env.R2_ACCESS_KEY_ID;
@@ -151,7 +150,7 @@ export const adminRouter = router({
         const d = await db();
         const buffer = Buffer.from(input.fileBase64, "base64");
         const key = `lab-reports/${input.categoryId}/${Date.now()}-${input.fileName}`;
-        const { url } = await storagePut(key, buffer, input.contentType);
+        const url = await uploadToR2(key, buffer, input.contentType);
         await d.insert(labReports).values({
           categoryId: input.categoryId,
           title: input.title,
