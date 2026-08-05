@@ -47,3 +47,5 @@
 - [x] AnnouncementBar: texto más grande (0.875rem), más espaciado entre items, 5 mensajes de Purple Organics
 - [x] HeroSection: fondo gris placeholder full-width (1920×1080px), sin imágenes flotantes, copy actualizado con info real de Silly Dots (mushrooms + nootropics, Mega/Hero/Super Dose)
 - [x] ChooseYourRide: 3 tarjetas de líneas de producto con placeholders grises 800×600px (Silly Dots, Silly Euphoria, Silly Bites Gummies)
+- [x] ChooseYourRide: tabs de 3 categorías (Silly Dots / Silly Euphoria / Silly Bites Gummies) con 3 sub-productos por categoría con placeholders grises
+- [x] MeetTheLineup: eliminados tabs, todos los productos de la tienda, fondo animado canvas humo púrpura + glassmorfismo en tarjetas
