@@ -19,8 +19,8 @@ export default function HeroSection() {
     // through around the edges instead of being fully covered.
     <section className="relative w-full py-5 sm:py-8 md:py-10">
     <div
-      className="relative mx-auto flex items-center overflow-hidden rounded-[1.75rem] sm:rounded-[2.25rem]"
-      style={{ width: "95%", minHeight: "75vh", background: "transparent" }}
+      className="relative mx-auto flex items-center overflow-hidden rounded-[1.75rem] sm:rounded-[2.25rem] min-h-[58vh] sm:min-h-[68vh] md:min-h-[75vh]"
+      style={{ width: "95%", background: "transparent" }}
     >
       {/* Background image, once uploaded from Admin -> Assets */}
       {background && (
@@ -45,8 +45,11 @@ export default function HeroSection() {
         </div>
       )}
 
-      {/* Content */}
-      <div className="max-w-[1280px] mx-auto px-4 sm:px-8 w-full py-24 relative z-10">
+      {/* Content — py is intentionally responsive: a fixed py-24 (matched with
+          minHeight: 75vh) left a large empty gap between the announcement bar
+          and the badge on mobile, since the fluid clamp() headline doesn't
+          need nearly as much breathing room at narrow widths. */}
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-8 w-full py-8 sm:py-16 md:py-24 relative z-10">
         <div className="max-w-[600px] space-y-7">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest"
