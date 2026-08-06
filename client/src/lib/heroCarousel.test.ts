@@ -1,10 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
+  BLUR_END_DEG,
+  BLUR_START_DEG,
   HERO_LAYOUTS,
+  MAX_DIM,
   MIN_RING_SLOTS,
   PHYSICS,
   activeImageIndex,
   activeSlot,
+  blurRamp,
   buildRingSlots,
   cardHeight,
   padIndex,
@@ -158,13 +162,14 @@ describe("ringOffset", () => {
 });
 
 describe("slotVisual", () => {
-  it("puts the focused card front, center, unrotated and fully opaque", () => {
+  it("puts the focused card front, center, unrotated, sharp and undimmed", () => {
     const v = slotVisual(0, 8, DESKTOP);
     expect(v.x).toBeCloseTo(0);
     expect(v.z).toBeCloseTo(0);
     expect(v.rotateY).toBe(-0);
     expect(v.scale).toBe(1);
     expect(v.opacity).toBe(1);
+    expect(v.dim).toBe(0);
     expect(v.blurPx).toBe(0);
   });
 
@@ -176,21 +181,36 @@ describe("slotVisual", () => {
     expect(left.rotateY).toBeCloseTo(-right.rotateY);
     expect(left.scale).toBeCloseTo(right.scale);
     expect(left.opacity).toBeCloseTo(right.opacity);
+    expect(left.dim).toBeCloseTo(right.dim);
   });
 
-  it("pushes side cards back, shrinks, dims and blurs them", () => {
+  it("pushes side cards back, shrinks and darkens them", () => {
     const center = slotVisual(0, 12, DESKTOP);
     const near = slotVisual(1, 12, DESKTOP);
     const far = slotVisual(2, 12, DESKTOP);
     expect(near.z).toBeLessThan(center.z);
     expect(far.z).toBeLessThan(near.z);
     expect(far.scale).toBeLessThan(near.scale);
-    expect(far.opacity).toBeLessThan(near.opacity);
-    expect(far.blurPx).toBeGreaterThan(near.blurPx);
+    expect(far.dim).toBeGreaterThan(near.dim);
     expect(far.zIndex).toBeLessThan(near.zIndex);
   });
 
-  it("fades the back of the ring to exactly 0 so recycling is never seen", () => {
+  /**
+   * The whole point of the change: depth comes from `dim`, never from
+   * making the card itself see-through. A translucent card lets the
+   * panel's gradients read through it, which is the washed-out look this
+   * replaced.
+   */
+  it("keeps cards fully opaque across the entire visible arc", () => {
+    for (const total of [8, 9, 10, 12, 14]) {
+      const lastVisible = total / 2 - 1.2;
+      for (let offset = 0; offset <= lastVisible; offset += 0.25) {
+        expect(slotVisual(offset, total, DESKTOP).opacity, `total ${total} offset ${offset}`).toBe(1);
+      }
+    }
+  });
+
+  it("still fades the back of the ring to exactly 0 so recycling is never seen", () => {
     for (const total of [8, 9, 10, 12, 14, 16]) {
       expect(slotVisual(total / 2, total, DESKTOP).opacity).toBe(0);
       expect(slotVisual(-total / 2, total, DESKTOP).opacity).toBe(0);
@@ -207,6 +227,16 @@ describe("slotVisual", () => {
     }
   });
 
+  it("darkens monotonically away from center, capped at MAX_DIM", () => {
+    let previous = -Infinity;
+    for (let offset = 0; offset <= 8; offset += 0.25) {
+      const { dim } = slotVisual(offset, 12, DESKTOP);
+      expect(dim).toBeGreaterThanOrEqual(previous - 1e-9);
+      expect(dim).toBeLessThanOrEqual(MAX_DIM);
+      previous = dim;
+    }
+  });
+
   it("emits no blur at all when the layout disables it", () => {
     const mobile = { ...DESKTOP, maxBlurPx: 0 };
     for (let offset = 0; offset <= 6; offset += 0.5) {
@@ -217,6 +247,80 @@ describe("slotVisual", () => {
   it("never exceeds the layout's blur ceiling", () => {
     for (let offset = 0; offset <= 8; offset += 0.5) {
       expect(slotVisual(offset, 16, DESKTOP).blurPx).toBeLessThanOrEqual(DESKTOP.maxBlurPx);
+    }
+  });
+});
+
+describe("blurRamp", () => {
+  it("leaves the card facing the viewer perfectly sharp", () => {
+    expect(blurRamp(0)).toBe(0);
+  });
+
+  it("is symmetric — a card turned left blurs like one turned right", () => {
+    for (const deg of [20, 45, 60, 75, 89]) {
+      expect(blurRamp(-deg)).toBe(blurRamp(deg));
+    }
+  });
+
+  it("keeps everything sharp up to the start angle", () => {
+    for (let deg = 0; deg <= BLUR_START_DEG; deg += 5) {
+      expect(blurRamp(deg), `${deg}deg`).toBe(0);
+    }
+  });
+
+  it("reaches full blur at the edge-on angle where the card vanishes", () => {
+    expect(blurRamp(BLUR_END_DEG)).toBe(1);
+    expect(blurRamp(120)).toBe(1);
+  });
+
+  it("eases in rather than snapping, so a card doesn't pop as it turns", () => {
+    const mid = (BLUR_START_DEG + BLUR_END_DEG) / 2;
+    expect(blurRamp(mid)).toBeCloseTo(0.5);
+    expect(blurRamp(mid)).toBeGreaterThan(blurRamp(mid - 10));
+    expect(blurRamp(mid)).toBeLessThan(blurRamp(mid + 10));
+  });
+
+  it("stays within 0..1 at any angle", () => {
+    for (let deg = -360; deg <= 360; deg += 7) {
+      const r = blurRamp(deg);
+      expect(r).toBeGreaterThanOrEqual(0);
+      expect(r).toBeLessThanOrEqual(1);
+    }
+  });
+
+  /**
+   * The regression this rule exists for. On the real ring only about
+   * three positions per side are ever visible — past ~90 degrees
+   * backface-visibility stops painting the card — so a slot-index rule
+   * put the blur on cards nobody could see and the effect did nothing.
+   * Measured rotations from a 12-slot desktop ring: 0, ~39, ~68 degrees.
+   */
+  it("blurs the outermost VISIBLE card and nothing nearer", () => {
+    const measuredRotations = [0, 14, 39, 68];
+    const [center, nearCenter, intermediate, outermost] = measuredRotations.map(blurRamp);
+    expect(center).toBe(0);
+    expect(nearCenter).toBe(0);
+    expect(intermediate).toBe(0);
+    expect(outermost).toBeGreaterThan(0.2);
+  });
+
+  it("applies across every breakpoint that actually renders blur", () => {
+    // Only the layouts with a non-zero blur ceiling matter here; the two
+    // mobile ones switch blur off at the layout level regardless.
+    const blurred = HERO_LAYOUTS.filter(l => l.maxBlurPx > 0);
+    expect(blurred.length).toBeGreaterThan(0);
+    for (const layout of blurred) {
+      const step = ringAngleStep(layout.cardW, layout.radius);
+      expect(blurRamp(0), `${layout.maxWidth}px pos 0`).toBe(0);
+      expect(blurRamp(step), `${layout.maxWidth}px pos 1`).toBe(0);
+      // ...and the position beyond that is the one carrying it.
+      expect(blurRamp(2 * step), `${layout.maxWidth}px pos 2`).toBeGreaterThan(0);
+    }
+  });
+
+  it("is moot on mobile, where the layout disables blur outright", () => {
+    for (const layout of HERO_LAYOUTS.filter(l => l.maxWidth <= 640)) {
+      expect(layout.maxBlurPx).toBe(0);
     }
   });
 });

@@ -1,8 +1,9 @@
 import { useMemo, useRef } from "react";
-import { useInView, useReducedMotion } from "framer-motion";
+import { useInView } from "framer-motion";
 import { useSiteAsset, useSiteAssets } from "@/hooks/useSiteAssets";
 import { useHeroLayout } from "@/hooks/useHeroLayout";
 import { cardHeight } from "@/lib/heroCarousel";
+import { LightParticles } from "./motion/LightParticles";
 import HeroCarousel, { type HeroSlide } from "./HeroCarousel";
 import "./HeroCarousel.css";
 
@@ -27,7 +28,6 @@ export default function HeroSection() {
   const { asset: background } = useSiteAsset("hero-background");
 
   const layout = useHeroLayout();
-  const reduceMotion = useReducedMotion() ?? false;
 
   const shellRef = useRef<HTMLDivElement>(null);
   // Everything ambient — the spinning glow, the beam, the particles, the
@@ -39,21 +39,6 @@ export default function HeroSection() {
     () => carouselAssets.map(a => ({ id: a.id, url: a.url, label: a.label })),
     [carouselAssets]
   );
-
-  // Deterministic rather than random: re-rendering must not reshuffle the
-  // particle field, and the same input gives the same layout every time.
-  const particles = useMemo(() => {
-    if (reduceMotion) return [];
-    return Array.from({ length: layout.particleCount }, (_, i) => {
-      const duration = 4 + ((i * 1.7) % 5);
-      return {
-        left: 8 + ((i * 37) % 84),
-        size: 2 + ((i * 0.9) % 2.4),
-        duration,
-        delay: -((i * 0.63) % duration),
-      };
-    });
-  }, [layout.particleCount, reduceMotion]);
 
   return (
     <section className="hero-section">
@@ -75,29 +60,11 @@ export default function HeroSection() {
 
           <div className="hero-beam" aria-hidden="true" />
           <div className="hero-beam__pool" aria-hidden="true" />
-          <div
+          <LightParticles
             className="hero-particles"
-            style={
-              {
-                "--hc-fall-distance": `${Math.round(cardHeight(layout.cardW) * 1.15)}px`,
-              } as React.CSSProperties
-            }
-            aria-hidden="true"
-          >
-            {particles.map((p, i) => (
-              <span
-                key={i}
-                className="hero-particle"
-                style={{
-                  left: `${p.left}%`,
-                  width: `${p.size}px`,
-                  height: `${p.size}px`,
-                  animationDuration: `${p.duration}s`,
-                  animationDelay: `${p.delay}s`,
-                }}
-              />
-            ))}
-          </div>
+            count={layout.particleCount}
+            fallDistance={Math.round(cardHeight(layout.cardW) * 1.15)}
+          />
 
           <header className="hero-panel__top">
             <span className="hero-badge">✦ Premium Mushroom Supplements · 21+</span>

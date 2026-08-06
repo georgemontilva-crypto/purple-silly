@@ -197,6 +197,8 @@
   }
 }
 
+/* Placement only — the motes themselves live in motion/LightParticles.css,
+   shared with the navbar so both read as one flow. */
 .hero-particles {
   top: 0;
   left: 50%;
@@ -204,37 +206,9 @@
   width: 46%;
   height: 78%;
   z-index: 1;
-  overflow: hidden;
 }
 
-.hero-particle {
-  position: absolute;
-  top: -10px;
-  border-radius: 50%;
-  background: radial-gradient(circle, #fff, rgba(216, 180, 254, 0.6));
-  box-shadow: 0 0 6px rgba(216, 180, 254, 0.75);
-  opacity: 0;
-  animation: hc-fall linear infinite;
-}
-
-@keyframes hc-fall {
-  0% {
-    transform: translateY(0) scale(1);
-    opacity: 0;
-  }
-  12% {
-    opacity: 1;
-  }
-  80% {
-    opacity: 0.7;
-  }
-  100% {
-    transform: translateY(var(--hc-fall-distance, 440px)) scale(0.4);
-    opacity: 0;
-  }
-}
-
-.hero-shell[data-hc-visible="false"] .hero-particle,
+.hero-shell[data-hc-visible="false"] .light-particle,
 .hero-shell[data-hc-visible="false"] .hero-beam {
   animation-play-state: paused;
 }
@@ -332,7 +306,10 @@
   height: var(--hc-card-h);
   border-radius: 22px;
   overflow: hidden;
-  background: linear-gradient(160deg, rgba(168, 85, 247, 0.1), rgba(20, 10, 30, 0.6));
+  /* Fully opaque. Both stops used to carry alpha, so the panel's
+     gradients and the light beam showed straight through every card and
+     the whole ring read as translucent. */
+  background: linear-gradient(160deg, oklch(0.26 0.11 300), oklch(0.13 0.06 296));
   border: 1px solid rgba(168, 85, 247, 0.3);
   box-shadow:
     0 30px 60px -20px rgba(0, 0, 0, 0.7),
@@ -358,6 +335,23 @@
   display: block;
   pointer-events: none;
   -webkit-user-drag: none;
+}
+
+/*
+ * Depth shading, written per frame from slotVisual().dim.
+ *
+ * An opaque dark layer ON TOP of the card, not transparency of the card
+ * itself: fading the element made the slides translucent and let the
+ * panel behind them show through. Sits above the image and the
+ * placeholder content so both darken together with distance.
+ */
+.hero-card__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: oklch(0.06 0.02 295);
+  opacity: 0;
 }
 
 /* Empty frame shown when no hero-carousel images have been uploaded. */
@@ -534,8 +528,7 @@
    * each card, so prev/next and the arrow keys still work.
    */
   .hero-glow,
-  .hero-beam,
-  .hero-particle {
+  .hero-beam {
     animation: none !important;
   }
   .hero-controls__btn {

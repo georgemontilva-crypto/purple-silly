@@ -70,6 +70,10 @@ export default function HeroCarousel({
   const stageRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  // Kept as its own ref list rather than reached through the card, so the
+  // per-frame write is a direct style set on a known element — no DOM
+  // query and no custom-property change invalidating the subtree.
+  const scrimRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   // Ring state lives in refs, not React state: it changes every frame,
   // and a re-render per frame is exactly what this needs to avoid.
@@ -132,6 +136,9 @@ export default function HeroCarousel({
       // breakpoint actually drops the filter instead of freezing it.
       el.style.filter = layout.maxBlurPx > 0 ? `blur(${v.blurPx.toFixed(1)}px)` : "";
       el.style.zIndex = String(v.zIndex);
+
+      const scrim = scrimRefs.current[i];
+      if (scrim) scrim.style.opacity = v.dim.toFixed(3);
     }
 
     if (trackRef.current) {
@@ -281,6 +288,17 @@ export default function HeroCarousel({
                   height={1440}
                 />
               )}
+              {/* Depth shading. A solid scrim on top of an opaque card,
+                  rather than fading the card itself — element opacity let
+                  the panel's gradients read straight through the slides,
+                  which is what made them look washed out. */}
+              <div
+                ref={el => {
+                  scrimRefs.current[i] = el;
+                }}
+                className="hero-card__scrim"
+                aria-hidden="true"
+              />
             </div>
           ))}
         </div>
