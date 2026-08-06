@@ -172,35 +172,43 @@ export default function ProductDetailPage() {
                 ))}
               </div>
 
-              {/* Bundle selector */}
-              {hasBundles && (
-                <div>
-                  <p className="text-sm font-bold text-foreground mb-2.5">Choose quantity</p>
-                  <div className="flex gap-2">
-                    {product.bundles.map(b => {
-                      const isActive = (selectedBundle?.id ?? product.bundles[0]?.id) === b.id;
-                      return (
-                        <button key={b.id} onClick={() => setSelectedBundleId(b.id)}
-                          className={`relative flex-1 px-3 py-2.5 rounded-xl border-2 font-bold text-sm transition-all ${isActive ? "border-white bg-white text-[oklch(0.13_0.05_295)]" : "border-white/15 text-white hover:border-white/40"}`}>
-                          {b.badge && (
-                            <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-[oklch(0.72_0.22_320)] text-white text-[0.6rem] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
-                              {b.badge}
-                            </span>
-                          )}
-                          {b.label}
-                        </button>
-                      );
-                    })}
+              {/* Bundle selector + price are one visually connected unit —
+                  a shared card, not two separate floating blocks. */}
+              {hasBundles ? (
+                <div className="rounded-2xl border border-white/10 p-4 space-y-4" style={{ background: "rgba(255,255,255,0.03)" }}>
+                  <div>
+                    <p className="text-sm font-bold text-foreground mb-2.5">Choose quantity</p>
+                    <div className="flex gap-2">
+                      {product.bundles.map(b => {
+                        const isActive = (selectedBundle?.id ?? product.bundles[0]?.id) === b.id;
+                        return (
+                          <button key={b.id} onClick={() => setSelectedBundleId(b.id)}
+                            className={`relative flex-1 px-3 py-2.5 rounded-xl border-2 font-bold text-sm transition-all flex flex-col items-center ${isActive ? "border-black bg-black text-white" : "border-white/15 text-white hover:border-white/40"}`}>
+                            {b.badge && (
+                              <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-[oklch(0.72_0.22_320)] text-white text-[0.6rem] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
+                                {b.badge}
+                              </span>
+                            )}
+                            <span>{b.label}</span>
+                            <span className={`text-xs font-semibold mt-0.5 ${isActive ? "text-white/70" : "text-white/55"}`}>{formatCents(b.priceCents)}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 flex-wrap pt-3 border-t border-white/10">
+                    <span className="font-extrabold text-3xl text-white">{formatCents(priceCents)}</span>
+                    {compareAtCents ? <span className="text-lg text-white/35 line-through">{formatCents(compareAtCents)}</span> : null}
+                    {savingsPct ? <span className="bg-[oklch(0.72_0.22_320)] text-white text-xs font-bold px-2.5 py-1 rounded-full">Save {savingsPct}%</span> : null}
                   </div>
                 </div>
+              ) : (
+                <div className="flex items-center gap-3 flex-wrap">
+                  <span className="font-extrabold text-3xl text-white">{formatCents(priceCents)}</span>
+                  {compareAtCents ? <span className="text-lg text-white/35 line-through">{formatCents(compareAtCents)}</span> : null}
+                  {savingsPct ? <span className="bg-[oklch(0.72_0.22_320)] text-white text-xs font-bold px-2.5 py-1 rounded-full">Save {savingsPct}%</span> : null}
+                </div>
               )}
-
-              {/* Price */}
-              <div className="flex items-center gap-3 flex-wrap">
-                <span className="font-extrabold text-3xl text-white">{formatCents(priceCents)}</span>
-                {compareAtCents ? <span className="text-lg text-white/35 line-through">{formatCents(compareAtCents)}</span> : null}
-                {savingsPct ? <span className="bg-[oklch(0.72_0.22_320)] text-white text-xs font-bold px-2.5 py-1 rounded-full">Save {savingsPct}%</span> : null}
-              </div>
 
               {/* Qty + Add to cart — always one row, button fills the rest */}
               <div className="flex gap-3">
