@@ -1,0 +1,319 @@
+/*
+ * Discount popup.
+ *
+ * Two columns on desktop — copy on a light purple panel to the left,
+ * image filling the full height to the right. On mobile it becomes two
+ * ROWS (image on top, copy below): an image column that narrow would be
+ * a sliver, and side-by-side text would wrap to nothing.
+ *
+ * Entry animation is framer-motion's, not CSS. App.tsx wraps the tree in
+ * <MotionConfig reducedMotion="user">, so the fade+scale is dropped
+ * automatically under prefers-reduced-motion; there are deliberately no
+ * CSS keyframes here that would sidestep that.
+ */
+
+.promo-overlay {
+  position: fixed;
+  inset: 0;
+  /* Above every other fixed layer on the storefront: Navbar is 100, its
+     mega-menu 200, MobileMenu 300. The case that actually needs this is
+     the mobile menu being open when the delay timer fires — at a lower
+     z-index the popup would open behind it. CustomCursor (99999) stays on
+     top by design. */
+  z-index: 400;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(8, 3, 20, 0.72);
+}
+
+.promo-dialog {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.02fr 0.98fr;
+  width: min(920px, 100%);
+  /* dvh, not vh: on mobile browsers vh includes the retracted URL bar, so
+     a 90vh dialog is taller than what's actually on screen and its bottom
+     edge — the button — sits under the chrome. */
+  max-height: min(90dvh, 640px);
+  overflow: hidden;
+  border-radius: 24px;
+  background: oklch(0.95 0.025 300);
+  box-shadow:
+    0 40px 90px -20px rgba(0, 0, 0, 0.65),
+    0 0 0 1px oklch(0.62 0.28 295 / 25%);
+}
+
+/* No image uploaded: the copy takes the whole dialog rather than leaving
+   a dead column. */
+.promo-dialog--no-image {
+  grid-template-columns: 1fr;
+  width: min(520px, 100%);
+}
+
+/* The dialog takes focus on open (see PromoPopup.tsx) purely to anchor
+   screen readers and the tab order — it isn't an interactive control, so
+   it shouldn't paint a focus ring. */
+.promo-dialog:focus {
+  outline: none;
+}
+
+.promo-dialog__content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.85rem;
+  padding: 2.5rem 2.25rem;
+  /* The scrollable side. If the copy is long or the viewport is short,
+     it scrolls INSIDE the dialog instead of pushing the button off. */
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.promo-dialog__media {
+  position: relative;
+  min-height: 0;
+  background: oklch(0.20 0.08 295);
+}
+
+.promo-dialog__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.promo-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  /* 44px: the minimum comfortable touch target. The icon inside is much
+     smaller, but the hit area is not. */
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(12, 4, 26, 0.55);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.promo-close:hover {
+  background: rgba(12, 4, 26, 0.8);
+}
+
+.promo-close:focus-visible {
+  outline: 2px solid oklch(0.72 0.22 320);
+  outline-offset: 2px;
+}
+
+.promo-eyebrow {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: oklch(0.52 0.28 295);
+}
+
+.promo-title {
+  margin: 0;
+  font-family: "Barlow Condensed", ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(1.9rem, 4.5vw, 2.75rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: oklch(0.22 0.1 295);
+}
+
+.promo-subtitle {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: oklch(0.42 0.16 300);
+}
+
+.promo-body {
+  margin: 0;
+  font-size: 0.93rem;
+  line-height: 1.55;
+  color: oklch(0.42 0.06 295);
+}
+
+.promo-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 0.35rem;
+}
+
+.promo-input {
+  width: 100%;
+  /* 48px tall via padding + font-size — a comfortable tap target, and big
+     enough that iOS doesn't zoom the page on focus (which needs >=16px). */
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid oklch(0.62 0.28 295 / 35%);
+  background: #fff;
+  color: oklch(0.22 0.1 295);
+  font-size: 16px;
+  outline: none;
+}
+
+.promo-input:focus {
+  border-color: oklch(0.62 0.28 295);
+  box-shadow: 0 0 0 3px oklch(0.62 0.28 295 / 18%);
+}
+
+.promo-input::placeholder {
+  color: oklch(0.6 0.05 295);
+}
+
+.promo-button {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.85rem 1.25rem;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, oklch(0.62 0.28 295), oklch(0.72 0.22 320));
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: filter 0.15s, transform 0.15s;
+}
+
+.promo-button:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.promo-button:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+
+.promo-error {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: oklch(0.55 0.22 25);
+}
+
+.promo-fineprint {
+  margin: 0;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: oklch(0.55 0.05 295);
+}
+
+/* ── Revealed code ── */
+
+.promo-code {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.35rem;
+  padding: 0.7rem 0.7rem 0.7rem 1rem;
+  border: 2px dashed oklch(0.62 0.28 295 / 55%);
+  border-radius: 12px;
+  background: oklch(0.99 0.01 300);
+}
+
+.promo-code__value {
+  flex: 1;
+  min-width: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: clamp(1.05rem, 3.5vw, 1.35rem);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: oklch(0.35 0.2 300);
+  overflow-wrap: break-word;
+}
+
+.promo-code__copy {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 44px;
+  padding: 0 0.9rem;
+  border: none;
+  border-radius: 9px;
+  background: oklch(0.62 0.28 295);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.promo-code__copy:hover {
+  background: oklch(0.55 0.28 295);
+}
+
+.promo-code__copy--done {
+  background: oklch(0.6 0.17 150);
+}
+
+/* ── Mobile: stack to image-on-top, copy below ── */
+
+@media (max-width: 768px) {
+  .promo-overlay {
+    /* Sit slightly high rather than dead center — leaves the bottom of
+       the screen clear of the browser's own chrome. */
+    align-items: start;
+    padding: 3.5rem 0.85rem 1.25rem;
+  }
+
+  .promo-dialog,
+  .promo-dialog--no-image {
+    width: min(440px, 100%);
+    grid-template-columns: 1fr;
+    /* Image row sized by content, copy row takes the rest and scrolls. */
+    grid-template-rows: auto minmax(0, 1fr);
+    max-height: min(88dvh, 720px);
+    border-radius: 20px;
+  }
+
+  /* Explicit order: the media element comes second in the DOM (so the
+     copy is what a screen reader and the tab order hit first), but reads
+     top-first visually. */
+  .promo-dialog__media {
+    grid-row: 1;
+    height: 42vw;
+    max-height: 210px;
+  }
+
+  .promo-dialog__content {
+    grid-row: 2;
+    gap: 0.7rem;
+    padding: 1.5rem 1.35rem 1.75rem;
+  }
+
+  .promo-close {
+    top: 0.5rem;
+    right: 0.5rem;
+    background: rgba(12, 4, 26, 0.65);
+  }
+}
+
+@media (max-width: 380px) {
+  .promo-dialog__content {
+    padding: 1.25rem 1.1rem 1.5rem;
+  }
+  .promo-code {
+    /* Below ~360px the code and the copy button can't share a row without
+       one of them being clipped. */
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    padding: 0.8rem;
+  }
+  .promo-code__copy {
+    justify-content: center;
+  }
+}
