@@ -25,6 +25,7 @@ const LIMITS = {
   bodyText: 2000,
   discountCode: 64,
   buttonText: 128,
+  ribbonText: 48,
   delayMin: 0,
   delayMax: 120,
 } as const;
@@ -35,6 +36,7 @@ interface Draft {
   bodyText: string;
   discountCode: string;
   buttonText: string;
+  ribbonText: string;
   showDelaySeconds: number;
   active: boolean;
 }
@@ -45,6 +47,7 @@ const EMPTY_DRAFT: Draft = {
   bodyText: "",
   discountCode: "",
   buttonText: "Quiero mi código",
+  ribbonText: "",
   showDelaySeconds: 3,
   active: false,
 };
@@ -56,6 +59,7 @@ function toDraft(p: PromoPopup): Draft {
     bodyText: p.bodyText ?? "",
     discountCode: p.discountCode,
     buttonText: p.buttonText,
+    ribbonText: p.ribbonText ?? "",
     showDelaySeconds: p.showDelaySeconds,
     active: p.active,
   };
@@ -197,6 +201,7 @@ export default function AdminPopups() {
       bodyText: draft.bodyText.trim() || undefined,
       discountCode: draft.discountCode.trim(),
       buttonText: draft.buttonText.trim(),
+      ribbonText: draft.ribbonText.trim() || undefined,
     };
     if (isNew) create.mutate(payload);
     else if (selectedId !== null) update.mutate({ id: selectedId, ...payload });
@@ -447,6 +452,19 @@ export default function AdminPopups() {
                   />
                 </Field>
               </div>
+
+              <Field
+                label="Cinta de esquina"
+                hint={`opcional · vacío = sin cinta · máx. ${LIMITS.ribbonText}`}
+              >
+                <input
+                  value={draft.ribbonText}
+                  maxLength={LIMITS.ribbonText}
+                  onChange={e => setDraft(d => ({ ...d, ribbonText: e.target.value }))}
+                  placeholder="GET 20% OFF"
+                  style={{ ...fieldStyle, textTransform: "uppercase" }}
+                />
+              </Field>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem", alignItems: "start" }}>
                 <Field label="Retraso" hint={`${LIMITS.delayMin}–${LIMITS.delayMax} s`}>
@@ -724,7 +742,11 @@ export default function AdminPopups() {
               >
                 <div style={{ transform: "scale(0.78)", transformOrigin: "top center", width: "100%" }}>
                   <div
-                    className={`promo-dialog${selected?.imageUrl ? "" : " promo-dialog--no-image"}`}
+                    className={
+                      "promo-dialog" +
+                      (selected?.imageUrl ? "" : " promo-dialog--no-image") +
+                      (draft.ribbonText.trim() ? " promo-dialog--ribbon" : "")
+                    }
                     style={{ margin: "0 auto" }}
                   >
                     <PromoPopupCard
@@ -733,6 +755,7 @@ export default function AdminPopups() {
                       bodyText={draft.bodyText}
                       discountCode={draft.discountCode || "TU-CODIGO"}
                       buttonText={draft.buttonText || "Botón"}
+                      ribbonText={draft.ribbonText}
                       imageUrl={selected?.imageUrl}
                       mode={previewMode}
                       preview

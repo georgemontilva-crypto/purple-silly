@@ -192,7 +192,11 @@ export default function PromoPopup() {
         >
           <motion.div
             ref={dialogRef}
-            className={`promo-dialog${popup.imageUrl ? "" : " promo-dialog--no-image"}`}
+            className={
+              "promo-dialog" +
+              (popup.imageUrl ? "" : " promo-dialog--no-image") +
+              (popup.ribbonText?.trim() ? " promo-dialog--ribbon" : "")
+            }
             role="dialog"
             aria-modal="true"
             aria-labelledby="promo-popup-title"
@@ -210,6 +214,7 @@ export default function PromoPopup() {
               bodyText={popup.bodyText}
               discountCode={popup.discountCode}
               buttonText={popup.buttonText}
+              ribbonText={popup.ribbonText}
               imageUrl={popup.imageUrl}
               mode={showCode ? "code" : "form"}
               onClose={close}

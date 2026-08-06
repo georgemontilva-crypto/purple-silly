@@ -1,0 +1,1 @@
+ALTER TABLE `promo_popups` ADD `ribbonText` varchar(48);

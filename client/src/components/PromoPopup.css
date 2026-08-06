@@ -111,6 +111,60 @@
   outline-offset: 2px;
 }
 
+/* ── Corner ribbon (bottom left) ── */
+
+/*
+ * A 45-degree band crossing the popup's bottom-left corner.
+ *
+ * There is no clipping wrapper: the band is positioned directly against
+ * .promo-dialog and deliberately overshoots the corner, so the DIALOG's
+ * own `overflow: hidden` + border-radius do the cutting. A wrapper square
+ * would have clipped the band's ends against its own interior edges,
+ * leaving two cut marks floating inside the popup instead of clean ends
+ * flush with the rounded border.
+ *
+ * --pr-inset is how far out along the diagonal the band's centre sits.
+ * Positioning is expressed against the element's OWN size (the 50% terms)
+ * rather than fixed pixels, so the band stays centred on the corner
+ * diagonal no matter how its width or height change with the caption,
+ * the font size, or the breakpoint.
+ */
+.promo-ribbon {
+  --pr-inset: 46px;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  z-index: 3;
+  /* Wide enough that both ends always run past the corner and get
+     clipped, rather than stopping short inside it. */
+  width: 320px;
+  padding: 0.42rem 0;
+  background: linear-gradient(135deg, oklch(0.62 0.28 295), oklch(0.52 0.28 295));
+  box-shadow: 0 2px 10px oklch(0.2 0.1 295 / 45%);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translate(calc(var(--pr-inset) - 50%), calc(50% - var(--pr-inset)))
+    rotate(45deg);
+}
+
+/*
+ * Keeps the copy out from under the band. Tied to the same condition
+ * that renders it, so a popup without a ribbon doesn't carry a hole of
+ * dead space at the bottom.
+ *
+ * The band crosses the left edge at roughly 2x --pr-inset above the
+ * corner, which is what this clears.
+ */
+.promo-dialog--ribbon .promo-dialog__content {
+  padding-bottom: 7rem;
+}
+
 .promo-eyebrow {
   font-size: 0.7rem;
   font-weight: 800;
@@ -299,11 +353,36 @@
     right: 0.5rem;
     background: rgba(12, 4, 26, 0.65);
   }
+
+  /* Tighter to the corner on a narrow dialog, so the band doesn't march
+     across half the width of the copy. */
+  .promo-ribbon {
+    --pr-inset: 38px;
+    width: 260px;
+    padding: 0.35rem 0;
+    font-size: 0.64rem;
+    letter-spacing: 0.1em;
+  }
+
+  .promo-dialog--ribbon .promo-dialog__content {
+    padding-bottom: 5.75rem;
+  }
 }
 
 @media (max-width: 380px) {
   .promo-dialog__content {
     padding: 1.25rem 1.1rem 1.5rem;
+  }
+  .promo-ribbon {
+    --pr-inset: 24px;
+    width: 190px;
+    padding: 0.3rem 0;
+    font-size: 0.58rem;
+    letter-spacing: 0.06em;
+  }
+
+  .promo-dialog--ribbon .promo-dialog__content {
+    padding-bottom: 4.5rem;
   }
   .promo-code {
     /* Below ~360px the code and the copy button can't share a row without
@@ -315,5 +394,34 @@
   }
   .promo-code__copy {
     justify-content: center;
+  }
+}
+
+/*
+ * Narrow AND short: no ribbon.
+ *
+ * At this size the copy is taller than the dialog, so the content column
+ * scrolls — and a corner element pinned to the dialog cannot be held
+ * clear of scrolling text by padding, because the last line's position is
+ * set by the flow above it and the padding below sits off-screen.
+ *
+ * Measured, only ~20px separate the last line of small print from the
+ * dialog's edge, so no band small enough to fit beneath it would still
+ * read as a ribbon. Shrinking it didn't clear the text, and indenting the
+ * small print made it worse: the narrower column wraps to more lines and
+ * pushes the last one deeper into the corner.
+ *
+ * Height is in the query, not just width — at 320x620 there IS room and
+ * the ribbon renders fine. Only when the viewport is also short does the
+ * copy crowd the corner. Dropping the ribbon there keeps the promise that
+ * it never covers content; the popup loses a decoration on the smallest
+ * screens, which is the right thing to lose.
+ */
+@media (max-width: 380px) and (max-height: 600px) {
+  .promo-ribbon {
+    display: none;
+  }
+  .promo-dialog--ribbon .promo-dialog__content {
+    padding-bottom: 1.5rem;
   }
 }
