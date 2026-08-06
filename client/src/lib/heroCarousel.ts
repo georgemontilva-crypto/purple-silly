@@ -133,12 +133,31 @@ export function ringOffset(slotIndex: number, focus: number, total: number): num
   return offset;
 }
 
+/** How dark the farthest card gets, as a scrim alpha over an opaque card. */
+export const MAX_DIM = 0.72;
+
+/** Darkening added per slot of distance from center. */
+const DIM_PER_SLOT = 0.22;
+
 export interface SlotVisual {
   readonly x: number;
   readonly z: number;
   readonly rotateY: number;
   readonly scale: number;
+  /**
+   * Element opacity. Used ONLY for the hand-off at the back of the ring —
+   * it stays at 1 across the whole visible arc, so cards never go
+   * see-through and never let the panel background read through them.
+   * Depth darkening is `dim` instead.
+   */
   readonly opacity: number;
+  /**
+   * Alpha of the dark scrim laid over the card, 0 at center rising with
+   * distance. This is what creates depth now: element opacity would have
+   * made the card translucent, which is exactly the washed-out look this
+   * replaced.
+   */
+  readonly dim: number;
   readonly blurPx: number;
   readonly zIndex: number;
 }
@@ -146,11 +165,12 @@ export interface SlotVisual {
 /**
  * Where a slot sits, and how it reads, given its wrapped offset.
  *
- * Two independent fades are combined with min(): one by distance from
- * center (the depth cue), one that forces opacity to exactly 0 at the
- * back of the ring. The second one is load-bearing — the back slot is
- * the one about to be recycled to the front, and if it were still even
- * faintly visible you'd catch it teleporting.
+ * Geometry (x, z, rotateY, scale, zIndex) is untouched from the original
+ * ring — only the shading changed.
+ *
+ * Opacity is now purely the edge fade, and it's load-bearing: the back
+ * slot is the one about to be recycled round to the front, and if it were
+ * still even faintly visible you'd catch it teleporting.
  */
 export function slotVisual(
   offset: number,
@@ -161,20 +181,49 @@ export function slotVisual(
   const rad = (angle * Math.PI) / 180;
   const dist = Math.abs(offset);
 
-  const byDistance = Math.max(0.18, 1 - dist * 0.22);
   const edge = total / 2 - 1.2;
-  const byEdge = dist > edge ? Math.max(0, 1 - (dist - edge) * 1.6) : 1;
 
   return {
     x: Math.sin(rad) * opts.radius,
     z: Math.cos(rad) * opts.radius - opts.radius,
     rotateY: -angle,
     scale: Math.max(0.5, 1 - dist * 0.11),
-    opacity: Math.min(byDistance, byEdge),
-    // Ramps to full blur ~3.75 slots out, matching the opacity falloff.
-    blurPx: Math.min(opts.maxBlurPx, (dist * opts.maxBlurPx) / 3.75),
+    opacity: dist > edge ? Math.max(0, 1 - (dist - edge) * 1.6) : 1,
+    dim: Math.min(MAX_DIM, dist * DIM_PER_SLOT),
+    blurPx: opts.maxBlurPx * blurRamp(angle),
     zIndex: 100 - Math.round(dist * 10),
   };
+}
+
+/** Card rotation past which blur starts easing in, in degrees. */
+export const BLUR_START_DEG = 45;
+/**
+ * Rotation at which a card is edge-on and `backface-visibility: hidden`
+ * stops painting it — the outer limit of what anyone can actually see.
+ */
+export const BLUR_END_DEG = 90;
+
+/**
+ * 0 for every card that should read sharp, easing to 1 as a card turns
+ * away toward the back of the ring.
+ *
+ * Keyed on the card's ROTATION, not its slot index. Slot index was the
+ * obvious choice and it was wrong: how many slots are visible depends on
+ * the angular step, which differs per breakpoint and with the number of
+ * images. Measured on the real ring, a 12-slot desktop configuration only
+ * ever shows three positions per side — everything past ~90 degrees is
+ * already hidden by backface-visibility — so an index-based rule put the
+ * blur on cards nobody could see, and the effect did nothing at all.
+ *
+ * Against rotation the rule holds at any breakpoint: the center card and
+ * its neighbours are square-on to the viewer and stay perfectly sharp,
+ * and only the outermost card, the one turning into the back of the
+ * ring, carries blur.
+ */
+export function blurRamp(angleDeg: number): number {
+  const turn = Math.abs(angleDeg);
+  const t = (turn - BLUR_START_DEG) / (BLUR_END_DEG - BLUR_START_DEG);
+  return Math.min(1, Math.max(0, t));
 }
 
 /** Slot nearest the center, normalized into 0..total-1. */
