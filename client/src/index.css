@@ -163,10 +163,19 @@ button:active, a:active {
 
 /* ─── Global ambient orbs ─── */
 #ambient-orbs {
+  /* z-index: -1 (not 0/auto) is load-bearing. #ambient-orbs is a `position:
+     fixed` sibling of #root, added before it in index.html. Per the CSS
+     stacking spec, a POSITIONED element with z-index 0/auto paints ABOVE
+     normal in-flow content in the same stacking context regardless of DOM
+     order — so at z-index:0 this rendered on top of the actual page,
+     visibly crossing over cards/content. A NEGATIVE z-index descendant of
+     the root stacking context paints just above the root's own background
+     but below all normal in-flow content, which is the "background glow
+     layer behind everything" this was always meant to be. */
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 0;
+  z-index: -1;
   overflow: hidden;
 }
 
@@ -187,69 +196,81 @@ button:active, a:active {
   will-change: transform, opacity;
 }
 
-/* Each gradient below: many stops with a gently-decaying alpha (not a
-   linear one) so the falloff reads as smooth light rather than visible
-   rings, and — importantly — the last stop is the SAME rgb at alpha 0
-   rather than the `transparent` keyword. `transparent` is rgba(0,0,0,0):
-   interpolating a colored stop toward it drags the color toward black
-   as well as fading it, which is exactly what was showing up as a hard
-   edge/ring near the tail. Sizes bumped up and peak alpha brought down
-   so the visible bright core is a smaller fraction of the whole gradient
-   — spreading the same alpha range over more pixels is what actually
-   removes 8-bit-quantization banding, not just adding more stops. */
+/* Each gradient below: 10 stops with an eased (not linear) alpha decay —
+   alpha(t) = peak * (1-t)^2.4 — so the falloff reads as smooth ambient
+   light rather than visible rings, ending at explicit alpha 0 on the SAME
+   rgb (never the `transparent` keyword, which is rgba(0,0,0,0) and drags
+   the color toward black while fading, producing a hard edge). A single
+   rgb per orb (no hue drift across stops) removes any chance of a color-
+   interpolation artifact compounding the alpha banding. Sizes are large
+   and peak alpha is low so the same alpha range spreads over far more
+   pixels — that combination, not the stop count alone, is what actually
+   eliminates 8-bit gradient banding. */
 .orb-1 {
-  width: 980px;
-  height: 980px;
+  width: 1150px;
+  height: 1150px;
   background: radial-gradient(circle,
-    rgba(139,92,246,0.34) 0%,
-    rgba(139,92,246,0.26) 12%,
-    rgba(130,80,230,0.18) 26%,
-    rgba(120,70,215,0.11) 42%,
-    rgba(109,40,217,0.05) 62%,
-    rgba(109,40,217,0.015) 82%,
-    rgba(109,40,217,0) 100%);
+    rgba(139,92,246,0.27) 0%,
+    rgba(139,92,246,0.212) 10%,
+    rgba(139,92,246,0.158) 20%,
+    rgba(139,92,246,0.112) 30%,
+    rgba(139,92,246,0.076) 40%,
+    rgba(139,92,246,0.051) 50%,
+    rgba(139,92,246,0.025) 62%,
+    rgba(139,92,246,0.009) 75%,
+    rgba(139,92,246,0.002) 88%,
+    rgba(139,92,246,0) 100%);
   animation-duration: 22s;
   animation-delay: 0s;
 }
 .orb-2 {
-  width: 820px;
-  height: 820px;
+  width: 970px;
+  height: 970px;
   background: radial-gradient(circle,
-    rgba(236,72,153,0.30) 0%,
-    rgba(236,72,153,0.23) 12%,
-    rgba(210,78,170,0.16) 26%,
-    rgba(190,80,190,0.10) 42%,
-    rgba(168,85,247,0.045) 62%,
-    rgba(168,85,247,0.014) 82%,
-    rgba(168,85,247,0) 100%);
+    rgba(236,72,153,0.24) 0%,
+    rgba(236,72,153,0.188) 10%,
+    rgba(236,72,153,0.140) 20%,
+    rgba(236,72,153,0.100) 30%,
+    rgba(236,72,153,0.068) 40%,
+    rgba(236,72,153,0.046) 50%,
+    rgba(236,72,153,0.022) 62%,
+    rgba(236,72,153,0.008) 75%,
+    rgba(236,72,153,0.0015) 88%,
+    rgba(236,72,153,0) 100%);
   animation-duration: 28s;
   animation-delay: -8s;
 }
 .orb-3 {
-  width: 720px;
-  height: 720px;
+  width: 850px;
+  height: 850px;
   background: radial-gradient(circle,
-    rgba(192,132,252,0.25) 0%,
-    rgba(192,132,252,0.19) 12%,
-    rgba(210,105,220,0.13) 26%,
-    rgba(225,90,190,0.08) 42%,
-    rgba(236,72,153,0.038) 62%,
-    rgba(236,72,153,0.012) 82%,
-    rgba(236,72,153,0) 100%);
+    rgba(192,132,252,0.20) 0%,
+    rgba(192,132,252,0.157) 10%,
+    rgba(192,132,252,0.117) 20%,
+    rgba(192,132,252,0.083) 30%,
+    rgba(192,132,252,0.056) 40%,
+    rgba(192,132,252,0.038) 50%,
+    rgba(192,132,252,0.018) 62%,
+    rgba(192,132,252,0.007) 75%,
+    rgba(192,132,252,0.0013) 88%,
+    rgba(192,132,252,0) 100%);
   animation-duration: 18s;
   animation-delay: -14s;
 }
 .orb-4 {
-  width: 650px;
-  height: 650px;
+  width: 770px;
+  height: 770px;
   background: radial-gradient(circle,
-    rgba(168,85,247,0.28) 0%,
-    rgba(168,85,247,0.21) 12%,
-    rgba(155,88,240,0.14) 26%,
-    rgba(147,90,235,0.09) 42%,
-    rgba(139,92,246,0.04) 62%,
-    rgba(139,92,246,0.012) 82%,
-    rgba(139,92,246,0) 100%);
+    rgba(168,85,247,0.22) 0%,
+    rgba(168,85,247,0.173) 10%,
+    rgba(168,85,247,0.129) 20%,
+    rgba(168,85,247,0.091) 30%,
+    rgba(168,85,247,0.062) 40%,
+    rgba(168,85,247,0.042) 50%,
+    rgba(168,85,247,0.020) 62%,
+    rgba(168,85,247,0.007) 75%,
+    rgba(168,85,247,0.0014) 88%,
+    rgba(168,85,247,0) 100%);
   animation-duration: 32s;
   animation-delay: -5s;
 }
