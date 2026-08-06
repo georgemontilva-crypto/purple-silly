@@ -1,12 +1,12 @@
 const rows = [
-  { feature: "PLANT POWERED", fw: true, alcohol: false, tonic: false, green: false, blk: false },
-  { feature: "WAKE UP CLEAR", fw: true, alcohol: false, tonic: true, green: false, blk: false },
-  { feature: "LIGHTS YOU UP", fw: true, alcohol: true, tonic: true, green: true, blk: true },
-  { feature: "NON-HABIT FORMING", fw: true, alcohol: false, tonic: true, green: false, blk: false },
+  { feature: "PLANT POWERED", silly: true, alcohol: false, tonic: false, green: false, blk: false },
+  { feature: "WAKE UP CLEAR", silly: true, alcohol: false, tonic: true, green: false, blk: false },
+  { feature: "LIGHTS YOU UP", silly: true, alcohol: true, tonic: true, green: true, blk: true },
+  { feature: "NON-HABIT FORMING", silly: true, alcohol: false, tonic: true, green: false, blk: false },
 ];
 
 const cols = [
-  { key: "fw", label: "FERRIS WHEEL", highlight: true },
+  { key: "silly", label: "🍄 SILLY DOTS", highlight: true },
   { key: "alcohol", label: "🍸 ALCOHOL", highlight: false },
   { key: "tonic", label: "🍹 SOCIAL TONIC", highlight: false },
   { key: "green", label: "💨 THE GREEN", highlight: false },
@@ -25,7 +25,9 @@ export default function ComparisonSection() {
             See how Purple Organics stacks up against the alternatives.
           </p>
         </div>
-        <div className="overflow-x-auto rounded-3xl">
+
+        {/* Desktop: table */}
+        <div className="hidden md:block overflow-x-auto rounded-3xl">
           <table className="w-full min-w-[600px]">
             <thead>
               <tr>
@@ -60,8 +62,39 @@ export default function ComparisonSection() {
             </tbody>
           </table>
         </div>
+
+        {/* Mobile: stacked cards, one per competitor, no horizontal scroll */}
+        <div className="md:hidden flex flex-col gap-4">
+          {cols.map(({ key, label, highlight }) => (
+            <div key={key} className={`rounded-2xl p-5 border ${
+              highlight
+                ? "border-[oklch(0.92_0.18_95)] bg-[oklch(0.92_0.18_95)]/[0.06]"
+                : "border-white/10 bg-white/[0.03]"
+            }`}>
+              <div className={`text-sm font-extrabold tracking-wide mb-4 ${
+                highlight ? "text-[oklch(0.92_0.18_95)]" : "text-white/60"
+              }`}>
+                {label}
+              </div>
+              <ul className="space-y-3">
+                {rows.map(({ feature, ...vals }) => {
+                  const val = vals[key as keyof typeof vals] as boolean;
+                  return (
+                    <li key={feature} className="flex items-center justify-between gap-3">
+                      <span className="text-white text-sm font-semibold">{feature}</span>
+                      <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-black shrink-0 ${val
+                        ? highlight ? "bg-[oklch(0.92_0.18_95)] text-[oklch(0.13_0.04_265)]" : "bg-white/20 text-white"
+                        : "bg-white/5 text-white/20"}`}>
+                        {val ? "✓" : "✗"}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
 }
-
