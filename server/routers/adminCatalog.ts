@@ -102,6 +102,13 @@ const cardImageUploadFields = {
   cardImageContentType: z.enum(ALLOWED_IMAGE_MIME_TYPES).optional(),
 };
 
+// Product-level "Secret Trick" section image — same shape, own field names.
+const secretImageUploadFields = {
+  secretImageBase64: z.string().optional(),
+  secretImageFileName: z.string().optional(),
+  secretImageContentType: z.enum(ALLOWED_IMAGE_MIME_TYPES).optional(),
+};
+
 const productStatus = z.enum(["draft", "active", "archived"]);
 
 export const adminCatalogRouter = router({
@@ -335,11 +342,16 @@ export const adminCatalogRouter = router({
           ingredients: z.string().optional(),
           howToTake: z.string().optional(),
           disclaimer: z.string().optional(),
+          // "Secret Trick" section — entirely optional, editor-managed.
+          secretTitle: z.string().max(256).optional(),
+          secretSubtitle: z.string().max(512).optional(),
+          secretCards: z.array(z.object({ title: z.string().max(128), description: z.string().max(512) })).max(4).optional(),
+          ...secretImageUploadFields,
         })
       )
       .mutation(async ({ input }) => {
         const d = await requireDb();
-        const { id, slug: rawSlug, title, ...rest } = input;
+        const { id, slug: rawSlug, title, secretImageBase64, secretImageFileName, secretImageContentType, ...rest } = input;
         const [existing] = await d.select().from(products).where(eq(products.id, id)).limit(1);
         if (!existing) throw new TRPCError({ code: "NOT_FOUND", message: "Product not found" });
 
@@ -351,19 +363,31 @@ export const adminCatalogRouter = router({
           data.slug = await resolveProductSlug(d, title ?? existing.title, rawSlug, id);
         }
 
+        const secretImage = await uploadImageField(
+          { imageBase64: secretImageBase64, imageFileName: secretImageFileName, imageContentType: secretImageContentType },
+          `products/${id}/secret`
+        );
+        if (secretImage) {
+          if (existing.secretImageKey) await deleteFromR2(existing.secretImageKey);
+          data.secretImageKey = secretImage.imageKey;
+          data.secretImageUrl = secretImage.imageUrl;
+        }
+
         await d.update(products).set(data).where(eq(products.id, id));
         return { success: true };
       }),
 
     delete: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
       const d = await requireDb();
-      const [variants, images] = await Promise.all([
+      const [product, variants, images] = await Promise.all([
+        d.select({ secretImageKey: products.secretImageKey }).from(products).where(eq(products.id, input.id)).limit(1),
         d.select().from(productVariants).where(eq(productVariants.productId, input.id)),
         d.select().from(productImages).where(eq(productImages.productId, input.id)),
       ]);
       await Promise.all([
         ...images.map(img => deleteFromR2(img.r2Key)),
         ...variants.filter((v): v is typeof v & { imageKey: string } => Boolean(v.imageKey)).map(v => deleteFromR2(v.imageKey)),
+        ...(product[0]?.secretImageKey ? [deleteFromR2(product[0].secretImageKey)] : []),
       ]);
       await d.delete(productImages).where(eq(productImages.productId, input.id));
       await d.delete(productVariants).where(eq(productVariants.productId, input.id));

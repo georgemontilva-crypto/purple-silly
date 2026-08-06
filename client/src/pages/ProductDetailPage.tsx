@@ -95,6 +95,10 @@ export default function ProductDetailPage() {
     { title: "Disclaimer", content: product.disclaimer },
   ].filter((a): a is { title: string; content: string } => Boolean(a.content));
 
+  // Entirely admin-managed, per product — nothing hardcoded. No title, no section.
+  const secretCards = ((product.secretCards as { title: string; description: string }[] | null) ?? [])
+    .filter(c => c.title?.trim());
+
   return (
     <div className="min-h-screen flex flex-col">
       <AnnouncementBar />
@@ -259,6 +263,38 @@ export default function ProductDetailPage() {
               )}
             </Reveal>
           </div>
+
+          {/* Secret Trick — fully admin-managed per product; renders nothing
+              if the admin hasn't set a title for this product. */}
+          {product.secretTitle && (
+            <Reveal className="mt-10 sm:mt-14">
+              <section className="rounded-3xl overflow-hidden border border-border" style={{ background: "oklch(0.13 0.05 295)" }}>
+                {product.secretImageUrl && (
+                  <div className="aspect-[21/9] overflow-hidden">
+                    <img src={product.secretImageUrl} alt={product.secretTitle} className="w-full h-full object-cover" />
+                  </div>
+                )}
+                <div className="p-6 sm:p-10">
+                  <h2 className="font-condensed font-black text-2xl sm:text-3xl text-white mb-2">{product.secretTitle}</h2>
+                  {product.secretSubtitle && (
+                    <p className="text-sm text-muted-foreground mb-6 max-w-2xl">{product.secretSubtitle}</p>
+                  )}
+                  {secretCards.length > 0 && (
+                    <RevealStagger className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
+                      {secretCards.map((card, i) => (
+                        <RevealItem key={i}>
+                          <div className="rounded-2xl p-4 h-full border" style={{ background: "oklch(0.52 0.28 295 / 8%)", borderColor: "oklch(0.52 0.28 295 / 25%)" }}>
+                            <h3 className="font-bold text-sm text-white mb-1.5">{card.title}</h3>
+                            {card.description && <p className="text-xs text-muted-foreground leading-relaxed">{card.description}</p>}
+                          </div>
+                        </RevealItem>
+                      ))}
+                    </RevealStagger>
+                  )}
+                </div>
+              </section>
+            </Reveal>
+          )}
         </div>
       </main>
       <Reveal><NewsletterSection /></Reveal>

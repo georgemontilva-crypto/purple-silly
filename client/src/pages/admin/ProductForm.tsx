@@ -464,6 +464,104 @@ function BundlesEditor({ productId }: { productId: number }) {
   );
 }
 
+// ─── Secret Trick editor ────────────────────────────────────────────
+// Entirely optional per product — the storefront renders nothing for this
+// section unless secretTitle is set (see ProductDetailPage.tsx). Cards are
+// always exactly 4 fixed slots here for simplicity; blank slots (empty
+// title) are just filtered out on the public side.
+const CARD_SLOTS = 4;
+type SecretCard = { title: string; description: string };
+const emptyCards: SecretCard[] = Array.from({ length: CARD_SLOTS }, () => ({ title: "", description: "" }));
+
+function SecretTrickEditor({ productId }: { productId: number }) {
+  const utils = trpc.useUtils();
+  const { data } = trpc.adminCatalog.products.get.useQuery({ id: productId });
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const [secretTitle, setSecretTitle] = useState("");
+  const [secretSubtitle, setSecretSubtitle] = useState("");
+  const [cards, setCards] = useState<SecretCard[]>(emptyCards);
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!data) return;
+    setSecretTitle(data.secretTitle ?? "");
+    setSecretSubtitle(data.secretSubtitle ?? "");
+    const existingCards = (data.secretCards as SecretCard[] | null) ?? [];
+    setCards(Array.from({ length: CARD_SLOTS }, (_, i) => existingCards[i] ?? { title: "", description: "" }));
+    setPreview(data.secretImageUrl ?? null);
+  }, [data]);
+
+  const save = trpc.adminCatalog.products.update.useMutation({
+    onSuccess: () => { utils.adminCatalog.products.get.invalidate({ id: productId }); toast.success("Secret Trick guardado"); },
+    onError: e => toast.error(e.message),
+  });
+
+  const updateCard = (i: number, patch: Partial<SecretCard>) => {
+    setCards(cs => cs.map((c, idx) => (idx === i ? { ...c, ...patch } : c)));
+  };
+
+  async function handleSave() {
+    let imageFields = {};
+    if (file) {
+      imageFields = { secretImageBase64: await fileToBase64(file), secretImageFileName: file.name, secretImageContentType: file.type };
+    }
+    save.mutate({
+      id: productId,
+      secretTitle: secretTitle || undefined,
+      secretSubtitle: secretSubtitle || undefined,
+      secretCards: cards,
+      ...imageFields,
+    });
+  }
+
+  return (
+    <div>
+      <p style={{ color: C.muted, fontSize: "0.8rem", margin: "0 0 1rem" }}>
+        Sección opcional al final de la página del producto. Si "Title" queda vacío, no se muestra en la tienda.
+      </p>
+      <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginBottom: "1rem" }}>
+        <div style={{ flex: "1 1 200px" }}>
+          <label style={labelStyle}>Title</label>
+          <input value={secretTitle} onChange={e => setSecretTitle(e.target.value)} placeholder="The Secret Trick" style={fieldStyle} />
+        </div>
+        <div style={{ flex: "2 1 260px" }}>
+          <label style={labelStyle}>Subtitle</label>
+          <input value={secretSubtitle} onChange={e => setSecretSubtitle(e.target.value)} placeholder="Optional" style={fieldStyle} />
+        </div>
+        <div>
+          <label style={labelStyle}>Image</label>
+          <div onClick={() => fileRef.current?.click()} style={{
+            width: 72, height: 72, borderRadius: "0.6rem", cursor: "pointer", overflow: "hidden",
+            border: `1.5px dashed ${alpha(C.border, 45)}`, background: C.panelAlt,
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            {preview ? <img src={preview} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <ImagePlus size={18} style={{ color: C.muted }} />}
+          </div>
+          <input ref={fileRef} type="file" accept={ALLOWED_MIME_TYPES.join(",")} style={{ display: "none" }}
+            onChange={e => { const f = e.target.files?.[0]; if (f) { setFile(f); setPreview(URL.createObjectURL(f)); } }} />
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "0.75rem", marginBottom: "1rem" }}>
+        {cards.map((card, i) => (
+          <div key={i} style={{ border: `1px solid ${alpha(C.border, 30)}`, borderRadius: "0.6rem", padding: "0.75rem", background: C.panelAlt }}>
+            <label style={labelStyle}>Card {i + 1} title</label>
+            <input value={card.title} onChange={e => updateCard(i, { title: e.target.value })} style={{ ...fieldStyle, marginBottom: "0.5rem" }} />
+            <label style={labelStyle}>Card {i + 1} text</label>
+            <textarea value={card.description} onChange={e => updateCard(i, { description: e.target.value })} rows={2} style={{ ...fieldStyle, resize: "vertical", fontFamily: "inherit" }} />
+          </div>
+        ))}
+      </div>
+
+      <PrimaryButton onClick={handleSave} disabled={save.isPending}>
+        {save.isPending ? <Loader2 size={13} className="animate-spin" /> : null} Save Secret Trick
+      </PrimaryButton>
+    </div>
+  );
+}
+
 // ─── Main form ──────────────────────────────────────────────────────
 interface ProductFormState {
   title: string;
@@ -620,6 +718,14 @@ export default function ProductForm({ productId, onDone }: { productId?: number;
             {id ? <BundlesEditor productId={id} /> : (
               <p style={{ color: C.muted, fontSize: "0.85rem", margin: 0 }}>
                 Guarda el producto primero para poder agregar bundles.
+              </p>
+            )}
+          </Section>
+
+          <Section title="Secret Trick">
+            {id ? <SecretTrickEditor productId={id} /> : (
+              <p style={{ color: C.muted, fontSize: "0.85rem", margin: 0 }}>
+                Guarda el producto primero para poder configurar esta sección.
               </p>
             )}
           </Section>

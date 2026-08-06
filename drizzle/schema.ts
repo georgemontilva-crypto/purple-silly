@@ -144,6 +144,13 @@ export const products = mysqlTable("products", {
   ingredients: text("ingredients"),
   howToTake: text("howToTake"),
   disclaimer: text("disclaimer"),
+  // "Secret Trick" section (Fase 3C) — entirely admin-managed per product;
+  // ProductDetailPage renders nothing here unless secretTitle is set.
+  secretTitle: varchar("secretTitle", { length: 256 }),
+  secretSubtitle: varchar("secretSubtitle", { length: 512 }),
+  secretImageKey: varchar("secretImageKey", { length: 512 }),
+  secretImageUrl: varchar("secretImageUrl", { length: 1024 }),
+  secretCards: json("secretCards").$type<{ title: string; description: string }[]>(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
