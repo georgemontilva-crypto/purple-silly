@@ -32,20 +32,26 @@ import {
   Loader2,
   LogOut,
   type LucideIcon,
+  Package,
   ShieldAlert,
+  Tags,
   Users,
 } from "lucide-react";
 import AdminUsers from "./AdminUsers";
 import AdminLabReports from "./AdminLabReports";
 import AdminCategories from "./AdminCategories";
 import AdminAssets from "./AdminAssets";
+import AdminProducts from "./AdminProducts";
+import AdminProductCategories from "./AdminProductCategories";
 
-type AdminTab = "overview" | "categories" | "lab-reports" | "assets" | "users";
+type AdminTab = "overview" | "products" | "product-categories" | "lab-reports" | "lab-categories" | "assets" | "users";
 
 const NAV_ITEMS: { id: AdminTab; label: string; icon: LucideIcon }[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
-  { id: "categories", label: "Categories", icon: FolderTree },
+  { id: "products", label: "Products", icon: Package },
+  { id: "product-categories", label: "Product Categories", icon: Tags },
   { id: "lab-reports", label: "Lab Reports", icon: FlaskConical },
+  { id: "lab-categories", label: "Lab Categories", icon: FolderTree },
   { id: "assets", label: "Assets", icon: ImageIcon },
   { id: "users", label: "Users", icon: Users },
 ];
@@ -281,8 +287,10 @@ export default function AdminDashboard() {
         </header>
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
           {tab === "overview" && <Overview />}
-          {tab === "categories" && <AdminCategories />}
+          {tab === "products" && <AdminProducts />}
+          {tab === "product-categories" && <AdminProductCategories />}
           {tab === "lab-reports" && <AdminLabReports />}
+          {tab === "lab-categories" && <AdminCategories />}
           {tab === "assets" && <AdminAssets />}
           {tab === "users" && <AdminUsers />}
         </main>
