@@ -196,29 +196,37 @@ button:active, a:active {
   will-change: transform, opacity;
 }
 
-/* Each gradient below: 10 stops with an eased (not linear) alpha decay —
-   alpha(t) = peak * (1-t)^2.4 — so the falloff reads as smooth ambient
-   light rather than visible rings, ending at explicit alpha 0 on the SAME
-   rgb (never the `transparent` keyword, which is rgba(0,0,0,0) and drags
-   the color toward black while fading, producing a hard edge). A single
-   rgb per orb (no hue drift across stops) removes any chance of a color-
-   interpolation artifact compounding the alpha banding. Sizes are large
-   and peak alpha is low so the same alpha range spreads over far more
-   pixels — that combination, not the stop count alone, is what actually
-   eliminates 8-bit gradient banding. */
+/* Each gradient below: `circle closest-side` — NOT the bare `circle`
+   keyword, which defaults to `closest-side`'s opposite, `farthest-corner`.
+   These orbs are square boxes (width===height) clipped to a circle via
+   border-radius:50%, so the VISIBLE edge sits at closest-side (half the
+   box width). farthest-corner is ~41% farther out (sqrt(2)/2 vs 1/2 of the
+   box width) — meaning the gradient was still at meaningful, non-zero
+   alpha (not yet 0) at the point where border-radius physically clipped
+   it, producing a hard edge no matter how gradual the stops were. With
+   closest-side, the gradient's 100% (alpha 0) stop lands EXACTLY on the
+   visible circular boundary, so alpha has already reached (or is
+   imperceptibly close to) 0 before the clip ever happens.
+   11 stops with an eased alpha(t) = peak * (1-t)^2.6 decay, clustering
+   extra stops in the last 30% of the radius so the tail is very gradual,
+   ending at explicit alpha 0 on the SAME rgb (never the `transparent`
+   keyword, which is rgba(0,0,0,0) and drags the color toward black while
+   fading). A single rgb per orb (no hue drift across stops) removes any
+   chance of a color-interpolation artifact compounding alpha banding. */
 .orb-1 {
   width: 1150px;
   height: 1150px;
-  background: radial-gradient(circle,
+  background: radial-gradient(circle closest-side,
     rgba(139,92,246,0.27) 0%,
-    rgba(139,92,246,0.212) 10%,
-    rgba(139,92,246,0.158) 20%,
-    rgba(139,92,246,0.112) 30%,
-    rgba(139,92,246,0.076) 40%,
-    rgba(139,92,246,0.051) 50%,
-    rgba(139,92,246,0.025) 62%,
-    rgba(139,92,246,0.009) 75%,
-    rgba(139,92,246,0.002) 88%,
+    rgba(139,92,246,0.190) 15%,
+    rgba(139,92,246,0.130) 30%,
+    rgba(139,92,246,0.085) 45%,
+    rgba(139,92,246,0.055) 58%,
+    rgba(139,92,246,0.032) 68%,
+    rgba(139,92,246,0.018) 77%,
+    rgba(139,92,246,0.0089) 85%,
+    rgba(139,92,246,0.0041) 92%,
+    rgba(139,92,246,0.0015) 97%,
     rgba(139,92,246,0) 100%);
   animation-duration: 22s;
   animation-delay: 0s;
@@ -226,16 +234,17 @@ button:active, a:active {
 .orb-2 {
   width: 970px;
   height: 970px;
-  background: radial-gradient(circle,
+  background: radial-gradient(circle closest-side,
     rgba(236,72,153,0.24) 0%,
-    rgba(236,72,153,0.188) 10%,
-    rgba(236,72,153,0.140) 20%,
-    rgba(236,72,153,0.100) 30%,
-    rgba(236,72,153,0.068) 40%,
-    rgba(236,72,153,0.046) 50%,
-    rgba(236,72,153,0.022) 62%,
-    rgba(236,72,153,0.008) 75%,
-    rgba(236,72,153,0.0015) 88%,
+    rgba(236,72,153,0.169) 15%,
+    rgba(236,72,153,0.115) 30%,
+    rgba(236,72,153,0.0756) 45%,
+    rgba(236,72,153,0.049) 58%,
+    rgba(236,72,153,0.0286) 68%,
+    rgba(236,72,153,0.0161) 77%,
+    rgba(236,72,153,0.0079) 85%,
+    rgba(236,72,153,0.0036) 92%,
+    rgba(236,72,153,0.0013) 97%,
     rgba(236,72,153,0) 100%);
   animation-duration: 28s;
   animation-delay: -8s;
@@ -243,16 +252,17 @@ button:active, a:active {
 .orb-3 {
   width: 850px;
   height: 850px;
-  background: radial-gradient(circle,
+  background: radial-gradient(circle closest-side,
     rgba(192,132,252,0.20) 0%,
-    rgba(192,132,252,0.157) 10%,
-    rgba(192,132,252,0.117) 20%,
-    rgba(192,132,252,0.083) 30%,
-    rgba(192,132,252,0.056) 40%,
-    rgba(192,132,252,0.038) 50%,
-    rgba(192,132,252,0.018) 62%,
-    rgba(192,132,252,0.007) 75%,
-    rgba(192,132,252,0.0013) 88%,
+    rgba(192,132,252,0.141) 15%,
+    rgba(192,132,252,0.0962) 30%,
+    rgba(192,132,252,0.063) 45%,
+    rgba(192,132,252,0.0408) 58%,
+    rgba(192,132,252,0.0238) 68%,
+    rgba(192,132,252,0.0134) 77%,
+    rgba(192,132,252,0.0066) 85%,
+    rgba(192,132,252,0.003) 92%,
+    rgba(192,132,252,0.0011) 97%,
     rgba(192,132,252,0) 100%);
   animation-duration: 18s;
   animation-delay: -14s;
@@ -260,16 +270,17 @@ button:active, a:active {
 .orb-4 {
   width: 770px;
   height: 770px;
-  background: radial-gradient(circle,
+  background: radial-gradient(circle closest-side,
     rgba(168,85,247,0.22) 0%,
-    rgba(168,85,247,0.173) 10%,
-    rgba(168,85,247,0.129) 20%,
-    rgba(168,85,247,0.091) 30%,
-    rgba(168,85,247,0.062) 40%,
-    rgba(168,85,247,0.042) 50%,
-    rgba(168,85,247,0.020) 62%,
-    rgba(168,85,247,0.007) 75%,
-    rgba(168,85,247,0.0014) 88%,
+    rgba(168,85,247,0.155) 15%,
+    rgba(168,85,247,0.1058) 30%,
+    rgba(168,85,247,0.0693) 45%,
+    rgba(168,85,247,0.0449) 58%,
+    rgba(168,85,247,0.0262) 68%,
+    rgba(168,85,247,0.0147) 77%,
+    rgba(168,85,247,0.0073) 85%,
+    rgba(168,85,247,0.0033) 92%,
+    rgba(168,85,247,0.0012) 97%,
     rgba(168,85,247,0) 100%);
   animation-duration: 32s;
   animation-delay: -5s;

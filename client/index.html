@@ -13,12 +13,17 @@
   </head>
 
   <body>
-    <!-- Ambient background orbs -->
+    <!-- Ambient background orbs. Translate ranges kept moderate (not the
+         original wider drift) so the orb's still-visible interior never
+         wanders past the viewport edge mid-gradient — closest-side sizing
+         in index.css only guarantees a clean fade at the orb's OWN edge,
+         it can't help if the browser's own viewport boundary clips through
+         the middle of the gradient first. -->
     <div id="ambient-orbs" aria-hidden="true">
-      <div class="orb orb-1" style="--ox0:-10vw; --oy0:10vh; --ox1:30vw; --oy1:60vh; left:5vw; top:5vh;"></div>
-      <div class="orb orb-2" style="--ox0:60vw; --oy0:-5vh; --ox1:-20vw; --oy1:50vh; left:55vw; top:0vh;"></div>
-      <div class="orb orb-3" style="--ox0:20vw; --oy0:70vh; --ox1:70vw; --oy1:10vh; left:15vw; top:65vh;"></div>
-      <div class="orb orb-4" style="--ox0:75vw; --oy0:55vh; --ox1:10vw; --oy1:80vh; left:70vw; top:50vh;"></div>
+      <div class="orb orb-1" style="--ox0:-5vw; --oy0:6vh; --ox1:16vw; --oy1:32vh; left:5vw; top:5vh;"></div>
+      <div class="orb orb-2" style="--ox0:32vw; --oy0:-3vh; --ox1:-11vw; --oy1:27vh; left:55vw; top:0vh;"></div>
+      <div class="orb orb-3" style="--ox0:11vw; --oy0:37vh; --ox1:37vw; --oy1:6vh; left:15vw; top:65vh;"></div>
+      <div class="orb orb-4" style="--ox0:38vw; --oy0:29vh; --ox1:6vw; --oy1:42vh; left:70vw; top:50vh;"></div>
     </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
