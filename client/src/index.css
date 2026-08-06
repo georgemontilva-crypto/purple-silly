@@ -59,6 +59,45 @@
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
+/*
+ * /admin theme — black background, purple borders/accents, white text.
+ * Deliberately higher-contrast than the storefront's purple-tinted-black
+ * theme above. Scoped to .admin-shell (the AdminDashboard root) so it
+ * doesn't affect the public site. Tailwind's `@theme inline` makes every
+ * `bg-*`/`text-*`/`border-*` utility reference these custom properties
+ * directly, so overriding them here is enough — no component changes needed.
+ */
+.admin-shell {
+  --color-background: #000000;
+  --color-foreground: #ffffff;
+  --color-card: #0a0a0a;
+  --color-card-foreground: #ffffff;
+  --color-popover: #0a0a0a;
+  --color-popover-foreground: #ffffff;
+
+  --color-primary: #a855f7;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #141118;
+  --color-secondary-foreground: #ffffff;
+  --color-muted: #141118;
+  --color-muted-foreground: #c7c2d6;
+  --color-accent: #ec4899;
+  --color-accent-foreground: #ffffff;
+  --color-destructive: oklch(0.65 0.24 27);
+  --color-border: #a855f75a;
+  --color-input: #141118;
+  --color-ring: #a855f7;
+
+  --color-sidebar: #000000;
+  --color-sidebar-foreground: #ffffff;
+  --color-sidebar-primary: #a855f7;
+  --color-sidebar-primary-foreground: #ffffff;
+  --color-sidebar-accent: #a855f733;
+  --color-sidebar-accent-foreground: #c084fc;
+  --color-sidebar-border: #a855f75a;
+  --color-sidebar-ring: #a855f7;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

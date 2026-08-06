@@ -2,16 +2,28 @@ import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Loader2, Users as UsersIcon } from "lucide-react";
+import { ADMIN_COLORS as C, alpha } from "@/lib/adminTheme";
 
-const C = {
-  bg:     "oklch(0.07 0.04 295)",
-  border: "oklch(0.18 0.06 295)",
-  vivid:  "oklch(0.52 0.28 295)",
-  pink:   "oklch(0.72 0.22 320)",
-  text:   "oklch(0.92 0.02 295)",
-  muted:  "oklch(0.55 0.07 295)",
-  row:    "oklch(0.11 0.05 295)",
-};
+function RoleButton({ isAdmin, onClick, disabled }: { isAdmin: boolean; onClick: () => void; disabled: boolean }) {
+  const [hover, setHover] = useState(false);
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        padding: "0.3rem 0.75rem", borderRadius: "0.4rem", fontSize: "0.75rem",
+        border: `1px solid ${hover ? C.vivid : alpha(C.border, 35)}`,
+        background: hover ? alpha(C.vivid, 15) : "transparent",
+        color: hover ? C.bright : C.muted, cursor: "pointer", fontWeight: 600,
+        transition: "color 0.15s, background 0.15s, border-color 0.15s",
+      }}
+    >
+      {isAdmin ? "Revoke Admin" : "Make Admin"}
+    </button>
+  );
+}
 
 export default function AdminUsers() {
   const { data: users, isLoading, refetch } = trpc.admin.users.list.useQuery();
@@ -20,10 +32,11 @@ export default function AdminUsers() {
     onError: (e) => toast.error(e.message),
   });
   const [search, setSearch] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
 
   const filtered = users?.filter(u =>
     (u.name ?? "").toLowerCase().includes(search.toLowerCase()) ||
-    (u.email ?? "").toLowerCase().includes(search.toLowerCase())
+    u.email.toLowerCase().includes(search.toLowerCase())
   ) ?? [];
 
   return (
@@ -36,11 +49,13 @@ export default function AdminUsers() {
           placeholder="Search users..."
           value={search}
           onChange={e => setSearch(e.target.value)}
+          onFocus={() => setSearchFocused(true)}
+          onBlur={() => setSearchFocused(false)}
           style={{
-            background: `${C.vivid}10`, border: `1px solid ${C.border}`,
+            background: C.panel, border: `1px solid ${searchFocused ? C.vivid : alpha(C.border, 35)}`,
             borderRadius: "0.5rem", padding: "0.5rem 1rem",
             color: C.text, fontSize: "0.9rem", outline: "none",
-            minWidth: 200,
+            minWidth: 200, transition: "border-color 0.15s",
           }}
         />
       </div>
@@ -53,7 +68,7 @@ export default function AdminUsers() {
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
             <thead>
-              <tr style={{ borderBottom: `1px solid ${C.border}` }}>
+              <tr style={{ borderBottom: `1px solid ${alpha(C.border, 35)}` }}>
                 {["ID", "Name", "Email", "Role", "Joined", "Actions"].map(h => (
                   <th key={h} style={{ color: C.muted, fontWeight: 700, textAlign: "left", padding: "0.6rem 0.75rem", whiteSpace: "nowrap", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                     {h}
@@ -63,15 +78,15 @@ export default function AdminUsers() {
             </thead>
             <tbody>
               {filtered.map(u => (
-                <tr key={u.id} style={{ borderBottom: `1px solid ${C.border}30` }}>
+                <tr key={u.id} style={{ borderBottom: `1px solid ${alpha(C.border, 20)}` }}>
                   <td style={{ padding: "0.75rem", color: C.muted }}>{u.id}</td>
                   <td style={{ padding: "0.75rem", color: C.text, fontWeight: 600 }}>{u.name ?? "—"}</td>
-                  <td style={{ padding: "0.75rem", color: C.muted }}>{u.email ?? "—"}</td>
+                  <td style={{ padding: "0.75rem", color: C.muted }}>{u.email}</td>
                   <td style={{ padding: "0.75rem" }}>
                     <span style={{
                       padding: "0.2rem 0.6rem", borderRadius: "999px", fontSize: "0.7rem", fontWeight: 700,
-                      background: u.role === "admin" ? `${C.pink}25` : `${C.vivid}15`,
-                      color: u.role === "admin" ? C.pink : C.vivid,
+                      background: u.role === "admin" ? alpha(C.pink, 25) : alpha(C.vivid, 18),
+                      color: u.role === "admin" ? C.pink : C.bright,
                     }}>
                       {u.role}
                     </span>
@@ -80,18 +95,11 @@ export default function AdminUsers() {
                     {new Date(u.createdAt).toLocaleDateString()}
                   </td>
                   <td style={{ padding: "0.75rem" }}>
-                    <button
-                      onClick={() => updateRole.mutate({ userId: u.id, role: u.role === "admin" ? "user" : "admin" })}
+                    <RoleButton
+                      isAdmin={u.role === "admin"}
                       disabled={updateRole.isPending}
-                      style={{
-                        padding: "0.3rem 0.75rem", borderRadius: "0.4rem", fontSize: "0.75rem",
-                        border: `1px solid ${C.border}`, background: "transparent",
-                        color: C.muted, cursor: "pointer", fontWeight: 600,
-                        transition: "color 0.15s, border-color 0.15s",
-                      }}
-                    >
-                      {u.role === "admin" ? "Revoke Admin" : "Make Admin"}
-                    </button>
+                      onClick={() => updateRole.mutate({ userId: u.id, role: u.role === "admin" ? "user" : "admin" })}
+                    />
                   </td>
                 </tr>
               ))}

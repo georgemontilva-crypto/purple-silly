@@ -20,14 +20,14 @@ import LabReportsPage from "./pages/LabReportsPage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import Login from "./pages/Login";
 
-function Router() {
+// Storefront-only routes — rendered inside StorefrontLayout (Navbar + Footer).
+// /admin and /login have their own layout and are NOT part of this Switch.
+function StorefrontRouter() {
   return (
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/what-is-silly" component={WhatIsSilly} />
       <Route path="/lab-reports" component={LabReportsPage} />
-      <Route path="/admin" component={AdminDashboard} />
-      <Route path="/login" component={Login} />
       <Route path="/collections/all" component={ShopPage} />
       <Route path="/collections/:handle" component={ShopPage} />
       <Route path="/products/:handle" component={ProductDetailPage} />
@@ -41,12 +41,12 @@ function Router() {
   );
 }
 
-function AppLayout() {
+function StorefrontLayout() {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
       <div className="flex-1">
-        <Router />
+        <StorefrontRouter />
       </div>
       <Footer />
     </div>
@@ -61,7 +61,14 @@ function App() {
           <TooltipProvider>
             <Toaster position="top-right" richColors />
             <CustomCursor />
-            <AppLayout />
+            {/* /admin and /login get their own clean layout — no storefront
+                Navbar/Footer. Everything else falls through to StorefrontLayout,
+                which has its own inner Switch for the rest of the site. */}
+            <Switch>
+              <Route path="/admin" component={AdminDashboard} />
+              <Route path="/login" component={Login} />
+              <Route component={StorefrontLayout} />
+            </Switch>
           </TooltipProvider>
         </CartProvider>
       </ThemeProvider>
