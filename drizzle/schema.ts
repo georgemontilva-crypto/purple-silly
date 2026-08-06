@@ -207,3 +207,32 @@ export const productImages = mysqlTable("product_images", {
 
 export type ProductImage = typeof productImages.$inferSelect;
 export type InsertProductImage = typeof productImages.$inferInsert;
+
+// ─── Promo popups (Fase 5) ────────────────────────────────────────────────
+//
+// Discount popups shown on the storefront. At most ONE row may have
+// active = true at a time; that's enforced in the router (activate/create/
+// update all clear the flag on every other row) rather than by a
+// constraint, because MySQL can't express "unique among the rows where
+// active = true" — a plain unique index on `active` would instead cap the
+// table at one inactive popup, which is the opposite of what's wanted.
+//
+// discountCode is stored here but deliberately NOT included in the public
+// payload for anonymous visitors — see promoPopups.active in the router.
+export const promoPopups = mysqlTable("promo_popups", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 256 }).notNull(),
+  subtitle: varchar("subtitle", { length: 512 }),
+  bodyText: text("bodyText"),
+  discountCode: varchar("discountCode", { length: 64 }).notNull(),
+  buttonText: varchar("buttonText", { length: 128 }).notNull(),
+  imageKey: varchar("imageKey", { length: 512 }),
+  imageUrl: varchar("imageUrl", { length: 1024 }),
+  active: boolean("active").default(false).notNull(),
+  showDelaySeconds: int("showDelaySeconds").default(3).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type PromoPopup = typeof promoPopups.$inferSelect;
+export type InsertPromoPopup = typeof promoPopups.$inferInsert;
