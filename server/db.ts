@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, users } from "../drizzle/schema";
@@ -15,6 +16,14 @@ export async function getDb() {
     }
   }
   return _db;
+}
+
+/** Like getDb(), but throws a tRPC error instead of returning null — for
+ * routers that can't do anything useful without a database connection. */
+export async function requireDb() {
+  const d = await getDb();
+  if (!d) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+  return d;
 }
 
 export async function getUserById(id: number) {

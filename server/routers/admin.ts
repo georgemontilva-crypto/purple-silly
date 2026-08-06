@@ -1,51 +1,11 @@
 import { adminProcedure, publicProcedure, router } from "../_core/trpc";
-import { getDb } from "../db";
+import { requireDb as db } from "../db";
 import { labReportCategories, labReports, siteAssets, users } from "../../drizzle/schema";
 import { count, eq, desc, asc } from "drizzle-orm";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { ASSET_SECTIONS, ASSET_SECTION_KEYS } from "../../shared/assetSections";
-
-const ALLOWED_ASSET_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
-const MAX_ASSET_BYTES = 5 * 1024 * 1024; // 5MB
-
-// ─── Cloudflare R2 client ─────────────────────────────────────────
-function getR2Client() {
-  const accountId = process.env.R2_ACCOUNT_ID;
-  const accessKeyId = process.env.R2_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
-  if (!accountId || !accessKeyId || !secretAccessKey) return null;
-  return new S3Client({
-    region: "auto",
-    endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
-    credentials: { accessKeyId, secretAccessKey },
-  });
-}
-
-async function uploadToR2(key: string, buffer: Buffer, contentType: string): Promise<string> {
-  const client = getR2Client();
-  const bucket = process.env.R2_BUCKET_NAME;
-  const publicUrl = process.env.R2_PUBLIC_URL;
-  if (!client || !bucket || !publicUrl) {
-    throw new TRPCError({ code: "PRECONDITION_FAILED", message: "R2 not configured. Add R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, R2_PUBLIC_URL to your environment variables." });
-  }
-  await client.send(new PutObjectCommand({ Bucket: bucket, Key: key, Body: buffer, ContentType: contentType }));
-  return `${publicUrl.replace(/\/$/, "")}/${key}`;
-}
-
-async function deleteFromR2(key: string): Promise<void> {
-  const client = getR2Client();
-  const bucket = process.env.R2_BUCKET_NAME;
-  if (!client || !bucket) return; // silently skip if not configured
-  await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
-}
-
-async function db() {
-  const d = await getDb();
-  if (!d) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
-  return d;
-}
+import { ALLOWED_IMAGE_MIME_TYPES as ALLOWED_ASSET_MIME_TYPES, MAX_IMAGE_BYTES as MAX_ASSET_BYTES, uploadToR2, deleteFromR2 } from "../_core/r2";
 
 export const adminRouter = router({
   // ─── STATS ───────────────────────────────────────────────────────
