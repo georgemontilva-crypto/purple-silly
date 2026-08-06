@@ -54,14 +54,12 @@ export default function MobileMenu({
 
   return (
     <div
-      className="md:hidden"
+      className="flex md:hidden flex-col"
       style={{
         position: "fixed",
         inset: 0,
         zIndex: 300,
         background: "oklch(0.07 0.04 295)",
-        display: "flex",
-        flexDirection: "column",
       }}
     >
       {/* Header: close button */}

@@ -128,16 +128,11 @@ export default function Navbar() {
           )}
         </Link>
 
-        {/* Desktop Nav */}
+        {/* Desktop Nav — visibility controlled ONLY via Tailwind's `hidden md:flex`;
+            no `display` in inline style here, or it would win over the class
+            and the links would show at every breakpoint. */}
         <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.25rem",
-            flex: 1,
-            justifyContent: "center",
-          }}
-          className="hidden md:flex"
+          className="hidden md:flex items-center justify-center flex-1 gap-1"
         >
           {/* SHOP dropdown */}
           <div ref={dropdownRef} style={{ position: "relative" }}>
@@ -342,13 +337,13 @@ export default function Navbar() {
             )}
           </Link>
 
-          {/* Mobile menu trigger — circular grid icon */}
+          {/* Mobile menu trigger — circular grid icon. Visibility via
+              `flex md:hidden` only; no `display` in inline style. */}
           <button
-            className="md:hidden"
+            className="flex md:hidden items-center justify-center"
             onClick={() => setMobileOpen(true)}
             aria-label="Open menu"
             style={{
-              display: "flex", alignItems: "center", justifyContent: "center",
               width: 44, height: 44, borderRadius: "999px",
               background: "oklch(0.18 0.07 295)", border: "1px solid oklch(0.28 0.09 295)",
               color: "white", cursor: "pointer",
@@ -375,13 +370,6 @@ export default function Navbar() {
         @keyframes fadeInDown {
           from { opacity: 0; transform: translateX(-50%) translateY(-8px); }
           to   { opacity: 1; transform: translateX(-50%) translateY(0); }
-        }
-        @media (min-width: 768px) { .hidden { display: none !important; } }
-        .hidden.md\\:flex { display: flex !important; }
-        .md\\:hidden { display: none !important; }
-        @media (max-width: 767px) {
-          .hidden { display: none !important; }
-          .md\\:hidden { display: block !important; }
         }
       `}</style>
     </header>

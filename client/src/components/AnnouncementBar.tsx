@@ -18,11 +18,14 @@ export default function AnnouncementBar() {
         style={{
           display: "flex",
           whiteSpace: "nowrap",
-          animation: "marquee 35s linear infinite",
+          animation: "announcementMarquee 35s linear infinite",
           fontFamily: "'Barlow', sans-serif",
           fontWeight: 700,
-          fontSize: "0.875rem",
-          letterSpacing: "0.12em",
+          // clamp() keeps this small enough on narrow screens that a single
+          // item always fits within the viewport on its own — even in a
+          // worst-case frozen frame, no word gets cut off mid-scroll.
+          fontSize: "clamp(0.7rem, 2.8vw, 0.875rem)",
+          letterSpacing: "0.08em",
           textTransform: "uppercase",
         }}
       >
@@ -30,8 +33,12 @@ export default function AnnouncementBar() {
         <span style={{ paddingRight: "4rem" }}>{marqueeText}</span>
         <span style={{ paddingRight: "4rem" }}>{marqueeText}</span>
       </div>
+      {/* Named uniquely — index.css previously had its own dead, unused
+          `@keyframes marquee` (from `.animate-marquee`, never referenced by
+          any className) with different values. Same-named @keyframes in the
+          global stylesheet cascade are a real footgun, so this stays unique. */}
       <style>{`
-        @keyframes marquee {
+        @keyframes announcementMarquee {
           from { transform: translateX(0); }
           to   { transform: translateX(-33.333%); }
         }
