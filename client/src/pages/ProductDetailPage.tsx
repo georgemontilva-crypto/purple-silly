@@ -19,6 +19,11 @@ import AnnouncementBar from "@/components/AnnouncementBar";
 import NewsletterSection from "@/components/NewsletterSection";
 import { Reveal, RevealItem, RevealStagger } from "@/components/motion/Reveal";
 
+const C = {
+  vivid: "oklch(0.52 0.28 295)",
+  pink: "oklch(0.72 0.22 320)",
+};
+
 function formatCents(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
 }
@@ -33,12 +38,12 @@ const TRUST_BADGES = [
 function Accordion({ title, content, defaultOpen = false }: { title: string; content: string; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border border-gray-200 rounded-2xl overflow-hidden">
+    <div className="border border-border rounded-2xl overflow-hidden">
       <button onClick={() => setOpen(o => !o)} className="w-full flex items-center justify-between gap-4 p-4 text-left">
-        <span className="font-bold text-sm text-[oklch(0.22_0.08_265)]">{title}</span>
-        {open ? <ChevronUp size={16} className="text-[oklch(0.62_0.25_340)] flex-shrink-0" /> : <ChevronDown size={16} className="text-gray-400 flex-shrink-0" />}
+        <span className="font-bold text-sm text-foreground">{title}</span>
+        {open ? <ChevronUp size={16} className="text-[oklch(0.72_0.22_320)] flex-shrink-0" /> : <ChevronDown size={16} className="text-muted-foreground flex-shrink-0" />}
       </button>
-      {open && <div className="px-4 pb-4 text-sm text-gray-600 leading-relaxed whitespace-pre-line">{content}</div>}
+      {open && <div className="px-4 pb-4 text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{content}</div>}
     </div>
   );
 }
@@ -54,7 +59,7 @@ export default function ProductDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center gap-2 text-gray-400">
+      <div className="min-h-screen flex items-center justify-center gap-2 text-muted-foreground">
         <Loader2 size={22} className="animate-spin" /> Loading product...
       </div>
     );
@@ -63,9 +68,9 @@ export default function ProductDetailPage() {
   if (!product) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-3 text-center px-4">
-        <Package size={40} className="text-gray-300" strokeWidth={1.5} />
-        <p className="text-gray-500">Product not found.</p>
-        <Link href="/collections/all" className="text-sm font-bold text-[oklch(0.62_0.25_340)]">← Back to Shop</Link>
+        <Package size={40} className="text-muted-foreground" strokeWidth={1.5} />
+        <p className="text-muted-foreground">Product not found.</p>
+        <Link href="/collections/all" className="text-sm font-bold text-[oklch(0.72_0.22_320)]">← Back to Shop</Link>
       </div>
     );
   }
@@ -95,135 +100,156 @@ export default function ProductDetailPage() {
       <AnnouncementBar />
       <main className="flex-1">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-4">
-          <Link href="/collections/all" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-[oklch(0.22_0.08_265)] transition-colors font-medium">
+          <Link href="/collections/all" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors font-medium">
             <ArrowLeft size={14} /> Back to Shop
           </Link>
         </div>
 
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 pb-16">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
-            {/* Gallery — thumbnails on the left, main image on the right */}
-            <Reveal className="flex gap-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
+            {/* Gallery — thumbnails on the left, main image on the right (mobile:
+                main image on top, thumbnail strip scrolls horizontally below it) */}
+            <Reveal className="flex flex-col-reverse sm:flex-row gap-3">
               {images.length > 1 && (
-                <div className="flex flex-col gap-2 w-16 sm:w-20 shrink-0">
+                <div className="flex sm:flex-col gap-2 overflow-x-auto sm:overflow-visible sm:w-20 shrink-0">
                   {images.map((img, i) => (
                     <button key={img.id} onClick={() => setSelectedImage(i)}
-                      className={`aspect-square rounded-xl overflow-hidden border-2 transition-colors ${i === selectedImage ? "border-[oklch(0.62_0.25_340)]" : "border-transparent"}`}>
+                      className={`aspect-square w-16 sm:w-full shrink-0 rounded-xl overflow-hidden border-2 transition-colors ${i === selectedImage ? "border-[oklch(0.72_0.22_320)]" : "border-transparent"}`}>
                       <img src={img.url} alt={img.alt ?? ""} className="w-full h-full object-cover" />
                     </button>
                   ))}
                 </div>
               )}
-              <div className="flex-1 aspect-square bg-gray-100 rounded-3xl overflow-hidden min-w-0">
+              <div className="flex-1 aspect-square bg-white/5 rounded-3xl overflow-hidden min-w-0">
                 {activeImage ? (
                   <img src={activeImage.url} alt={activeImage.alt ?? product.title} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 gap-2">
+                  <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground gap-2">
                     <Package size={40} strokeWidth={1.5} />
                   </div>
                 )}
               </div>
+              {/* Dots — mobile only, mirror the thumbnail strip when there's more than one image */}
+              {images.length > 1 && (
+                <div className="flex sm:hidden justify-center gap-1.5">
+                  {images.map((img, i) => (
+                    <button key={img.id} onClick={() => setSelectedImage(i)} aria-label={`Image ${i + 1}`}
+                      className="h-1.5 rounded-full transition-all"
+                      style={{ width: i === selectedImage ? 18 : 6, background: i === selectedImage ? C.pink : "rgba(255,255,255,0.2)" }} />
+                  ))}
+                </div>
+              )}
             </Reveal>
 
             {/* Info */}
-            <Reveal className="space-y-5">
-              <div>
+            <Reveal className="space-y-7">
+              <div className="space-y-2">
                 {product.category && (
-                  <p className="text-xs font-bold uppercase tracking-widest text-[oklch(0.62_0.25_340)] mb-2">{product.category.name}</p>
+                  <p className="text-xs font-bold uppercase tracking-widest text-[oklch(0.72_0.22_320)]">{product.category.name}</p>
                 )}
-                <h1 className="font-condensed font-black text-3xl md:text-4xl text-[oklch(0.22_0.08_265)] tracking-tight leading-tight">
+                <h1 className="font-condensed font-black text-3xl md:text-4xl text-white tracking-tight leading-tight">
                   {product.title}
                 </h1>
+                {product.description && (
+                  <p className="text-sm text-muted-foreground leading-relaxed">{product.description}</p>
+                )}
               </div>
 
-              {/* Benefit icons */}
-              <div className="flex flex-wrap gap-4">
+              {/* Benefit icons — 2x2 on mobile, single row from sm: up */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {TRUST_BADGES.map(({ icon: Icon, label }) => (
-                  <span key={label} className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600">
-                    <Icon size={14} className="text-[oklch(0.62_0.25_340)]" /> {label}
-                  </span>
+                  <div key={label} className="flex items-center gap-2.5 sm:flex-col sm:text-center sm:gap-1.5">
+                    <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+                      style={{ background: "oklch(0.52 0.28 295 / 20%)", color: C.pink }}>
+                      <Icon size={16} />
+                    </div>
+                    <span className="text-xs font-semibold text-white/80 leading-tight">{label}</span>
+                  </div>
                 ))}
               </div>
 
               {/* Bundle selector */}
               {hasBundles && (
                 <div>
-                  <p className="text-sm font-bold text-[oklch(0.22_0.08_265)] mb-2">Choose a package</p>
-                  <div className="flex flex-wrap gap-2">
-                    {product.bundles.map(b => (
-                      <button key={b.id} onClick={() => setSelectedBundleId(b.id)}
-                        className={`relative px-4 py-2.5 rounded-xl border-2 font-bold text-sm transition-all ${(selectedBundle?.id ?? product.bundles[0]?.id) === b.id ? "border-[oklch(0.22_0.08_265)] bg-[oklch(0.22_0.08_265)] text-white" : "border-gray-200 text-gray-700 hover:border-[oklch(0.22_0.08_265)]"}`}>
-                        {b.badge && (
-                          <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-[oklch(0.62_0.25_340)] text-white text-[0.6rem] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
-                            {b.badge}
-                          </span>
-                        )}
-                        {b.label}
-                      </button>
-                    ))}
+                  <p className="text-sm font-bold text-foreground mb-2.5">Choose quantity</p>
+                  <div className="flex gap-2">
+                    {product.bundles.map(b => {
+                      const isActive = (selectedBundle?.id ?? product.bundles[0]?.id) === b.id;
+                      return (
+                        <button key={b.id} onClick={() => setSelectedBundleId(b.id)}
+                          className={`relative flex-1 px-3 py-2.5 rounded-xl border-2 font-bold text-sm transition-all ${isActive ? "border-white bg-white text-[oklch(0.13_0.05_295)]" : "border-white/15 text-white hover:border-white/40"}`}>
+                          {b.badge && (
+                            <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-[oklch(0.72_0.22_320)] text-white text-[0.6rem] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
+                              {b.badge}
+                            </span>
+                          )}
+                          {b.label}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}
 
               {/* Price */}
-              <div className="flex items-center gap-3">
-                <span className="font-extrabold text-2xl text-[oklch(0.22_0.08_265)]">{formatCents(priceCents)}</span>
-                {compareAtCents ? <span className="text-lg text-gray-400 line-through">{formatCents(compareAtCents)}</span> : null}
-                {savingsPct ? <span className="bg-[oklch(0.62_0.25_340)] text-white text-xs font-bold px-2.5 py-1 rounded-full">Save {savingsPct}%</span> : null}
+              <div className="flex items-center gap-3 flex-wrap">
+                <span className="font-extrabold text-3xl text-white">{formatCents(priceCents)}</span>
+                {compareAtCents ? <span className="text-lg text-white/35 line-through">{formatCents(compareAtCents)}</span> : null}
+                {savingsPct ? <span className="bg-[oklch(0.72_0.22_320)] text-white text-xs font-bold px-2.5 py-1 rounded-full">Save {savingsPct}%</span> : null}
               </div>
 
-              {/* Variant / flavor selector */}
+              {/* Qty + Add to cart — always one row, button fills the rest */}
+              <div className="flex gap-3">
+                <div className="flex items-center gap-1 bg-white/8 rounded-xl p-1 shrink-0">
+                  <button onClick={() => setQty(q => Math.max(1, q - 1))}
+                    className="w-11 h-11 rounded-lg bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors" aria-label="Decrease quantity">
+                    <Minus size={14} />
+                  </button>
+                  <span className="w-9 text-center font-bold text-base text-white">{qty}</span>
+                  <button onClick={() => setQty(q => q + 1)}
+                    className="w-11 h-11 rounded-lg bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors" aria-label="Increase quantity">
+                    <Plus size={14} />
+                  </button>
+                </div>
+                <button disabled title="Checkout is coming soon"
+                  className="flex-1 font-extrabold text-base py-3 rounded-xl cursor-not-allowed flex items-center justify-center gap-2 border"
+                  style={{ background: "oklch(0.52 0.28 295 / 12%)", borderColor: "oklch(0.52 0.28 295 / 30%)", color: "rgba(255,255,255,0.45)" }}>
+                  <ShoppingCart size={18} />
+                  Coming soon
+                </button>
+              </div>
+              {!inStock && !hasBundles && (
+                <p className="text-sm font-semibold text-red-400">This flavor is currently sold out.</p>
+              )}
+
+              {/* Variant / flavor selector — circular swatch, name below each */}
               {product.variants.length > 1 && (
                 <div>
-                  <p className="text-sm font-bold text-[oklch(0.22_0.08_265)] mb-2">Flavor: <span className="font-normal text-gray-500">{selectedVariant?.title}</span></p>
-                  <div className="flex flex-wrap gap-3">
+                  <p className="text-sm font-bold text-foreground mb-2.5">Flavor</p>
+                  <div className="flex flex-wrap gap-4">
                     {product.variants.map(v => (
                       <button key={v.id} onClick={() => setSelectedVariantId(v.id)} title={v.title}
-                        className={`w-12 h-12 rounded-full overflow-hidden border-2 transition-all flex items-center justify-center text-xs font-bold uppercase ${selectedVariant?.id === v.id ? "border-[oklch(0.62_0.25_340)] scale-105" : "border-gray-200"} ${v.stock <= 0 ? "opacity-40" : ""}`}>
-                        {v.imageUrl ? (
-                          <img src={v.imageUrl} alt={v.title} className="w-full h-full object-cover" />
-                        ) : (
-                          <span className="bg-gray-100 w-full h-full flex items-center justify-center text-gray-500">{v.title.slice(0, 2)}</span>
-                        )}
+                        className={`flex flex-col items-center gap-1.5 ${v.stock <= 0 ? "opacity-40" : ""}`}>
+                        <span className={`w-12 h-12 rounded-full overflow-hidden border-2 transition-all flex items-center justify-center text-xs font-bold uppercase text-white ${selectedVariant?.id === v.id ? "border-[oklch(0.72_0.22_320)] scale-105" : "border-white/20"}`}>
+                          {v.imageUrl ? (
+                            <img src={v.imageUrl} alt={v.title} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="bg-white/10 w-full h-full flex items-center justify-center">{v.title.slice(0, 2)}</span>
+                          )}
+                        </span>
+                        <span className={`text-xs font-semibold ${selectedVariant?.id === v.id ? "text-white" : "text-muted-foreground"}`}>{v.title}</span>
                       </button>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* Qty + Add to cart */}
-              <div className="flex gap-3 flex-wrap">
-                <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1">
-                  <button onClick={() => setQty(q => Math.max(1, q - 1))} className="w-11 h-11 rounded-lg bg-white flex items-center justify-center hover:bg-gray-50 transition-colors" aria-label="Decrease quantity">
-                    <Minus size={14} />
-                  </button>
-                  <span className="w-9 text-center font-bold text-base">{qty}</span>
-                  <button onClick={() => setQty(q => q + 1)} className="w-11 h-11 rounded-lg bg-white flex items-center justify-center hover:bg-gray-50 transition-colors" aria-label="Increase quantity">
-                    <Plus size={14} />
-                  </button>
-                </div>
-                <button disabled title="Checkout is coming soon"
-                  className="flex-1 bg-gray-300 text-white font-extrabold text-base py-3 rounded-xl cursor-not-allowed flex items-center justify-center gap-2">
-                  <ShoppingCart size={18} />
-                  Coming soon
-                </button>
-              </div>
-              {!inStock && !hasBundles && (
-                <p className="text-sm font-semibold text-red-500">This flavor is currently sold out.</p>
-              )}
-
-              <Link href="/lab-reports" className="inline-block text-sm font-bold text-[oklch(0.62_0.25_340)] hover:underline">
+              <Link href="/lab-reports" className="inline-block text-sm font-bold text-[oklch(0.72_0.22_320)] hover:underline">
                 View lab reports for this product →
               </Link>
 
-              {product.description && (
-                <div className="prose prose-sm max-w-none text-gray-600 pt-4 border-t border-gray-100">
-                  <p className="whitespace-pre-line">{product.description}</p>
-                </div>
-              )}
-
               {accordions.length > 0 && (
-                <RevealStagger className="space-y-3 pt-2">
+                <RevealStagger className="space-y-3">
                   {accordions.map(a => (
                     <RevealItem key={a.title}>
                       <Accordion title={a.title} content={a.content} />
