@@ -7,7 +7,7 @@ import { useIsMobile } from "@/hooks/useMobile";
 import { AssetPlaceholder } from "@/components/AssetPlaceholder";
 import type { AssetSectionKey } from "@shared/assetSections";
 import MobileMenu from "@/components/MobileMenu";
-import { OrbParticles } from "@/components/motion/OrbParticles";
+import { NavbarGlow } from "@/components/motion/NavbarGlow";
 
 const PRODUCTS: {
   key: string;
@@ -95,8 +95,15 @@ export default function Navbar() {
         zIndex: 100,
       }}
     >
+      {/* Desktop-only glow + particles integrated into the bar itself —
+          not rendered at all under md (gated by useIsMobile below), and
+          sits behind the nav content (nav gets its own stacking context). */}
+      {!isMobile && <NavbarGlow />}
+
       <nav
         style={{
+          position: "relative",
+          zIndex: 1,
           maxWidth: 1280,
           margin: "0 auto",
           padding: "0 1.5rem",
@@ -309,10 +316,9 @@ export default function Navbar() {
           ))}
         </div>
 
-        {/* Right side: orb (desktop only — not just hidden, not rendered at
-            all under md, so its rAF loop never runs on mobile) + Cart */}
+        {/* Right side: Cart. The glow/particle effect is rendered as its own
+            layer behind the whole bar (see NavbarGlow above), not here. */}
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-          {!isMobile && <OrbParticles />}
           <Link href="/cart" style={{
             position: "relative", color: "white", textDecoration: "none",
             display: "flex", alignItems: "center", justifyContent: "center",
