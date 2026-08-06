@@ -208,7 +208,11 @@ export default function AdminDashboard() {
   const initial = (user.name || user.email).charAt(0).toUpperCase();
 
   return (
-    <SidebarProvider>
+    // Fixed to the viewport height (not min-height) so the page itself never
+    // grows taller than the screen — that's what makes <main> below the only
+    // scrolling region, while the sidebar (already `fixed` on desktop, a
+    // Sheet drawer on mobile) stays put.
+    <SidebarProvider className="h-svh overflow-hidden">
       <Sidebar collapsible="icon">
         <SidebarHeader className="h-14 justify-center border-b border-sidebar-border px-3">
           <div className="flex items-center gap-2 font-condensed text-lg font-black text-sidebar-foreground">
