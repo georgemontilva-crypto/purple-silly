@@ -1,0 +1,248 @@
+/**
+ * Geometry and physics for the Hero 3D filmstrip carousel.
+ *
+ * Everything here is pure — no DOM, no React — for two reasons. The ring
+ * math is the part that's easy to get subtly wrong (an off-by-one in the
+ * wrap makes an empty gap sweep through the ring once per revolution), so
+ * it's the part worth unit-testing. And the render loop runs on every
+ * animation frame: keeping it as plain arithmetic that writes straight to
+ * element styles avoids a React re-render per frame.
+ *
+ * Card sizing lives here too, not in CSS. The 3D layout needs the card
+ * width in JS anyway (it sets the ring's angular step and the drag
+ * sensitivity), and the demo this was built from carried a standing
+ * "FRAME_W must match --frame-w" comment precisely because the two copies
+ * drift. The component writes these numbers out as CSS custom properties
+ * instead, so JS stays the single source of truth.
+ */
+
+/** Slide aspect ratio: 3:4 portrait, matching the 1080×1440 asset spec. */
+export const SLIDE_ASPECT = 4 / 3;
+
+/**
+ * Ring positions to fill. Below this the visible arc has holes in it at
+ * the sides, so fewer images than this get repeated around the ring.
+ */
+export const MIN_RING_SLOTS = 8;
+
+/**
+ * Distance between adjacent card centers, measured along the ring's arc,
+ * in card widths. Slightly over 1 so neighbours sit shoulder to shoulder
+ * with a sliver of gap rather than overlapping.
+ */
+export const RING_SPACING = 1.1;
+
+export interface HeroLayout {
+  /** Largest viewport width (inclusive) this layout applies to. */
+  readonly maxWidth: number;
+  /** Center card width in px at full scale. */
+  readonly cardW: number;
+  /** Ring radius in px — smaller pulls the side cards in and around. */
+  readonly radius: number;
+  /** CSS `perspective` for the stage. */
+  readonly perspective: number;
+  /**
+   * Blur applied to the farthest cards, in px. 0 disables the filter
+   * entirely (side cards fall back to opacity + scale alone).
+   */
+  readonly maxBlurPx: number;
+  /** Peak cursor-parallax tilt of the whole ring, in degrees. */
+  readonly parallaxDeg: number;
+  /** Falling light-beam particles to render. */
+  readonly particleCount: number;
+}
+
+/**
+ * Ordered narrowest -> widest; the first entry whose maxWidth fits wins.
+ *
+ * maxBlurPx is 0 for both mobile layouts on purpose. A blur() filter on a
+ * dozen elements that are transforming every frame can't be composited —
+ * the browser re-rasterizes each card per frame — and this site has
+ * already had to walk back scroll-jank from an animated blur (see the
+ * .orb notes in index.css). Depth on small screens comes from scale and
+ * opacity only. Particle counts drop for the same reason.
+ */
+export const HERO_LAYOUTS: readonly HeroLayout[] = [
+  { maxWidth: 380, cardW: 196, radius: 250, perspective: 900, maxBlurPx: 0, parallaxDeg: 0, particleCount: 10 },
+  { maxWidth: 640, cardW: 232, radius: 300, perspective: 1000, maxBlurPx: 0, parallaxDeg: 0, particleCount: 14 },
+  { maxWidth: 1024, cardW: 264, radius: 520, perspective: 1400, maxBlurPx: 4, parallaxDeg: 4, particleCount: 20 },
+  { maxWidth: Infinity, cardW: 300, radius: 640, perspective: 1600, maxBlurPx: 6, parallaxDeg: 6, particleCount: 26 },
+];
+
+export function pickLayout(viewportWidth: number): HeroLayout {
+  return HERO_LAYOUTS.find(l => viewportWidth <= l.maxWidth) ?? HERO_LAYOUTS[HERO_LAYOUTS.length - 1];
+}
+
+/** Card height derived from the width, so the frame is always 3:4. */
+export function cardHeight(cardW: number): number {
+  return Math.round(cardW * SLIDE_ASPECT);
+}
+
+/**
+ * Degrees between adjacent cards, derived from how far apart they need to
+ * sit along the arc. Clamped: below ~18° the cards stack on top of each
+ * other, above ~52° the neighbours turn so far edge-on they read as
+ * slivers rather than images.
+ */
+export function ringAngleStep(cardW: number, radius: number): number {
+  const deg = ((cardW * RING_SPACING) / radius) * (180 / Math.PI);
+  return Math.min(52, Math.max(18, deg));
+}
+
+export interface RingSlot<T> {
+  /** Position around the ring, 0..total-1. */
+  readonly slotIndex: number;
+  /** Which source image fills it. */
+  readonly imageIndex: number;
+  readonly image: T;
+}
+
+/**
+ * Lays the source images out around the ring, repeating them when there
+ * are fewer than MIN_RING_SLOTS.
+ *
+ * The repeat count is a whole number of passes, never a partial one, so
+ * the total is always a multiple of the image count. That's what keeps
+ * the wrap seamless: with 7 images in 8 slots the ring would read
+ * 1..7,1 and you'd see the same image twice side by side at the seam,
+ * whereas 14 slots read 1..7,1..7 and the sequence just continues.
+ */
+export function buildRingSlots<T>(images: readonly T[], minSlots = MIN_RING_SLOTS): RingSlot<T>[] {
+  if (images.length === 0) return [];
+  const passes = Math.max(1, Math.ceil(minSlots / images.length));
+  const slots: RingSlot<T>[] = [];
+  for (let pass = 0; pass < passes; pass++) {
+    for (let i = 0; i < images.length; i++) {
+      slots.push({ slotIndex: slots.length, imageIndex: i, image: images[i] });
+    }
+  }
+  return slots;
+}
+
+/**
+ * Signed distance from the focused position to a slot, wrapped to the
+ * SHORT way around the ring: always in (-total/2, total/2].
+ *
+ * This wrap is what makes the loop infinite. A slot that walks off one
+ * side re-enters from the other on the next frame, so there's no first
+ * or last card and no edge to run out of.
+ */
+export function ringOffset(slotIndex: number, focus: number, total: number): number {
+  let offset = ((((slotIndex - focus) % total) + total) % total);
+  if (offset > total / 2) offset -= total;
+  return offset;
+}
+
+export interface SlotVisual {
+  readonly x: number;
+  readonly z: number;
+  readonly rotateY: number;
+  readonly scale: number;
+  readonly opacity: number;
+  readonly blurPx: number;
+  readonly zIndex: number;
+}
+
+/**
+ * Where a slot sits, and how it reads, given its wrapped offset.
+ *
+ * Two independent fades are combined with min(): one by distance from
+ * center (the depth cue), one that forces opacity to exactly 0 at the
+ * back of the ring. The second one is load-bearing — the back slot is
+ * the one about to be recycled to the front, and if it were still even
+ * faintly visible you'd catch it teleporting.
+ */
+export function slotVisual(
+  offset: number,
+  total: number,
+  opts: { radius: number; angleStep: number; maxBlurPx: number }
+): SlotVisual {
+  const angle = offset * opts.angleStep;
+  const rad = (angle * Math.PI) / 180;
+  const dist = Math.abs(offset);
+
+  const byDistance = Math.max(0.18, 1 - dist * 0.22);
+  const edge = total / 2 - 1.2;
+  const byEdge = dist > edge ? Math.max(0, 1 - (dist - edge) * 1.6) : 1;
+
+  return {
+    x: Math.sin(rad) * opts.radius,
+    z: Math.cos(rad) * opts.radius - opts.radius,
+    rotateY: -angle,
+    scale: Math.max(0.5, 1 - dist * 0.11),
+    opacity: Math.min(byDistance, byEdge),
+    // Ramps to full blur ~3.75 slots out, matching the opacity falloff.
+    blurPx: Math.min(opts.maxBlurPx, (dist * opts.maxBlurPx) / 3.75),
+    zIndex: 100 - Math.round(dist * 10),
+  };
+}
+
+/** Slot nearest the center, normalized into 0..total-1. */
+export function activeSlot(focus: number, total: number): number {
+  if (total <= 0) return 0;
+  return ((Math.round(focus) % total) + total) % total;
+}
+
+/**
+ * Which SOURCE image is centered. Distinct from activeSlot: when images
+ * repeat around the ring, several slots map to the same image, and the
+ * counter has to read "03 / 06" against the real images — not against
+ * however many slots the repeat happened to produce.
+ */
+export function activeImageIndex(focus: number, total: number, imageCount: number): number {
+  if (imageCount <= 0) return 0;
+  return activeSlot(focus, total) % imageCount;
+}
+
+/** 1-based, zero-padded to at least 2 digits: 0 -> "01". */
+export function padIndex(index: number): string {
+  return String(index + 1).padStart(2, "0");
+}
+
+export const PHYSICS = {
+  /** Per-frame velocity decay once the drag is released. */
+  friction: 0.92,
+  /** Below this, the throw is over and the magnet/autoplay takes back over. */
+  velocityEpsilon: 0.0005,
+  /** Slots per frame while idling. Deliberately barely-perceptible. */
+  autoplayStep: 0.004,
+  /** Share of the remaining gap closed per frame when snapping. */
+  snapStrength: 0.12,
+  /** Slots travelled per card-width of pointer drag. */
+  dragScale: 0.9,
+  /** Velocity added per wheel notch. */
+  wheelImpulse: 0.08,
+} as const;
+
+export interface FocusState {
+  readonly focus: number;
+  readonly velocity: number;
+}
+
+/**
+ * One frame of ring motion. Released throws coast on friction; once
+ * they've died out the ring either drifts (autoplay) or is pulled to the
+ * nearest card (the magnet). Dragging is driven by pointer deltas
+ * instead, so this is a no-op then.
+ */
+export function stepFocus(
+  state: FocusState,
+  opts: { dragging: boolean; autoplay: boolean }
+): FocusState {
+  if (opts.dragging) return state;
+
+  if (Math.abs(state.velocity) > PHYSICS.velocityEpsilon) {
+    return {
+      focus: state.focus + state.velocity,
+      velocity: state.velocity * PHYSICS.friction,
+    };
+  }
+  if (opts.autoplay) {
+    return { focus: state.focus + PHYSICS.autoplayStep, velocity: 0 };
+  }
+  const nearest = Math.round(state.focus);
+  return {
+    focus: state.focus + (nearest - state.focus) * PHYSICS.snapStrength,
+    velocity: 0,
+  };
+}

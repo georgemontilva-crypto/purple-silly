@@ -158,7 +158,8 @@ export const adminRouter = router({
       .input(z.object({ section: z.enum(ASSET_SECTION_KEYS).optional() }))
       .query(async ({ input }) => {
         const d = await db();
-        const rows = await d.select().from(siteAssets).orderBy(asc(siteAssets.section), asc(siteAssets.sortOrder));
+        const rows = await d.select().from(siteAssets)
+          .orderBy(asc(siteAssets.section), asc(siteAssets.sortOrder), asc(siteAssets.id));
         if (input.section) return rows.filter(r => r.section === input.section);
         return rows;
       }),
@@ -166,8 +167,12 @@ export const adminRouter = router({
       .input(z.object({ section: z.enum(ASSET_SECTION_KEYS) }))
       .query(async ({ input }) => {
         const d = await db();
+        // id as tiebreaker: multi-image sections can hold several rows at the
+        // same sortOrder (uploaded before any reorder), and without it their
+        // relative order would be whatever the DB happened to return —
+        // i.e. the carousel could shuffle itself between requests.
         const rows = await d.select().from(siteAssets)
-          .orderBy(asc(siteAssets.sortOrder));
+          .orderBy(asc(siteAssets.sortOrder), asc(siteAssets.id));
         return rows.filter(r => r.section === input.section);
       }),
     upload: adminProcedure
@@ -179,7 +184,11 @@ export const adminRouter = router({
         contentType: z.enum(ALLOWED_ASSET_MIME_TYPES),
         width: z.number().optional(),
         height: z.number().optional(),
-        sortOrder: z.number().default(0),
+        // Omitted by the admin UI: multi-image sections (hero-carousel) need
+        // each new upload APPENDED after the existing ones, and only the
+        // server knows what's already there. A caller can still pin an
+        // explicit position.
+        sortOrder: z.number().optional(),
       }))
       .mutation(async ({ input }) => {
         const d = await db();
@@ -216,9 +225,47 @@ export const adminRouter = router({
           sizeBytes: buffer.length,
           width: input.width,
           height: input.height,
-          sortOrder: input.sortOrder,
+          // existingCount is the count for THIS section (read above for the
+          // maxImages check), so it doubles as the next free slot.
+          sortOrder: input.sortOrder ?? existingCount,
         });
         return { success: true, url, key };
+      }),
+    /**
+     * Drag & drop ordering for multi-image sections. Takes the full,
+     * already-reordered id list for one section and rewrites sortOrder to
+     * match its index — sending positions rather than a "move id X to Y"
+     * delta keeps the result identical no matter how the client got there.
+     *
+     * Ids are validated against the section before anything is written: an
+     * id from a DIFFERENT section would otherwise have its sortOrder
+     * silently rewritten, scrambling that other section's order.
+     */
+    reorder: adminProcedure
+      .input(z.object({
+        section: z.enum(ASSET_SECTION_KEYS),
+        orderedIds: z.array(z.number()).min(1),
+      }))
+      .mutation(async ({ input }) => {
+        const d = await db();
+        const rows = await d
+          .select({ id: siteAssets.id })
+          .from(siteAssets)
+          .where(eq(siteAssets.section, input.section));
+        const owned = new Set(rows.map(r => r.id));
+        const foreign = input.orderedIds.filter(id => !owned.has(id));
+        if (foreign.length > 0) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Asset ids [${foreign.join(", ")}] don't belong to section "${input.section}".`,
+          });
+        }
+        await Promise.all(
+          input.orderedIds.map((id, index) =>
+            d.update(siteAssets).set({ sortOrder: index }).where(eq(siteAssets.id, id))
+          )
+        );
+        return { success: true };
       }),
     update: adminProcedure
       .input(z.object({

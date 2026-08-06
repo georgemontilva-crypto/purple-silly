@@ -10,10 +10,20 @@
  * choose-your-ride-* and meet-the-lineup used to live here, but both
  * sections now pull real products from the catalog (Fase 3, Parte 4)
  * instead of static assets — removed rather than left dangling.
+ *
+ * hero-carousel is the one ORDERED, multi-image section (Fase 4): its
+ * images are the slides of the 3D filmstrip, and sortOrder decides the
+ * sequence around the ring. It deliberately reuses site_assets rather
+ * than getting its own hero_slides table — site_assets already carries
+ * section + sortOrder + the R2 key/url pair, so a separate table would
+ * duplicate all of it (and the upload/delete/R2-cleanup code with it)
+ * to store nothing new.
  */
 export const ASSET_SECTION_KEYS = [
   "logo-navbar",
   "logo-footer",
+  "hero-logo",
+  "hero-carousel",
   "hero-background",
   "navbar-dropdown-dots",
   "navbar-dropdown-euphoria",
@@ -49,12 +59,29 @@ export const ASSET_SECTIONS: Record<AssetSectionKey, AssetSectionMeta> = {
     maxImages: 1,
     description: "Logo en el pie de página, en todas las páginas.",
   },
+  "hero-logo": {
+    label: "Hero — Logo",
+    width: 800,
+    height: 240,
+    maxImages: 1,
+    description:
+      "Logo que corona el carrusel del Hero, en el home. Sin fondo (PNG/WebP transparente). Si no hay ninguno, se muestra el título en texto.",
+  },
+  "hero-carousel": {
+    label: "Hero — Carrusel",
+    width: 1080,
+    height: 1440,
+    maxImages: 8,
+    description:
+      "Slides del carrusel 3D del Hero, en el home. Vertical 3:4. Arrastra las miniaturas para cambiar el orden. Pensado para 6–8 imágenes; con menos se repiten para cerrar el anillo.",
+  },
   "hero-background": {
     label: "Hero — Fondo",
     width: 1920,
     height: 1080,
     maxImages: 1,
-    description: "Imagen de fondo de la sección Hero, en el home.",
+    description:
+      "Fondo opcional detrás del carrusel del Hero, en el home. Sin imagen, se usan solo los degradados magenta/púrpura.",
   },
   "navbar-dropdown-dots": {
     label: "Navbar Dropdown — Silly Dots",
