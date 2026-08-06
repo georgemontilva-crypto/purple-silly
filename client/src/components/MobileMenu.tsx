@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { X } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
+import { ParticleBurst } from "@/components/motion/ParticleBurst";
 
 interface MobileMenuLink {
   label: string;
@@ -62,6 +63,11 @@ export default function MobileMenu({
         background: "oklch(0.07 0.04 295)",
       }}
     >
+      {/* One-shot spark burst near the close button's corner — this component
+          only exists in the tree while `open` is true (see the early `return
+          null` above), so a fresh mount happens every time the menu opens. */}
+      <ParticleBurst originX="88%" originY="7%" />
+
       {/* Header: close button */}
       <div style={{ display: "flex", justifyContent: "flex-end", padding: "1.25rem" }}>
         <button

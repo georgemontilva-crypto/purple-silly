@@ -3,9 +3,11 @@ import { Link, useLocation } from "wouter";
 import { ShoppingCart, ChevronDown, Grid2x2 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useSiteAsset } from "@/hooks/useSiteAssets";
+import { useIsMobile } from "@/hooks/useMobile";
 import { AssetPlaceholder } from "@/components/AssetPlaceholder";
 import type { AssetSectionKey } from "@shared/assetSections";
 import MobileMenu from "@/components/MobileMenu";
+import { OrbParticles } from "@/components/motion/OrbParticles";
 
 const PRODUCTS: {
   key: string;
@@ -64,6 +66,7 @@ export default function Navbar() {
   const { totalQuantity } = useCart();
   const [location] = useLocation();
   const { asset: logo } = useSiteAsset("logo-navbar");
+  const isMobile = useIsMobile();
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -306,8 +309,10 @@ export default function Navbar() {
           ))}
         </div>
 
-        {/* Right side: Cart */}
+        {/* Right side: orb (desktop only — not just hidden, not rendered at
+            all under md, so its rAF loop never runs on mobile) + Cart */}
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+          {!isMobile && <OrbParticles />}
           <Link href="/cart" style={{
             position: "relative", color: "white", textDecoration: "none",
             display: "flex", alignItems: "center", justifyContent: "center",
