@@ -102,13 +102,20 @@
   * {
     @apply border-border outline-ring/50;
   }
-  html, body {
-    /* Safety net against horizontal scroll from any one-off overflow —
-       a stray fixed width, an unwrapped wide table, etc. */
+  body {
+    /* max-width/overflow-x here is a safety net against horizontal scroll
+       from any one-off overflow — a stray fixed width, an unwrapped wide
+       table, etc. IMPORTANT: only on body, not `html, body` — per the CSS
+       overflow spec, setting overflow-x without overflow-y forces the
+       *other* axis to `auto` on that same element. Applying it to both
+       html AND body gave each of them their own independent auto
+       overflow-y, i.e. two separate scroll containers (visible as two
+       vertical scrollbars, and heavier/janky scrolling since the browser
+       has to reconcile both). body alone is enough: its overflow
+       propagates to become the root scroller since html itself has no
+       overflow set. */
     max-width: 100%;
     overflow-x: hidden;
-  }
-  body {
     @apply bg-background text-foreground;
     font-family: var(--font-sans);
     font-size: 16px;
@@ -164,38 +171,47 @@ button:active, a:active {
 }
 
 .orb {
+  /* No `filter: blur()` — a blurred layer under a continuous transform
+     animation forces the browser to repaint the blur every frame instead
+     of just compositing it, which is a real source of scroll jank at this
+     size (4 layers, up to 700px, animating forever on every page). The
+     softness comes entirely from the radial-gradient's own falloff
+     instead, which is transform/opacity-only and fully compositor-driven.
+     will-change is left on permanently here (not "temporary") because
+     these animations run infinitely for the page's whole lifetime — that's
+     the one case where a persistent compositing layer is actually correct. */
   position: absolute;
   border-radius: 50%;
-  filter: blur(70px);
   opacity: 0;
   animation: orbFloat linear infinite;
+  will-change: transform, opacity;
 }
 
 .orb-1 {
   width: 700px;
   height: 700px;
-  background: radial-gradient(circle, rgba(139,92,246,0.75) 0%, rgba(109,40,217,0.35) 55%, transparent 100%);
+  background: radial-gradient(circle, rgba(139,92,246,0.55) 0%, rgba(139,92,246,0.30) 25%, rgba(109,40,217,0.12) 55%, transparent 100%);
   animation-duration: 22s;
   animation-delay: 0s;
 }
 .orb-2 {
   width: 580px;
   height: 580px;
-  background: radial-gradient(circle, rgba(236,72,153,0.70) 0%, rgba(168,85,247,0.30) 55%, transparent 100%);
+  background: radial-gradient(circle, rgba(236,72,153,0.50) 0%, rgba(236,72,153,0.26) 25%, rgba(168,85,247,0.10) 55%, transparent 100%);
   animation-duration: 28s;
   animation-delay: -8s;
 }
 .orb-3 {
   width: 500px;
   height: 500px;
-  background: radial-gradient(circle, rgba(192,132,252,0.60) 0%, rgba(236,72,153,0.25) 55%, transparent 100%);
+  background: radial-gradient(circle, rgba(192,132,252,0.42) 0%, rgba(192,132,252,0.22) 25%, rgba(236,72,153,0.09) 55%, transparent 100%);
   animation-duration: 18s;
   animation-delay: -14s;
 }
 .orb-4 {
   width: 450px;
   height: 450px;
-  background: radial-gradient(circle, rgba(168,85,247,0.65) 0%, rgba(139,92,246,0.28) 55%, transparent 100%);
+  background: radial-gradient(circle, rgba(168,85,247,0.46) 0%, rgba(168,85,247,0.24) 25%, rgba(139,92,246,0.10) 55%, transparent 100%);
   animation-duration: 32s;
   animation-delay: -5s;
 }
