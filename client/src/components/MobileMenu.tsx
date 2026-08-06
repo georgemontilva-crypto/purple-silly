@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { X } from "lucide-react";
 import { toast } from "sonner";
+import { trpc } from "@/lib/trpc";
 
 interface MobileMenuLink {
   label: string;
@@ -20,6 +21,7 @@ export default function MobileMenu({
   links: MobileMenuLink[];
 }) {
   const [email, setEmail] = useState("");
+  const createLead = trpc.leads.create.useMutation();
 
   // Lock body scroll while the overlay is open.
   useEffect(() => {
@@ -35,10 +37,19 @@ export default function MobileMenu({
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    // Visual only for now — wired up to the leads table in a later phase.
     if (!email.trim()) return;
-    toast.success("¡Gracias! Te vamos a mandar el cupón por correo.");
-    setEmail("");
+    createLead.mutate(
+      { email: email.trim(), source: "mobile-menu-coupon" },
+      {
+        onSuccess: () => {
+          toast.success("¡Gracias! Te vamos a mandar el cupón por correo.");
+          setEmail("");
+        },
+        onError: () => {
+          toast.error("Algo salió mal. Intenta de nuevo.");
+        },
+      }
+    );
   }
 
   return (

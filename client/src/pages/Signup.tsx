@@ -4,43 +4,56 @@ import { trpc } from "@/lib/trpc";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 
-export default function Login() {
+export default function Signup() {
   const [location, setLocation] = useLocation();
   const utils = trpc.useUtils();
   const { data: user, isLoading } = trpc.auth.me.useQuery();
 
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const login = trpc.auth.login.useMutation({
+  const signup = trpc.auth.signup.useMutation({
     onSuccess: async () => {
       await utils.auth.me.invalidate();
-      const me = await utils.auth.me.fetch();
-      setLocation(me?.role === "admin" ? "/admin" : "/");
+      setLocation("/");
     },
   });
 
   // Already signed in — no need to show the form.
   useEffect(() => {
-    if (!isLoading && user && location === "/login") {
+    if (!isLoading && user && location === "/signup") {
       setLocation(user.role === "admin" ? "/admin" : "/");
     }
   }, [isLoading, user, location, setLocation]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    login.mutate({ email, password });
+    signup.mutate({ name, email, password });
   };
 
   return (
     <div className="admin-shell flex min-h-screen items-center justify-center bg-background px-4 text-foreground">
       <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-6">
         <div className="space-y-1 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
-          <p className="text-sm text-muted-foreground">Access your Purple Organics account.</p>
+          <h1 className="text-2xl font-semibold tracking-tight">Create an account</h1>
+          <p className="text-sm text-muted-foreground">Join Purple Organics.</p>
         </div>
 
         <div className="space-y-4">
+          <div className="space-y-1.5">
+            <label htmlFor="name" className="text-sm font-medium">
+              Name
+            </label>
+            <Input
+              id="name"
+              type="text"
+              autoComplete="name"
+              required
+              value={name}
+              onChange={e => setName(e.target.value)}
+            />
+          </div>
           <div className="space-y-1.5">
             <label htmlFor="email" className="text-sm font-medium">
               Email
@@ -61,26 +74,26 @@ export default function Login() {
             <Input
               id="password"
               type="password"
-              autoComplete="current-password"
+              autoComplete="new-password"
               required
+              minLength={8}
               value={password}
               onChange={e => setPassword(e.target.value)}
             />
+            <p className="text-xs text-muted-foreground">At least 8 characters.</p>
           </div>
         </div>
 
-        {login.isError && (
-          <p className="text-sm text-destructive">Invalid email or password.</p>
-        )}
+        {signup.isError && <p className="text-sm text-destructive">{signup.error.message}</p>}
 
-        <Button type="submit" className="w-full" disabled={login.isPending}>
-          {login.isPending ? "Signing in..." : "Sign in"}
+        <Button type="submit" className="w-full" disabled={signup.isPending}>
+          {signup.isPending ? "Creating account..." : "Create account"}
         </Button>
 
         <p className="text-center text-sm text-muted-foreground">
-          Don&apos;t have an account?{" "}
-          <Link href="/signup" className="font-medium text-foreground underline underline-offset-4">
-            Sign up
+          Already have an account?{" "}
+          <Link href="/login" className="font-medium text-foreground underline underline-offset-4">
+            Sign in
           </Link>
         </p>
       </form>

@@ -19,6 +19,8 @@ import WhatIsSilly from "./pages/WhatIsSilly";
 import LabReportsPage from "./pages/LabReportsPage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import VerifyEmail from "./pages/VerifyEmail";
 
 // Storefront-only routes — rendered inside StorefrontLayout (Navbar + Footer).
 // /admin and /login have their own layout and are NOT part of this Switch.
@@ -61,12 +63,15 @@ function App() {
           <TooltipProvider>
             <Toaster position="top-right" richColors />
             <CustomCursor />
-            {/* /admin and /login get their own clean layout — no storefront
-                Navbar/Footer. Everything else falls through to StorefrontLayout,
-                which has its own inner Switch for the rest of the site. */}
+            {/* /admin, /login, /signup and /verify-email get their own clean
+                layout — no storefront Navbar/Footer. Everything else falls
+                through to StorefrontLayout, which has its own inner Switch
+                for the rest of the site. */}
             <Switch>
               <Route path="/admin" component={AdminDashboard} />
               <Route path="/login" component={Login} />
+              <Route path="/signup" component={Signup} />
+              <Route path="/verify-email" component={VerifyEmail} />
               <Route component={StorefrontLayout} />
             </Switch>
           </TooltipProvider>

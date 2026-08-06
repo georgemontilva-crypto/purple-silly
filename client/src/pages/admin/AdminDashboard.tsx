@@ -32,6 +32,7 @@ import {
   Loader2,
   LogOut,
   type LucideIcon,
+  Mail,
   Package,
   ShieldAlert,
   Tags,
@@ -43,8 +44,17 @@ import AdminCategories from "./AdminCategories";
 import AdminAssets from "./AdminAssets";
 import AdminProducts from "./AdminProducts";
 import AdminProductCategories from "./AdminProductCategories";
+import AdminLeads from "./AdminLeads";
 
-type AdminTab = "overview" | "products" | "product-categories" | "lab-reports" | "lab-categories" | "assets" | "users";
+type AdminTab =
+  | "overview"
+  | "products"
+  | "product-categories"
+  | "lab-reports"
+  | "lab-categories"
+  | "assets"
+  | "leads"
+  | "users";
 
 const NAV_ITEMS: { id: AdminTab; label: string; icon: LucideIcon }[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
@@ -53,6 +63,7 @@ const NAV_ITEMS: { id: AdminTab; label: string; icon: LucideIcon }[] = [
   { id: "lab-reports", label: "Lab Reports", icon: FlaskConical },
   { id: "lab-categories", label: "Lab Categories", icon: FolderTree },
   { id: "assets", label: "Assets", icon: ImageIcon },
+  { id: "leads", label: "Leads", icon: Mail },
   { id: "users", label: "Users", icon: Users },
 ];
 
@@ -292,6 +303,7 @@ export default function AdminDashboard() {
           {tab === "lab-reports" && <AdminLabReports />}
           {tab === "lab-categories" && <AdminCategories />}
           {tab === "assets" && <AdminAssets />}
+          {tab === "leads" && <AdminLeads />}
           {tab === "users" && <AdminUsers />}
         </main>
       </SidebarInset>
