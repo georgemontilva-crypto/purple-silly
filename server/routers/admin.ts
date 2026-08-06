@@ -5,6 +5,10 @@ import { count, eq, desc, asc } from "drizzle-orm";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { ASSET_SECTIONS, ASSET_SECTION_KEYS } from "../../shared/assetSections";
+
+const ALLOWED_ASSET_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
+const MAX_ASSET_BYTES = 5 * 1024 * 1024; // 5MB
 
 // ─── Cloudflare R2 client ─────────────────────────────────────────
 function getR2Client() {
@@ -191,7 +195,7 @@ export const adminRouter = router({
   // ─── SITE ASSETS (Cloudflare R2) ─────────────────────────────────
   assets: router({
     list: adminProcedure
-      .input(z.object({ section: z.string().optional() }))
+      .input(z.object({ section: z.enum(ASSET_SECTION_KEYS).optional() }))
       .query(async ({ input }) => {
         const d = await db();
         const rows = await d.select().from(siteAssets).orderBy(asc(siteAssets.section), asc(siteAssets.sortOrder));
@@ -199,7 +203,7 @@ export const adminRouter = router({
         return rows;
       }),
     listPublic: publicProcedure
-      .input(z.object({ section: z.string() }))
+      .input(z.object({ section: z.enum(ASSET_SECTION_KEYS) }))
       .query(async ({ input }) => {
         const d = await db();
         const rows = await d.select().from(siteAssets)
@@ -208,11 +212,11 @@ export const adminRouter = router({
       }),
     upload: adminProcedure
       .input(z.object({
-        section: z.string().min(1).max(128),
+        section: z.enum(ASSET_SECTION_KEYS),
         label: z.string().min(1).max(256),
         fileBase64: z.string(),
         fileName: z.string(),
-        contentType: z.string(),
+        contentType: z.enum(ALLOWED_ASSET_MIME_TYPES),
         width: z.number().optional(),
         height: z.number().optional(),
         sortOrder: z.number().default(0),
@@ -220,6 +224,26 @@ export const adminRouter = router({
       .mutation(async ({ input }) => {
         const d = await db();
         const buffer = Buffer.from(input.fileBase64, "base64");
+
+        if (buffer.length > MAX_ASSET_BYTES) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Image is too large. Max ${MAX_ASSET_BYTES / (1024 * 1024)}MB.`,
+          });
+        }
+
+        const maxImages = ASSET_SECTIONS[input.section].maxImages;
+        const [{ value: existingCount }] = await d
+          .select({ value: count() })
+          .from(siteAssets)
+          .where(eq(siteAssets.section, input.section));
+        if (existingCount >= maxImages) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `"${ASSET_SECTIONS[input.section].label}" already has the maximum of ${maxImages} image${maxImages === 1 ? "" : "s"}. Delete one before uploading another.`,
+          });
+        }
+
         const ext = input.fileName.split(".").pop() ?? "bin";
         const key = `site-assets/${input.section}/${Date.now()}-${input.label.toLowerCase().replace(/\s+/g, "-")}.${ext}`;
         const url = await uploadToR2(key, buffer, input.contentType);

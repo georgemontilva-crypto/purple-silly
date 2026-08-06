@@ -2,10 +2,19 @@ import { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { ShoppingCart, ChevronDown, Menu, X } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
+import { useSiteAsset } from "@/hooks/useSiteAssets";
+import { AssetPlaceholder } from "@/components/AssetPlaceholder";
+import type { AssetSectionKey } from "@shared/assetSections";
 
-const LOGO_URL = "/manus-storage/Purple_Logo_Variations_white_997d1ec1.webp";
-
-const PRODUCTS = [
+const PRODUCTS: {
+  key: string;
+  label: string;
+  subtitle: string;
+  color: string;
+  border: string;
+  href: string;
+  assetKey: AssetSectionKey;
+}[] = [
   {
     key: "silly-dots",
     label: "Silly Dots",
@@ -13,7 +22,7 @@ const PRODUCTS = [
     color: "#7C3AED",
     border: "#a855f7",
     href: "/collections/silly-dots",
-    img: "/manus-storage/SuperSillyDotsnatural_45aeba50.webp",
+    assetKey: "navbar-dropdown-dots",
   },
   {
     key: "silly-euphoria",
@@ -22,7 +31,7 @@ const PRODUCTS = [
     color: "#9D174D",
     border: "#ec4899",
     href: "/collections/silly-euphoria",
-    img: "/manus-storage/SuperSillyDotsCherryBerry_497a91bf.webp",
+    assetKey: "navbar-dropdown-euphoria",
   },
   {
     key: "silly-bites",
@@ -31,9 +40,21 @@ const PRODUCTS = [
     color: "#065F46",
     border: "#10b981",
     href: "/collections/silly-bites",
-    img: "/manus-storage/SuperSillyDotsbluerazz_58830613.webp",
+    assetKey: "navbar-dropdown-bites",
   },
 ];
+
+function DropdownThumb({ assetKey, label }: { assetKey: AssetSectionKey; label: string }) {
+  const { asset } = useSiteAsset(assetKey);
+  if (!asset) return <AssetPlaceholder width={400} height={400} variant="dark" />;
+  return (
+    <img
+      src={asset.url}
+      alt={label}
+      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+    />
+  );
+}
 
 export default function Navbar() {
   const [shopOpen, setShopOpen] = useState(false);
@@ -41,6 +62,7 @@ export default function Navbar() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { totalQuantity } = useCart();
   const [location] = useLocation();
+  const { asset: logo } = useSiteAsset("logo-navbar");
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -83,11 +105,26 @@ export default function Navbar() {
       >
         {/* Logo */}
         <Link href="/">
-          <img
-            src={LOGO_URL}
-            alt="Purple Organics"
-            style={{ height: 36, width: "auto", objectFit: "contain", cursor: "pointer" }}
-          />
+          {logo ? (
+            <img
+              src={logo.url}
+              alt="Purple Organics"
+              style={{ height: 36, width: "auto", objectFit: "contain", cursor: "pointer" }}
+            />
+          ) : (
+            <span
+              style={{
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontWeight: 900,
+                fontSize: "1.3rem",
+                letterSpacing: "0.02em",
+                color: "white",
+                cursor: "pointer",
+              }}
+            >
+              PURPLE <span style={{ color: "#a855f7" }}>ORGANICS</span>
+            </span>
+          )}
         </Link>
 
         {/* Desktop Nav */}
@@ -222,11 +259,7 @@ export default function Navbar() {
                             background: "oklch(0.18 0.06 295)",
                           }}
                         >
-                          <img
-                            src={p.img}
-                            alt={p.label}
-                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                          />
+                          <DropdownThumb assetKey={p.assetKey} label={p.label} />
                         </div>
                         <p
                           style={{

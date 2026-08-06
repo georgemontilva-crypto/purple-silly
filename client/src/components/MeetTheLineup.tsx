@@ -2,10 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { Star, ShoppingCart } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
-
-const BLUE_RAZZ = "/manus-storage/SuperSillyDotsbluerazz_58830613.webp";
-const CHERRY    = "/manus-storage/SuperSillyDotsCherryBerry_497a91bf.webp";
-const NATURAL   = "/manus-storage/SuperSillyDotsnatural_45aeba50.webp";
+import { useSiteAssets } from "@/hooks/useSiteAssets";
+import { AssetPlaceholder } from "@/components/AssetPlaceholder";
 
 const C = {
   deep:   "oklch(0.09 0.04 295)",
@@ -18,9 +16,9 @@ const C = {
 };
 
 const FALLBACK = [
-  { id: "1", title: "Super Silly Dots — Natural", handle: "super-silly-dots-natural", price: { amount: "14.99", currencyCode: "USD" }, image: NATURAL, rating: 4.9, reviews: 128 },
-  { id: "2", title: "Super Silly Dots — Blue Razz", handle: "super-silly-dots-blue-razz", price: { amount: "14.99", currencyCode: "USD" }, image: BLUE_RAZZ, rating: 4.8, reviews: 94 },
-  { id: "3", title: "Super Silly Dots — Cherry Berry", handle: "super-silly-dots-cherry-berry", price: { amount: "14.99", currencyCode: "USD" }, image: CHERRY, rating: 4.7, reviews: 76 },
+  { id: "1", title: "Super Silly Dots — Natural", handle: "super-silly-dots-natural", price: { amount: "14.99", currencyCode: "USD" }, image: null as string | null, rating: 4.9, reviews: 128 },
+  { id: "2", title: "Super Silly Dots — Blue Razz", handle: "super-silly-dots-blue-razz", price: { amount: "14.99", currencyCode: "USD" }, image: null as string | null, rating: 4.8, reviews: 94 },
+  { id: "3", title: "Super Silly Dots — Cherry Berry", handle: "super-silly-dots-cherry-berry", price: { amount: "14.99", currencyCode: "USD" }, image: null as string | null, rating: 4.7, reviews: 76 },
 ];
 
 type FallbackProduct = typeof FALLBACK[0];
@@ -133,7 +131,7 @@ function ProductCard({ product }: { product: FallbackProduct }) {
     addItem(
       product.id,
       1,
-      { title: product.title, variantTitle: "Default", price: product.price, image: { url: product.image, altText: product.title } }
+      { title: product.title, variantTitle: "Default", price: product.price, image: product.image ? { url: product.image, altText: product.title } : null }
     );
     setTimeout(() => setAdding(false), 900);
   };
@@ -154,12 +152,16 @@ function ProductCard({ product }: { product: FallbackProduct }) {
           className="aspect-square overflow-hidden flex items-center justify-center p-6 cursor-pointer"
           style={{ background: "rgba(124,58,237,0.08)" }}
         >
-          <img
-            src={product.image}
-            alt={product.title}
-            className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
-            style={{ filter: "drop-shadow(0 12px 32px rgba(124,58,237,0.5))" }}
-          />
+          {product.image ? (
+            <img
+              src={product.image}
+              alt={product.title}
+              className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
+              style={{ filter: "drop-shadow(0 12px 32px rgba(124,58,237,0.5))" }}
+            />
+          ) : (
+            <AssetPlaceholder width={600} height={600} variant="dark" />
+          )}
         </div>
       </Link>
       <div className="p-5 flex flex-col flex-1">
@@ -194,7 +196,8 @@ function ProductCard({ product }: { product: FallbackProduct }) {
 /* ─── Main section ─── */
 export default function MeetTheLineup() {
   // TODO: reemplazar por catálogo propio (tablas locales) cuando esté listo.
-  const products: FallbackProduct[] = FALLBACK;
+  const { assets } = useSiteAssets("meet-the-lineup");
+  const products: FallbackProduct[] = FALLBACK.map((p, i) => ({ ...p, image: assets[i]?.url ?? null }));
 
   return (
     <section

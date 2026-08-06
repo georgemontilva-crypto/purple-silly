@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
+import { useSiteAsset } from "@/hooks/useSiteAssets";
+import type { AssetSectionKey } from "@shared/assetSections";
 
 const C = {
   deep:   "oklch(0.07 0.04 295)",
@@ -22,6 +24,7 @@ const SECTIONS = [
     imgSide: "left",
     imgLabel: "SILLY UNIVERSE · PURPLE CO",
     imgGradient: `linear-gradient(135deg, oklch(0.15 0.12 295) 0%, oklch(0.25 0.18 295) 100%)`,
+    assetKey: "what-is-silly-intro" as AssetSectionKey,
   },
   {
     id: "silly-dots",
@@ -33,6 +36,7 @@ const SECTIONS = [
     imgSide: "right",
     imgLabel: "SILLY DOTS · FROM $15.95",
     imgGradient: `linear-gradient(135deg, oklch(0.12 0.15 295) 0%, oklch(0.22 0.22 295) 100%)`,
+    assetKey: "what-is-silly-dots" as AssetSectionKey,
   },
   {
     id: "silly-euphoria",
@@ -44,6 +48,7 @@ const SECTIONS = [
     imgSide: "left",
     imgLabel: "SILLY EUPHORIA · FROM $7.95",
     imgGradient: `linear-gradient(135deg, oklch(0.12 0.15 320) 0%, oklch(0.22 0.20 320) 100%)`,
+    assetKey: "what-is-silly-euphoria" as AssetSectionKey,
   },
   {
     id: "silly-bites",
@@ -55,6 +60,7 @@ const SECTIONS = [
     imgSide: "right",
     imgLabel: "SILLY BITES · $17.95",
     imgGradient: `linear-gradient(135deg, oklch(0.12 0.12 160) 0%, oklch(0.20 0.18 160) 100%)`,
+    assetKey: "what-is-silly-bites" as AssetSectionKey,
   },
 ];
 
@@ -77,6 +83,7 @@ function useInView(threshold = 0.25) {
 function SectionBlock({ section, index }: { section: typeof SECTIONS[0]; index: number }) {
   const { ref, visible } = useInView(0.15);
   const isLeft = section.imgSide === "left";
+  const { asset } = useSiteAsset(section.assetKey);
 
   return (
     <div
@@ -99,52 +106,63 @@ function SectionBlock({ section, index }: { section: typeof SECTIONS[0]; index: 
           order: isLeft ? 0 : 1,
           position: "relative",
           overflow: "hidden",
-          background: section.imgGradient,
+          background: asset ? undefined : section.imgGradient,
           minHeight: 480,
         }}
       >
-        {/* Decorative circles */}
-        <div style={{
-          position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
-          pointerEvents: "none",
-        }}>
-          <div style={{
-            width: "70%", aspectRatio: "1/1", borderRadius: "50%",
-            border: `1px solid ${section.accent}30`,
-            position: "absolute",
-          }} />
-          <div style={{
-            width: "45%", aspectRatio: "1/1", borderRadius: "50%",
-            border: `1px solid ${section.accent}50`,
-            position: "absolute",
-          }} />
-          <div style={{
-            width: "25%", aspectRatio: "1/1", borderRadius: "50%",
-            background: `${section.accent}18`,
-            border: `1px solid ${section.accent}70`,
-            position: "absolute",
-          }} />
-        </div>
-        {/* Placeholder label */}
-        <div style={{
-          position: "absolute", inset: 0, display: "flex", flexDirection: "column",
-          alignItems: "center", justifyContent: "center", gap: "0.75rem",
-        }}>
-          <div style={{
-            width: "55%", aspectRatio: "4/3", borderRadius: "1.5rem",
-            background: `${section.accent}15`,
-            border: `1.5px dashed ${section.accent}40`,
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
-            <span style={{
-              color: `${section.accent}80`, fontSize: "0.7rem", fontWeight: 700,
-              letterSpacing: "0.12em", textTransform: "uppercase", textAlign: "center",
-              fontFamily: "'Barlow Condensed', sans-serif",
+        {asset && (
+          <img
+            src={asset.url}
+            alt={section.title}
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        )}
+        {!asset && (
+          <>
+            {/* Decorative circles */}
+            <div style={{
+              position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
+              pointerEvents: "none",
             }}>
-              {section.imgLabel}
-            </span>
-          </div>
-        </div>
+              <div style={{
+                width: "70%", aspectRatio: "1/1", borderRadius: "50%",
+                border: `1px solid ${section.accent}30`,
+                position: "absolute",
+              }} />
+              <div style={{
+                width: "45%", aspectRatio: "1/1", borderRadius: "50%",
+                border: `1px solid ${section.accent}50`,
+                position: "absolute",
+              }} />
+              <div style={{
+                width: "25%", aspectRatio: "1/1", borderRadius: "50%",
+                background: `${section.accent}18`,
+                border: `1px solid ${section.accent}70`,
+                position: "absolute",
+              }} />
+            </div>
+            {/* Placeholder label */}
+            <div style={{
+              position: "absolute", inset: 0, display: "flex", flexDirection: "column",
+              alignItems: "center", justifyContent: "center", gap: "0.75rem",
+            }}>
+              <div style={{
+                width: "55%", aspectRatio: "4/3", borderRadius: "1.5rem",
+                background: `${section.accent}15`,
+                border: `1.5px dashed ${section.accent}40`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <span style={{
+                  color: `${section.accent}80`, fontSize: "0.7rem", fontWeight: 700,
+                  letterSpacing: "0.12em", textTransform: "uppercase", textAlign: "center",
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                }}>
+                  {section.imgLabel}
+                </span>
+              </div>
+            </div>
+          </>
+        )}
         {/* Index number */}
         <div style={{
           position: "absolute", bottom: "2rem", left: isLeft ? "2rem" : "auto", right: isLeft ? "auto" : "2rem",
