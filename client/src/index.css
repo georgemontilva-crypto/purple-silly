@@ -187,31 +187,69 @@ button:active, a:active {
   will-change: transform, opacity;
 }
 
+/* Each gradient below: many stops with a gently-decaying alpha (not a
+   linear one) so the falloff reads as smooth light rather than visible
+   rings, and — importantly — the last stop is the SAME rgb at alpha 0
+   rather than the `transparent` keyword. `transparent` is rgba(0,0,0,0):
+   interpolating a colored stop toward it drags the color toward black
+   as well as fading it, which is exactly what was showing up as a hard
+   edge/ring near the tail. Sizes bumped up and peak alpha brought down
+   so the visible bright core is a smaller fraction of the whole gradient
+   — spreading the same alpha range over more pixels is what actually
+   removes 8-bit-quantization banding, not just adding more stops. */
 .orb-1 {
-  width: 700px;
-  height: 700px;
-  background: radial-gradient(circle, rgba(139,92,246,0.55) 0%, rgba(139,92,246,0.30) 25%, rgba(109,40,217,0.12) 55%, transparent 100%);
+  width: 980px;
+  height: 980px;
+  background: radial-gradient(circle,
+    rgba(139,92,246,0.34) 0%,
+    rgba(139,92,246,0.26) 12%,
+    rgba(130,80,230,0.18) 26%,
+    rgba(120,70,215,0.11) 42%,
+    rgba(109,40,217,0.05) 62%,
+    rgba(109,40,217,0.015) 82%,
+    rgba(109,40,217,0) 100%);
   animation-duration: 22s;
   animation-delay: 0s;
 }
 .orb-2 {
-  width: 580px;
-  height: 580px;
-  background: radial-gradient(circle, rgba(236,72,153,0.50) 0%, rgba(236,72,153,0.26) 25%, rgba(168,85,247,0.10) 55%, transparent 100%);
+  width: 820px;
+  height: 820px;
+  background: radial-gradient(circle,
+    rgba(236,72,153,0.30) 0%,
+    rgba(236,72,153,0.23) 12%,
+    rgba(210,78,170,0.16) 26%,
+    rgba(190,80,190,0.10) 42%,
+    rgba(168,85,247,0.045) 62%,
+    rgba(168,85,247,0.014) 82%,
+    rgba(168,85,247,0) 100%);
   animation-duration: 28s;
   animation-delay: -8s;
 }
 .orb-3 {
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(192,132,252,0.42) 0%, rgba(192,132,252,0.22) 25%, rgba(236,72,153,0.09) 55%, transparent 100%);
+  width: 720px;
+  height: 720px;
+  background: radial-gradient(circle,
+    rgba(192,132,252,0.25) 0%,
+    rgba(192,132,252,0.19) 12%,
+    rgba(210,105,220,0.13) 26%,
+    rgba(225,90,190,0.08) 42%,
+    rgba(236,72,153,0.038) 62%,
+    rgba(236,72,153,0.012) 82%,
+    rgba(236,72,153,0) 100%);
   animation-duration: 18s;
   animation-delay: -14s;
 }
 .orb-4 {
-  width: 450px;
-  height: 450px;
-  background: radial-gradient(circle, rgba(168,85,247,0.46) 0%, rgba(168,85,247,0.24) 25%, rgba(139,92,246,0.10) 55%, transparent 100%);
+  width: 650px;
+  height: 650px;
+  background: radial-gradient(circle,
+    rgba(168,85,247,0.28) 0%,
+    rgba(168,85,247,0.21) 12%,
+    rgba(155,88,240,0.14) 26%,
+    rgba(147,90,235,0.09) 42%,
+    rgba(139,92,246,0.04) 62%,
+    rgba(139,92,246,0.012) 82%,
+    rgba(139,92,246,0) 100%);
   animation-duration: 32s;
   animation-delay: -5s;
 }
