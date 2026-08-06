@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import PromoPopupCard from "./PromoPopupCard";
@@ -49,6 +49,17 @@ export default function PromoPopup() {
   });
   const { isAuthenticated, loading: authLoading } = useAuth();
   const createLead = trpc.leads.create.useMutation();
+
+  /**
+   * MotionConfig reducedMotion="user" (App.tsx) is not enough on its own
+   * here: it drops transform and layout animations but deliberately KEEPS
+   * opacity ones, on the reasoning that a cross-fade isn't vestibular.
+   * Measured, the dialog still faded in from opacity 0 under
+   * prefers-reduced-motion. The spec for this popup is "no animation", so
+   * the fade is cut explicitly too — initial={false} tells framer-motion
+   * to mount straight at the animate values with no enter transition.
+   */
+  const reduceMotion = useReducedMotion() ?? false;
 
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
@@ -168,10 +179,10 @@ export default function PromoPopup() {
       {open && (
         <motion.div
           className="promo-overlay"
-          initial={{ opacity: 0 }}
+          initial={reduceMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.22, ease: "easeOut" }}
+          exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+          transition={{ duration: reduceMotion ? 0 : 0.22, ease: "easeOut" }}
           // Click outside closes. Checking the target IS the overlay (not
           // a descendant) means a click that started inside the dialog
           // and drifted out doesn't count.
@@ -186,10 +197,12 @@ export default function PromoPopup() {
             aria-modal="true"
             aria-labelledby="promo-popup-title"
             tabIndex={-1}
-            initial={{ opacity: 0, scale: 0.94 }}
+            initial={reduceMotion ? false : { opacity: 0, scale: 0.94 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.96 }}
-            transition={{ duration: 0.26, ease: [0.23, 1, 0.32, 1] }}
+            exit={reduceMotion ? { opacity: 1 } : { opacity: 0, scale: 0.96 }}
+            transition={
+              reduceMotion ? { duration: 0 } : { duration: 0.26, ease: [0.23, 1, 0.32, 1] }
+            }
           >
             <PromoPopupCard
               title={popup.title}
