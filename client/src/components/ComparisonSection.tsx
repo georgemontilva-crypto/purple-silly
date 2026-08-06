@@ -43,7 +43,8 @@ export default function ComparisonSection() {
             <tbody>
               {rows.map(({ feature, ...vals }, i) => (
                 <tr key={feature}
-                  className={`border-t border-white/10 ${i % 2 === 0 ? "bg-white/5" : ""}`}>
+                  className="border-t border-white/10"
+                  style={{ background: i % 2 === 0 ? "oklch(0.17 0.05 265)" : "oklch(0.13 0.04 265)" }}>
                   <td className="py-4 px-4 text-white font-bold text-sm">{feature}</td>
                   {cols.map(({ key, highlight }) => {
                     const val = vals[key as keyof typeof vals] as boolean;
@@ -66,11 +67,8 @@ export default function ComparisonSection() {
         {/* Mobile: stacked cards, one per competitor, no horizontal scroll */}
         <div className="md:hidden flex flex-col gap-4">
           {cols.map(({ key, label, highlight }) => (
-            <div key={key} className={`rounded-2xl p-5 border ${
-              highlight
-                ? "border-[oklch(0.92_0.18_95)] bg-[oklch(0.92_0.18_95)]/[0.06]"
-                : "border-white/10 bg-white/[0.03]"
-            }`}>
+            <div key={key} className={`rounded-2xl p-5 border ${highlight ? "border-[oklch(0.92_0.18_95)]" : "border-white/10"}`}
+              style={{ background: "oklch(0.17 0.05 265)" }}>
               <div className={`text-sm font-extrabold tracking-wide mb-4 ${
                 highlight ? "text-[oklch(0.92_0.18_95)]" : "text-white/60"
               }`}>

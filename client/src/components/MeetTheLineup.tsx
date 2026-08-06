@@ -139,9 +139,10 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
     <div
       className="group rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-2 flex flex-col"
       style={{
-        background: "rgba(255,255,255,0.04)",
-        backdropFilter: "blur(18px)",
-        WebkitBackdropFilter: "blur(18px)",
+        // Solid, not translucent — a glassmorphism card here let the
+        // ambient background glow bleed through inconsistently depending
+        // on where the card happened to land on the page.
+        background: C.mid,
         border: "1px solid rgba(168,85,247,0.25)",
         boxShadow: "0 8px 32px rgba(124,58,237,0.15), inset 0 1px 0 rgba(255,255,255,0.06)",
       }}

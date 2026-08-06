@@ -38,7 +38,7 @@ const TRUST_BADGES = [
 function Accordion({ title, content, defaultOpen = false }: { title: string; content: string; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border border-border rounded-2xl overflow-hidden">
+    <div className="border border-border rounded-2xl overflow-hidden" style={{ background: "oklch(0.15 0.06 295)" }}>
       <button onClick={() => setOpen(o => !o)} className="w-full flex items-center justify-between gap-4 p-4 text-left">
         <span className="font-bold text-sm text-foreground">{title}</span>
         {open ? <ChevronUp size={16} className="text-[oklch(0.72_0.22_320)] flex-shrink-0" /> : <ChevronDown size={16} className="text-muted-foreground flex-shrink-0" />}
@@ -124,7 +124,7 @@ export default function ProductDetailPage() {
                   ))}
                 </div>
               )}
-              <div className="flex-1 aspect-square bg-white/5 rounded-3xl overflow-hidden min-w-0">
+              <div className="flex-1 aspect-square rounded-3xl overflow-hidden min-w-0" style={{ background: "oklch(0.20 0.08 295)" }}>
                 {activeImage ? (
                   <img src={activeImage.url} alt={activeImage.alt ?? product.title} className="w-full h-full object-cover" />
                 ) : (
@@ -175,7 +175,7 @@ export default function ProductDetailPage() {
               {/* Bundle selector + price are one visually connected unit —
                   a shared card, not two separate floating blocks. */}
               {hasBundles ? (
-                <div className="rounded-2xl border border-white/10 p-4 space-y-4" style={{ background: "rgba(255,255,255,0.03)" }}>
+                <div className="rounded-2xl border border-white/10 p-4 space-y-4" style={{ background: "oklch(0.20 0.08 295)" }}>
                   <div>
                     <p className="text-sm font-bold text-foreground mb-2.5">Choose quantity</p>
                     <div className="flex gap-2">
@@ -212,20 +212,28 @@ export default function ProductDetailPage() {
 
               {/* Qty + Add to cart — always one row, button fills the rest */}
               <div className="flex gap-3">
-                <div className="flex items-center gap-1 bg-white/8 rounded-xl p-1 shrink-0">
+                <div className="flex items-center gap-1 rounded-xl p-1 shrink-0" style={{ background: "oklch(0.20 0.08 295)" }}>
                   <button onClick={() => setQty(q => Math.max(1, q - 1))}
-                    className="w-11 h-11 rounded-lg bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors" aria-label="Decrease quantity">
+                    className="w-11 h-11 rounded-lg text-white flex items-center justify-center transition-colors"
+                    style={{ background: "oklch(0.26 0.10 295)" }}
+                    onMouseEnter={e => (e.currentTarget.style.background = "oklch(0.32 0.12 295)")}
+                    onMouseLeave={e => (e.currentTarget.style.background = "oklch(0.26 0.10 295)")}
+                    aria-label="Decrease quantity">
                     <Minus size={14} />
                   </button>
                   <span className="w-9 text-center font-bold text-base text-white">{qty}</span>
                   <button onClick={() => setQty(q => q + 1)}
-                    className="w-11 h-11 rounded-lg bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors" aria-label="Increase quantity">
+                    className="w-11 h-11 rounded-lg text-white flex items-center justify-center transition-colors"
+                    style={{ background: "oklch(0.26 0.10 295)" }}
+                    onMouseEnter={e => (e.currentTarget.style.background = "oklch(0.32 0.12 295)")}
+                    onMouseLeave={e => (e.currentTarget.style.background = "oklch(0.26 0.10 295)")}
+                    aria-label="Increase quantity">
                     <Plus size={14} />
                   </button>
                 </div>
                 <button disabled title="Checkout is coming soon"
                   className="flex-1 font-extrabold text-base py-3 rounded-xl cursor-not-allowed flex items-center justify-center gap-2 border"
-                  style={{ background: "oklch(0.52 0.28 295 / 12%)", borderColor: "oklch(0.52 0.28 295 / 30%)", color: "rgba(255,255,255,0.45)" }}>
+                  style={{ background: "oklch(0.18 0.07 295)", borderColor: "oklch(0.26 0.10 295)", color: "rgba(255,255,255,0.45)" }}>
                   <ShoppingCart size={18} />
                   Coming soon
                 </button>
@@ -246,7 +254,7 @@ export default function ProductDetailPage() {
                           {v.imageUrl ? (
                             <img src={v.imageUrl} alt={v.title} className="w-full h-full object-cover" />
                           ) : (
-                            <span className="bg-white/10 w-full h-full flex items-center justify-center">{v.title.slice(0, 2)}</span>
+                            <span className="w-full h-full flex items-center justify-center" style={{ background: "oklch(0.24 0.09 295)" }}>{v.title.slice(0, 2)}</span>
                           )}
                         </span>
                         <span className={`text-xs font-semibold ${selectedVariant?.id === v.id ? "text-white" : "text-muted-foreground"}`}>{v.title}</span>
@@ -291,7 +299,7 @@ export default function ProductDetailPage() {
                     <RevealStagger className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
                       {secretCards.map((card, i) => (
                         <RevealItem key={i}>
-                          <div className="rounded-2xl p-4 h-full border" style={{ background: "oklch(0.52 0.28 295 / 8%)", borderColor: "oklch(0.52 0.28 295 / 25%)" }}>
+                          <div className="rounded-2xl p-4 h-full border" style={{ background: "oklch(0.20 0.08 295)", borderColor: "oklch(0.52 0.28 295 / 25%)" }}>
                             <h3 className="font-bold text-sm text-white mb-1.5">{card.title}</h3>
                             {card.description && <p className="text-xs text-muted-foreground leading-relaxed">{card.description}</p>}
                           </div>

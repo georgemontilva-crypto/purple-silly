@@ -31,17 +31,17 @@ export default function ContactPage() {
             <div>
               <label className="block text-sm font-bold text-foreground mb-1.5">Name *</label>
               <input type="text" required value={form.name} onChange={e => setForm({...form, name: e.target.value})}
-                className="w-full px-4 py-3 rounded-xl border-2 border-border bg-white/5 text-white placeholder:text-muted-foreground focus:border-[oklch(0.72_0.22_320)] focus:outline-none text-sm transition-colors" />
+                className="w-full px-4 py-3 rounded-xl border-2 border-border bg-[oklch(0.16_0.06_295)] text-white placeholder:text-muted-foreground focus:border-[oklch(0.72_0.22_320)] focus:outline-none text-sm transition-colors" />
             </div>
             <div>
               <label className="block text-sm font-bold text-foreground mb-1.5">Email *</label>
               <input type="email" required value={form.email} onChange={e => setForm({...form, email: e.target.value})}
-                className="w-full px-4 py-3 rounded-xl border-2 border-border bg-white/5 text-white placeholder:text-muted-foreground focus:border-[oklch(0.72_0.22_320)] focus:outline-none text-sm transition-colors" />
+                className="w-full px-4 py-3 rounded-xl border-2 border-border bg-[oklch(0.16_0.06_295)] text-white placeholder:text-muted-foreground focus:border-[oklch(0.72_0.22_320)] focus:outline-none text-sm transition-colors" />
             </div>
             <div>
               <label className="block text-sm font-bold text-foreground mb-1.5">Message *</label>
               <textarea required rows={6} value={form.message} onChange={e => setForm({...form, message: e.target.value})}
-                className="w-full px-4 py-3 rounded-xl border-2 border-border bg-white/5 text-white placeholder:text-muted-foreground focus:border-[oklch(0.72_0.22_320)] focus:outline-none text-sm transition-colors resize-none" />
+                className="w-full px-4 py-3 rounded-xl border-2 border-border bg-[oklch(0.16_0.06_295)] text-white placeholder:text-muted-foreground focus:border-[oklch(0.72_0.22_320)] focus:outline-none text-sm transition-colors resize-none" />
             </div>
             <button type="submit" disabled={loading}
               className="w-full text-white font-extrabold text-base py-4 rounded-xl transition-transform active:scale-[0.97] disabled:opacity-60"

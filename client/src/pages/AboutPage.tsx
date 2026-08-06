@@ -184,7 +184,13 @@ export default function AboutPage() {
                 style={{
                   padding: "2rem 1.75rem",
                   borderRadius: "1.25rem",
-                  background: oklchAlpha(v.accent, 10),
+                  // Solid, not translucent — this used to let the fixed
+                  // ambient background glow (which paints above in-flow
+                  // page content regardless of a section's own background)
+                  // bleed through inconsistently depending on scroll
+                  // position. Accent color still comes through via the
+                  // border, icon, and heading.
+                  background: C.dark,
                   border: `1.5px solid ${oklchAlpha(v.accent, 30)}`,
                   transition: "transform 0.2s, border-color 0.2s",
                 }}

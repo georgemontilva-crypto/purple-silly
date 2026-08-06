@@ -21,7 +21,8 @@ const allFaqs = [
 function FAQItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className={`border border-border rounded-2xl overflow-hidden transition-all ${open ? "border-[oklch(0.72_0.22_320)]" : "hover:border-white/25"}`}>
+    <div className={`border border-border rounded-2xl overflow-hidden transition-all ${open ? "border-[oklch(0.72_0.22_320)]" : "hover:border-white/25"}`}
+      style={{ background: "oklch(0.15 0.06 295)" }}>
       <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between gap-4 p-5 text-left" aria-expanded={open}>
         <span className="font-bold text-base text-white">{q}</span>
         <ChevronDown size={18} className={`flex-shrink-0 text-[oklch(0.72_0.22_320)] transition-transform duration-200 ${open ? "rotate-180" : ""}`} />

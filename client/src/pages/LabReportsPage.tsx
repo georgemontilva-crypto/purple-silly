@@ -139,7 +139,7 @@ export default function LabReportsPage() {
               <RevealItem key={report.id}>
               <div
                 style={{
-                  background: oklchAlpha(C.vivid, 8),
+                  background: "oklch(0.16 0.06 295)",
                   border: `1.5px solid ${C.border}`,
                   borderRadius: "1.25rem",
                   padding: "1.5rem",
