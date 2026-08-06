@@ -102,7 +102,7 @@ export default function PolicyPage() {
 
   if (!policy) return (
     <div className="min-h-screen flex items-center justify-center">
-      <p className="text-gray-500">Page not found.</p>
+      <p className="text-muted-foreground">Page not found.</p>
     </div>
   );
 
@@ -111,10 +111,10 @@ export default function PolicyPage() {
       <AnnouncementBar />
       <main className="flex-1 py-16">
         <div className="max-w-[860px] mx-auto px-4 sm:px-6">
-          <h1 className="font-condensed font-black text-5xl md:text-6xl text-[oklch(0.22_0.08_265)] tracking-tight mb-10">
+          <h1 className="font-condensed font-black text-5xl md:text-6xl text-white tracking-tight mb-10">
             {policy.title}
           </h1>
-          <div className="prose prose-base max-w-none text-gray-700 whitespace-pre-line leading-relaxed">
+          <div className="prose prose-base prose-invert max-w-none text-muted-foreground whitespace-pre-line leading-relaxed">
             {policy.content}
           </div>
         </div>

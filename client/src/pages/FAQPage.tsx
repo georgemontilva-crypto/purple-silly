@@ -21,12 +21,12 @@ const allFaqs = [
 function FAQItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className={`border border-gray-200 rounded-2xl overflow-hidden transition-all ${open ? "border-[oklch(0.62_0.25_340)]" : "hover:border-gray-300"}`}>
+    <div className={`border border-border rounded-2xl overflow-hidden transition-all ${open ? "border-[oklch(0.72_0.22_320)]" : "hover:border-white/25"}`}>
       <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between gap-4 p-5 text-left" aria-expanded={open}>
-        <span className="font-bold text-base text-[oklch(0.22_0.08_265)]">{q}</span>
-        <ChevronDown size={18} className={`flex-shrink-0 text-[oklch(0.62_0.25_340)] transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+        <span className="font-bold text-base text-white">{q}</span>
+        <ChevronDown size={18} className={`flex-shrink-0 text-[oklch(0.72_0.22_320)] transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
       </button>
-      {open && <div className="px-5 pb-5 text-sm text-gray-600 leading-relaxed">{a}</div>}
+      {open && <div className="px-5 pb-5 text-sm text-muted-foreground leading-relaxed">{a}</div>}
     </div>
   );
 }
@@ -37,10 +37,10 @@ export default function FAQPage() {
       <AnnouncementBar />
       <main className="flex-1 py-16">
         <div className="max-w-[860px] mx-auto px-4 sm:px-6">
-          <h1 className="font-condensed font-black text-5xl md:text-6xl text-[oklch(0.22_0.08_265)] tracking-tight mb-3">
+          <h1 className="font-condensed font-black text-5xl md:text-6xl text-white tracking-tight mb-3">
             FAQ
           </h1>
-          <p className="text-gray-500 text-lg mb-10">Everything you need to know about Purple Organics and Kanna.</p>
+          <p className="text-muted-foreground text-lg mb-10">Everything you need to know about Purple Organics and Kanna.</p>
           <div className="space-y-3">
             {allFaqs.map(({ q, a }) => <FAQItem key={q} q={q} a={a} />)}
           </div>

@@ -96,7 +96,7 @@ export default function ShopPage() {
       <main className="flex-1 py-12">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6">
           <Reveal className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-            <h1 className="font-condensed font-black text-4xl md:text-5xl text-[oklch(0.22_0.08_265)] tracking-tight">Shop All</h1>
+            <h1 className="font-condensed font-black text-4xl md:text-5xl text-white tracking-tight">Shop All</h1>
             {categories && categories.length > 0 && (
               <div className="flex bg-white rounded-2xl p-1 gap-1 shadow-sm border border-gray-100 self-start flex-wrap">
                 <button onClick={() => setCategorySlug("")}
