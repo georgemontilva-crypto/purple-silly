@@ -13,7 +13,15 @@ export default defineConfig({
     },
   },
   test: {
+    // Still "node": the client entries below are deliberately limited to
+    // pure logic modules under client/src/lib (no JSX, no DOM), so they
+    // need no jsdom environment.
     environment: "node",
-    include: ["server/**/*.test.ts", "server/**/*.spec.ts"],
+    include: [
+      "server/**/*.test.ts",
+      "server/**/*.spec.ts",
+      "client/src/lib/**/*.test.ts",
+      "client/src/lib/**/*.spec.ts",
+    ],
   },
 });
