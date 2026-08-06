@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { Link } from "wouter";
+import { useSiteAsset } from "@/hooks/useSiteAssets";
+import { AssetPlaceholder } from "@/components/AssetPlaceholder";
+import type { AssetSectionKey } from "@shared/assetSections";
 
 const C = {
   deep:   "oklch(0.09 0.04 295)",
@@ -18,9 +21,9 @@ const CATEGORIES = [
     accentHex: "#7C3AED",
     collection: "silly-dots",
     products: [
-      { name: "Silly Dots — Mega Dose",  sub: "1200mg",  href: "/products/silly-dots-mega-dose"  },
-      { name: "Silly Dots — Hero Dose",  sub: "1800mg",  href: "/products/silly-dots-hero-dose"  },
-      { name: "Silly Dots — Super Dose", sub: "2400mg",  href: "/products/silly-dots-super-dose" },
+      { name: "Silly Dots — Mega Dose",  sub: "1200mg",  href: "/products/silly-dots-mega-dose",  assetKey: "choose-your-ride-dots-1" as AssetSectionKey },
+      { name: "Silly Dots — Hero Dose",  sub: "1800mg",  href: "/products/silly-dots-hero-dose",  assetKey: "choose-your-ride-dots-2" as AssetSectionKey },
+      { name: "Silly Dots — Super Dose", sub: "2400mg",  href: "/products/silly-dots-super-dose", assetKey: "choose-your-ride-dots-3" as AssetSectionKey },
     ],
   },
   {
@@ -30,9 +33,9 @@ const CATEGORIES = [
     accentHex: "#ec4899",
     collection: "silly-euphoria",
     products: [
-      { name: "Silly Euphoria — Original", sub: "Premium blend", href: "/collections/silly-euphoria" },
-      { name: "Silly Euphoria — Tropical", sub: "Coming soon",   href: "/collections/silly-euphoria" },
-      { name: "Silly Euphoria — Berry",    sub: "Coming soon",   href: "/collections/silly-euphoria" },
+      { name: "Silly Euphoria — Original", sub: "Premium blend", href: "/collections/silly-euphoria", assetKey: "choose-your-ride-euphoria-1" as AssetSectionKey },
+      { name: "Silly Euphoria — Tropical", sub: "Coming soon",   href: "/collections/silly-euphoria", assetKey: "choose-your-ride-euphoria-2" as AssetSectionKey },
+      { name: "Silly Euphoria — Berry",    sub: "Coming soon",   href: "/collections/silly-euphoria", assetKey: "choose-your-ride-euphoria-3" as AssetSectionKey },
     ],
   },
   {
@@ -42,12 +45,18 @@ const CATEGORIES = [
     accentHex: "#10b981",
     collection: "silly-bites",
     products: [
-      { name: "Silly Bites — Original",   sub: "10ct pouch",  href: "/collections/silly-bites" },
-      { name: "Silly Bites — Watermelon", sub: "Coming soon", href: "/collections/silly-bites" },
-      { name: "Silly Bites — Mango",      sub: "Coming soon", href: "/collections/silly-bites" },
+      { name: "Silly Bites — Original",   sub: "10ct pouch",  href: "/collections/silly-bites", assetKey: "choose-your-ride-bites-1" as AssetSectionKey },
+      { name: "Silly Bites — Watermelon", sub: "Coming soon", href: "/collections/silly-bites", assetKey: "choose-your-ride-bites-2" as AssetSectionKey },
+      { name: "Silly Bites — Mango",      sub: "Coming soon", href: "/collections/silly-bites", assetKey: "choose-your-ride-bites-3" as AssetSectionKey },
     ],
   },
 ];
+
+function ProductImage({ assetKey }: { assetKey: AssetSectionKey }) {
+  const { asset } = useSiteAsset(assetKey);
+  if (!asset) return <AssetPlaceholder width={800} height={600} variant="dark" />;
+  return <img src={asset.url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />;
+}
 
 export default function ChooseYourRide() {
   const [activeTab, setActiveTab] = useState("dots");
@@ -101,21 +110,9 @@ export default function ChooseYourRide() {
                 style={{
                   aspectRatio: "4/3",
                   background: `linear-gradient(135deg, ${category.accentHex}18, ${category.accentHex}08)`,
-                  border: `1px dashed ${category.accentHex}30`,
                 }}
               >
-                <span style={{
-                  color: `${category.accentHex}50`,
-                  fontFamily: "'Barlow Condensed', sans-serif",
-                  fontWeight: 700,
-                  fontSize: "0.72rem",
-                  letterSpacing: "0.12em",
-                  textTransform: "uppercase",
-                  textAlign: "center",
-                  padding: "0 1rem",
-                }}>
-                  Subir imagen desde<br />Admin → Assets Manager
-                </span>
+                <ProductImage assetKey={p.assetKey} />
               </div>
               <div className="p-6">
                 <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: category.accent }}>{p.sub}</p>

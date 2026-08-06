@@ -1,4 +1,5 @@
 import { Link } from "wouter";
+import { useSiteAsset } from "@/hooks/useSiteAssets";
 
 const C = {
   deep:   "oklch(0.09 0.04 295)",
@@ -10,17 +11,31 @@ const C = {
 };
 
 export default function HeroSection() {
+  const { asset: background } = useSiteAsset("hero-background");
   return (
     <section className="relative min-h-[88vh] flex items-center overflow-hidden" style={{ background: "transparent" }}>
-      {/* Subtle dark overlay so text stays legible over the ambient orbs */}
+      {/* Background image, once uploaded from Admin -> Assets */}
+      {background && (
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: `url(${background.url})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        />
+      )}
+      {/* Subtle dark overlay so text stays legible over the background/orbs */}
       <div className="absolute inset-0 pointer-events-none"
         style={{ background: `linear-gradient(135deg, rgba(9,4,30,0.82) 0%, rgba(9,4,30,0.55) 60%, rgba(9,4,30,0.30) 100%)` }} />
-      {/* Placeholder label (remove when real image is uploaded) */}
-      <div className="absolute inset-0 flex items-center justify-end pr-16 pointer-events-none" style={{ opacity: 0.08 }}>
-        <span style={{ color: "white", fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800, fontSize: "clamp(0.75rem, 2.5vw, 1.5rem)", letterSpacing: "0.15em", textTransform: "uppercase" }}>
-          Hero Background Image · 1920 × 1080 px
-        </span>
-      </div>
+      {/* Placeholder label — only shown until a real image is uploaded */}
+      {!background && (
+        <div className="absolute inset-0 flex items-center justify-end pr-16 pointer-events-none" style={{ opacity: 0.08 }}>
+          <span style={{ color: "white", fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800, fontSize: "clamp(0.75rem, 2.5vw, 1.5rem)", letterSpacing: "0.15em", textTransform: "uppercase" }}>
+            Hero Background Image · 1920 × 1080 px
+          </span>
+        </div>
+      )}
 
       {/* Content */}
       <div className="max-w-[1280px] mx-auto px-4 sm:px-8 w-full py-24 relative z-10">
