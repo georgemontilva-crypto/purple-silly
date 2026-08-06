@@ -10,10 +10,10 @@ import {
 import { publicProcedure, router } from "../_core/trpc";
 import { requireDb } from "../db";
 
-/** Cheapest variant of a product — what a "from $X" card price is based on. */
-function cheapestVariant<T extends { priceCents: number }>(variants: T[]): T | null {
-  if (variants.length === 0) return null;
-  return variants.reduce((a, b) => (a.priceCents <= b.priceCents ? a : b));
+/** Cheapest of a list of priced rows (variants or bundles) — what a "from $X" card price is based on. */
+function cheapestByPrice<T extends { priceCents: number }>(rows: T[]): T | null {
+  if (rows.length === 0) return null;
+  return rows.reduce((a, b) => (a.priceCents <= b.priceCents ? a : b));
 }
 
 export const catalogRouter = router({
@@ -76,8 +76,9 @@ export const catalogRouter = router({
       if (filtered.length === 0) return [];
 
       const productIds = filtered.map(p => p.id);
-      const [variantRows, imageRows, categoryRows] = await Promise.all([
+      const [variantRows, bundleRows, imageRows, categoryRows] = await Promise.all([
         d.select().from(productVariants).where(inArray(productVariants.productId, productIds)),
+        d.select().from(productBundles).where(inArray(productBundles.productId, productIds)),
         d
           .select()
           .from(productImages)
@@ -89,7 +90,13 @@ export const catalogRouter = router({
 
       return filtered.map(p => {
         const variants = variantRows.filter(v => v.productId === p.id);
-        const cheapest = cheapestVariant(variants);
+        const bundles = bundleRows.filter(b => b.productId === p.id);
+        // Bundles take priority over variants for both price and stock,
+        // matching ProductDetailPage: a bundle-driven product doesn't map
+        // its purchasable SKU to a specific variant's stock count, so it's
+        // always considered in stock regardless of variant stock levels.
+        const hasBundles = bundles.length > 0;
+        const cheapest = hasBundles ? cheapestByPrice(bundles) : cheapestByPrice(variants);
         const totalStock = variants.reduce((sum, v) => sum + v.stock, 0);
         const primaryImage = imageRows.find(img => img.productId === p.id);
         return {
@@ -101,7 +108,7 @@ export const catalogRouter = router({
           compareAtCents: cheapest?.compareAtCents ?? null,
           imageUrl: primaryImage?.url ?? null,
           imageAlt: primaryImage?.alt ?? p.title,
-          inStock: totalStock > 0,
+          inStock: hasBundles ? true : totalStock > 0,
           categoryId: p.categoryId,
           categoryName: p.categoryId ? (categoryById.get(p.categoryId)?.name ?? null) : null,
           categorySlug: p.categoryId ? (categoryById.get(p.categoryId)?.slug ?? null) : null,
