@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, Copy, X } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
+import PromoPopupCard from "./PromoPopupCard";
 import "./PromoPopup.css";
 
 /**
@@ -191,78 +191,24 @@ export default function PromoPopup() {
             exit={{ opacity: 0, scale: 0.96 }}
             transition={{ duration: 0.26, ease: [0.23, 1, 0.32, 1] }}
           >
-            <button
-              type="button"
-              className="promo-close"
-              onClick={close}
-              aria-label="Cerrar"
-            >
-              <X size={20} aria-hidden="true" />
-            </button>
-
-            <div className="promo-dialog__content">
-              <span className="promo-eyebrow">Oferta exclusiva</span>
-              <h2 className="promo-title" id="promo-popup-title">
-                {popup.title}
-              </h2>
-              {popup.subtitle && <p className="promo-subtitle">{popup.subtitle}</p>}
-              {popup.bodyText && <p className="promo-body">{popup.bodyText}</p>}
-
-              {showCode ? (
-                <>
-                  <div className="promo-code">
-                    <span className="promo-code__value">{popup.discountCode}</span>
-                    <button
-                      type="button"
-                      className={`promo-code__copy${copied ? " promo-code__copy--done" : ""}`}
-                      onClick={handleCopy}
-                    >
-                      {copied ? <Check size={14} /> : <Copy size={14} />}
-                      {copied ? "Copiado" : "Copiar"}
-                    </button>
-                  </div>
-                  <p className="promo-fineprint">
-                    Usa este código al pagar. {submitted && "¡Gracias por suscribirte!"}
-                  </p>
-                  {error && <p className="promo-error">{error}</p>}
-                </>
-              ) : (
-                <form className="promo-form" onSubmit={handleSubmit} noValidate>
-                  <label className="sr-only" htmlFor="promo-popup-email">
-                    Correo electrónico
-                  </label>
-                  <input
-                    id="promo-popup-email"
-                    className="promo-input"
-                    type="email"
-                    inputMode="email"
-                    autoComplete="email"
-                    placeholder="tu@correo.com"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    aria-invalid={error ? true : undefined}
-                  />
-                  {error && <p className="promo-error">{error}</p>}
-                  <button
-                    type="submit"
-                    className="promo-button"
-                    disabled={createLead.isPending}
-                  >
-                    {createLead.isPending ? "Enviando..." : popup.buttonText}
-                  </button>
-                  <p className="promo-fineprint">
-                    Te enviaremos ofertas ocasionales. Puedes darte de baja cuando
-                    quieras.
-                  </p>
-                </form>
-              )}
-            </div>
-
-            {popup.imageUrl && (
-              <div className="promo-dialog__media">
-                <img src={popup.imageUrl} alt="" aria-hidden="true" />
-              </div>
-            )}
+            <PromoPopupCard
+              title={popup.title}
+              subtitle={popup.subtitle}
+              bodyText={popup.bodyText}
+              discountCode={popup.discountCode}
+              buttonText={popup.buttonText}
+              imageUrl={popup.imageUrl}
+              mode={showCode ? "code" : "form"}
+              onClose={close}
+              email={email}
+              onEmailChange={setEmail}
+              onSubmit={handleSubmit}
+              submitting={createLead.isPending}
+              onCopy={handleCopy}
+              copied={copied}
+              thanks={submitted}
+              error={error}
+            />
           </motion.div>
         </motion.div>
       )}
