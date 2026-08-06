@@ -42,11 +42,11 @@ export default function MobileMenu({
       { email: email.trim(), source: "mobile-menu-coupon" },
       {
         onSuccess: () => {
-          toast.success("¡Gracias! Te vamos a mandar el cupón por correo.");
+          toast.success("Thanks! We'll email your coupon shortly.");
           setEmail("");
         },
         onError: () => {
-          toast.error("Algo salió mal. Intenta de nuevo.");
+          toast.error("Something went wrong. Please try again.");
         },
       }
     );
@@ -108,7 +108,7 @@ export default function MobileMenu({
       {/* Coupon email capture — visual only for now */}
       <form onSubmit={handleSubmit} style={{ padding: "1.5rem 1.75rem 2rem", borderTop: "1px solid oklch(0.20 0.06 295 / 0.6)" }}>
         <p style={{ color: "oklch(0.65 0.10 295)", fontSize: "0.8rem", fontWeight: 600, margin: "0 0 0.75rem" }}>
-          Solicitar cupón de descuento
+          Get a discount coupon
         </p>
         <div style={{ display: "flex", gap: "0.5rem" }}>
           <input
@@ -116,7 +116,7 @@ export default function MobileMenu({
             required
             value={email}
             onChange={e => setEmail(e.target.value)}
-            placeholder="tu@email.com"
+            placeholder="you@email.com"
             style={{
               flex: 1,
               minHeight: 48,
@@ -145,7 +145,7 @@ export default function MobileMenu({
               whiteSpace: "nowrap",
             }}
           >
-            Enviar
+            Submit
           </button>
         </div>
       </form>
