@@ -1,4 +1,5 @@
 import { Smile, Users, Brain, Sunset } from "lucide-react";
+import { oklchAlpha } from "@/lib/color";
 const C = {
   deep:  "oklch(0.09 0.04 295)",
   dark:  "oklch(0.13 0.05 295)",
@@ -30,7 +31,7 @@ export default function BenefitsSection() {
             <div key={title} className="rounded-3xl p-8 flex flex-col items-center text-center transition-all duration-300 hover:-translate-y-1"
               style={{ background: C.deep, border: `1px solid ${C.mid}` }}>
               <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5"
-                style={{ background: `${accent}20`, color: accent }}>
+                style={{ background: oklchAlpha(accent, 20), color: accent }}>
                 <Icon size={28} strokeWidth={1.8} />
               </div>
               <h3 className="font-extrabold font-condensed text-xl text-white mb-3">{title}</h3>
@@ -46,7 +47,7 @@ export default function BenefitsSection() {
             { value: "100%",   label: "Lab Tested" },
           ].map(stat => (
             <div key={stat.label} className="rounded-2xl p-6 text-center"
-              style={{ background: `${C.vivid}15`, border: `1px solid ${C.vivid}30` }}>
+              style={{ background: oklchAlpha(C.vivid, 15), border: `1px solid ${oklchAlpha(C.vivid, 30)}` }}>
               <p className="text-3xl font-extrabold font-condensed" style={{ color: C.pink }}>{stat.value}</p>
               <p className="text-sm font-semibold mt-1" style={{ color: "oklch(0.68 0.07 295)" }}>{stat.label}</p>
             </div>

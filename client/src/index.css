@@ -102,6 +102,12 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html, body {
+    /* Safety net against horizontal scroll from any one-off overflow —
+       a stray fixed width, an unwrapped wide table, etc. */
+    max-width: 100%;
+    overflow-x: hidden;
+  }
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-sans);

@@ -191,13 +191,13 @@ export default function ProductDetailPage() {
               )}
 
               {/* Qty + Add to cart */}
-              <div className="flex gap-3">
-                <div className="flex items-center gap-2 bg-gray-100 rounded-xl px-3 py-2">
-                  <button onClick={() => setQty(q => Math.max(1, q - 1))} className="w-7 h-7 rounded-lg bg-white flex items-center justify-center hover:bg-gray-50 transition-colors" aria-label="Decrease quantity">
+              <div className="flex gap-3 flex-wrap">
+                <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1">
+                  <button onClick={() => setQty(q => Math.max(1, q - 1))} className="w-11 h-11 rounded-lg bg-white flex items-center justify-center hover:bg-gray-50 transition-colors" aria-label="Decrease quantity">
                     <Minus size={14} />
                   </button>
-                  <span className="w-8 text-center font-bold text-base">{qty}</span>
-                  <button onClick={() => setQty(q => q + 1)} className="w-7 h-7 rounded-lg bg-white flex items-center justify-center hover:bg-gray-50 transition-colors" aria-label="Increase quantity">
+                  <span className="w-9 text-center font-bold text-base">{qty}</span>
+                  <button onClick={() => setQty(q => q + 1)} className="w-11 h-11 rounded-lg bg-white flex items-center justify-center hover:bg-gray-50 transition-colors" aria-label="Increase quantity">
                     <Plus size={14} />
                   </button>
                 </div>

@@ -1,5 +1,6 @@
 import { Link } from "wouter";
 import { useSiteAsset } from "@/hooks/useSiteAssets";
+import { oklchAlpha } from "@/lib/color";
 
 const C = {
   deep:   "oklch(0.09 0.04 295)",
@@ -13,7 +14,14 @@ const C = {
 export default function HeroSection() {
   const { asset: background } = useSiteAsset("hero-background");
   return (
-    <section className="relative min-h-[88vh] flex items-center overflow-hidden" style={{ background: "transparent" }}>
+    // Inset (not full-bleed): 95% width, centered, with vertical margin, so
+    // the ambient orbs behind the page (#ambient-orbs in index.html) show
+    // through around the edges instead of being fully covered.
+    <section className="relative w-full py-5 sm:py-8 md:py-10">
+    <div
+      className="relative mx-auto flex items-center overflow-hidden rounded-[1.75rem] sm:rounded-[2.25rem]"
+      style={{ width: "95%", minHeight: "75vh", background: "transparent" }}
+    >
       {/* Background image, once uploaded from Admin -> Assets */}
       {background && (
         <div
@@ -42,7 +50,7 @@ export default function HeroSection() {
         <div className="max-w-[600px] space-y-7">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest"
-            style={{ background: `${C.vivid}25`, color: C.pink, border: `1px solid ${C.pink}40` }}>
+            style={{ background: oklchAlpha(C.vivid, 25), color: C.pink, border: `1px solid ${oklchAlpha(C.pink, 40)}` }}>
             ✦ Premium Mushroom Supplements · 21+
           </div>
           {/* Headline */}
@@ -76,7 +84,7 @@ export default function HeroSection() {
           <div className="flex gap-3 flex-wrap">
             <Link href="/collections/silly-dots"
               className="inline-flex items-center gap-2 px-8 py-4 rounded-full font-extrabold text-base text-white transition-all hover:scale-105 active:scale-95 shadow-xl"
-              style={{ background: `linear-gradient(135deg, ${C.bright}, ${C.pink})`, boxShadow: `0 8px 40px ${C.vivid}55` }}>
+              style={{ background: `linear-gradient(135deg, ${C.bright}, ${C.pink})`, boxShadow: `0 8px 40px ${oklchAlpha(C.vivid, 55)}` }}>
               SHOP SILLY DOTS →
             </Link>
             <Link href="/collections/all"
@@ -87,6 +95,7 @@ export default function HeroSection() {
           </div>
         </div>
       </div>
+    </div>
     </section>
   );
 }

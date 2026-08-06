@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { Package } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { oklchAlpha } from "@/lib/color";
 
 const C = {
   deep:   "oklch(0.09 0.04 295)",
@@ -67,7 +68,7 @@ export default function ChooseYourRide() {
                   onClick={() => setActiveSlug(cat.slug)}
                   className="px-5 py-2.5 rounded-full font-bold text-sm transition-all duration-200"
                   style={cat.slug === activeCategory.slug
-                    ? { background: `linear-gradient(135deg, ${C.bright}, ${C.pink})`, color: "white", boxShadow: `0 4px 20px ${C.vivid}50` }
+                    ? { background: `linear-gradient(135deg, ${C.bright}, ${C.pink})`, color: "white", boxShadow: `0 4px 20px ${oklchAlpha(C.vivid, 50)}` }
                     : { color: "oklch(0.65 0.07 295)", background: "transparent" }
                   }
                 >

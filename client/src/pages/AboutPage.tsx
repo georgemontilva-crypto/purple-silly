@@ -1,4 +1,5 @@
 import { Link } from "wouter";
+import { oklchAlpha } from "@/lib/color";
 
 const C = {
   deep:   "oklch(0.07 0.04 295)",
@@ -58,7 +59,7 @@ export default function AboutPage() {
           position: "absolute", top: "50%", left: "50%",
           transform: "translate(-50%, -50%)",
           width: 700, height: 350,
-          background: `radial-gradient(ellipse, ${C.vivid}18 0%, transparent 70%)`,
+          background: `radial-gradient(ellipse, ${oklchAlpha(C.vivid, 18)} 0%, transparent 70%)`,
           pointerEvents: "none",
         }} />
         <span style={{
@@ -183,17 +184,17 @@ export default function AboutPage() {
                 style={{
                   padding: "2rem 1.75rem",
                   borderRadius: "1.25rem",
-                  background: `${v.accent}10`,
-                  border: `1.5px solid ${v.accent}30`,
+                  background: oklchAlpha(v.accent, 10),
+                  border: `1.5px solid ${oklchAlpha(v.accent, 30)}`,
                   transition: "transform 0.2s, border-color 0.2s",
                 }}
                 onMouseEnter={(e) => {
                   (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)";
-                  (e.currentTarget as HTMLElement).style.borderColor = `${v.accent}60`;
+                  (e.currentTarget as HTMLElement).style.borderColor = oklchAlpha(v.accent, 60);
                 }}
                 onMouseLeave={(e) => {
                   (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
-                  (e.currentTarget as HTMLElement).style.borderColor = `${v.accent}30`;
+                  (e.currentTarget as HTMLElement).style.borderColor = oklchAlpha(v.accent, 30);
                 }}
               >
                 <div style={{
@@ -233,7 +234,7 @@ export default function AboutPage() {
           position: "absolute", top: "50%", left: "50%",
           transform: "translate(-50%, -50%)",
           width: 600, height: 300,
-          background: `radial-gradient(ellipse, ${C.pink}15 0%, transparent 70%)`,
+          background: `radial-gradient(ellipse, ${oklchAlpha(C.pink, 15)} 0%, transparent 70%)`,
           pointerEvents: "none",
         }} />
         <span style={{
@@ -265,13 +266,13 @@ export default function AboutPage() {
             style={{
               display: "inline-flex", alignItems: "center", gap: "0.5rem",
               padding: "0.875rem 1.75rem", borderRadius: "999px",
-              background: `${C.pink}20`, border: `1.5px solid ${C.pink}50`,
+              background: oklchAlpha(C.pink, 20), border: `1.5px solid ${oklchAlpha(C.pink, 50)}`,
               color: "white", fontWeight: 700, fontSize: "0.9rem",
               textDecoration: "none", fontFamily: "'Barlow', sans-serif",
               transition: "background 0.2s",
             }}
-            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = `${C.pink}35`)}
-            onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = `${C.pink}20`)}
+            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = oklchAlpha(C.pink, 35))}
+            onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = oklchAlpha(C.pink, 20))}
           >
             Instagram @groovypurple
           </a>
@@ -281,26 +282,26 @@ export default function AboutPage() {
             style={{
               display: "inline-flex", alignItems: "center", gap: "0.5rem",
               padding: "0.875rem 1.75rem", borderRadius: "999px",
-              background: `${C.vivid}20`, border: `1.5px solid ${C.vivid}50`,
+              background: oklchAlpha(C.vivid, 20), border: `1.5px solid ${oklchAlpha(C.vivid, 50)}`,
               color: "white", fontWeight: 700, fontSize: "0.9rem",
               textDecoration: "none", fontFamily: "'Barlow', sans-serif",
               transition: "background 0.2s",
             }}
-            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = `${C.vivid}35`)}
-            onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = `${C.vivid}20`)}
+            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = oklchAlpha(C.vivid, 35))}
+            onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = oklchAlpha(C.vivid, 20))}
           >
             Facebook @getgroovypurple
           </a>
         </div>
         <Link
-          href="/shop"
+          href="/collections/all"
           style={{
             display: "inline-flex", alignItems: "center", gap: "0.5rem",
             padding: "1rem 2.5rem", borderRadius: "999px",
             background: `linear-gradient(135deg, ${C.bright}, ${C.pink})`,
             color: "white", fontWeight: 800, fontSize: "1rem",
             textDecoration: "none", fontFamily: "'Barlow', sans-serif",
-            boxShadow: `0 8px 32px ${C.vivid}40`,
+            boxShadow: `0 8px 32px ${oklchAlpha(C.vivid, 40)}`,
             transition: "transform 0.2s",
           }}
           onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.transform = "scale(1.04)")}

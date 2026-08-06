@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
+import { oklchAlpha } from "@/lib/color";
 
 const C = {
   deep:   "oklch(0.07 0.04 295)",
@@ -37,7 +38,7 @@ export default function LabReportsPage() {
           position: "absolute", top: "50%", left: "50%",
           transform: "translate(-50%, -50%)",
           width: 600, height: 300,
-          background: `radial-gradient(ellipse, ${C.vivid}18 0%, transparent 70%)`,
+          background: `radial-gradient(ellipse, ${oklchAlpha(C.vivid, 18)} 0%, transparent 70%)`,
           pointerEvents: "none",
         }} />
         <span style={{
@@ -79,7 +80,7 @@ export default function LabReportsPage() {
           style={{
             padding: "0.5rem 1.25rem", borderRadius: "999px",
             border: `1.5px solid ${activeCat === undefined ? C.vivid : C.border}`,
-            background: activeCat === undefined ? `${C.vivid}20` : "transparent",
+            background: activeCat === undefined ? oklchAlpha(C.vivid, 20) : "transparent",
             color: activeCat === undefined ? C.vivid : C.muted,
             fontWeight: 700, fontSize: "0.875rem", cursor: "pointer",
             transition: "all 0.15s",
@@ -95,7 +96,7 @@ export default function LabReportsPage() {
             style={{
               padding: "0.5rem 1.25rem", borderRadius: "999px",
               border: `1.5px solid ${activeCat === cat.id ? C.vivid : C.border}`,
-              background: activeCat === cat.id ? `${C.vivid}20` : "transparent",
+              background: activeCat === cat.id ? oklchAlpha(C.vivid, 20) : "transparent",
               color: activeCat === cat.id ? C.vivid : C.muted,
               fontWeight: 700, fontSize: "0.875rem", cursor: "pointer",
               transition: "all 0.15s",
@@ -137,7 +138,7 @@ export default function LabReportsPage() {
               <div
                 key={report.id}
                 style={{
-                  background: `${C.vivid}08`,
+                  background: oklchAlpha(C.vivid, 8),
                   border: `1.5px solid ${C.border}`,
                   borderRadius: "1.25rem",
                   padding: "1.5rem",
@@ -147,7 +148,7 @@ export default function LabReportsPage() {
                   transition: "border-color 0.2s, transform 0.2s",
                 }}
                 onMouseEnter={e => {
-                  (e.currentTarget as HTMLElement).style.borderColor = `${C.vivid}50`;
+                  (e.currentTarget as HTMLElement).style.borderColor = oklchAlpha(C.vivid, 50);
                   (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
                 }}
                 onMouseLeave={e => {
@@ -158,8 +159,8 @@ export default function LabReportsPage() {
                 {/* PDF icon */}
                 <div style={{
                   width: 48, height: 48,
-                  background: `${C.pink}20`,
-                  border: `1px solid ${C.pink}35`,
+                  background: oklchAlpha(C.pink, 20),
+                  border: `1px solid ${oklchAlpha(C.pink, 35)}`,
                   borderRadius: "0.75rem",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: "1.5rem",
@@ -171,7 +172,7 @@ export default function LabReportsPage() {
                 <span style={{
                   display: "inline-block",
                   padding: "0.2rem 0.65rem", borderRadius: "999px",
-                  background: `${C.vivid}18`, border: `1px solid ${C.vivid}30`,
+                  background: oklchAlpha(C.vivid, 18), border: `1px solid ${oklchAlpha(C.vivid, 30)}`,
                   color: C.vivid, fontSize: "0.7rem", fontWeight: 700,
                   letterSpacing: "0.05em", textTransform: "uppercase",
                   alignSelf: "flex-start",
@@ -220,7 +221,7 @@ export default function LabReportsPage() {
                     textDecoration: "none",
                     marginTop: "auto",
                     alignSelf: "flex-start",
-                    boxShadow: `0 4px 16px ${C.vivid}25`,
+                    boxShadow: `0 4px 16px ${oklchAlpha(C.vivid, 25)}`,
                     transition: "transform 0.15s",
                     fontFamily: "'Barlow', sans-serif",
                   }}

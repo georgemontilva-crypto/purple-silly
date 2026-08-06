@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { useSiteAsset } from "@/hooks/useSiteAssets";
+import { oklchAlpha } from "@/lib/color";
 import type { AssetSectionKey } from "@shared/assetSections";
 
 const C = {
@@ -19,7 +20,7 @@ const SECTIONS = [
     tag: "THE SILLY UNIVERSE",
     title: "What is Silly?",
     body: `Silly is Purple Co's flagship line of functional mushroom products — designed for people who want to feel good, think clearly, and live fully. Every Silly product is crafted with premium botanical ingredients: no psilocybin, no synthetic stimulants, just nature's most powerful mushrooms and nootropics working together.\n\nThe Silly universe spans three distinct product lines, each engineered for a different kind of experience — from focused energy to social ease to daily balance.`,
-    cta: { label: "Shop All Silly →", href: "/shop" },
+    cta: { label: "Shop All Silly →", href: "/collections/all" },
     accent: C.vivid,
     imgSide: "left",
     imgLabel: "SILLY UNIVERSE · PURPLE CO",
@@ -126,18 +127,18 @@ function SectionBlock({ section, index }: { section: typeof SECTIONS[0]; index: 
             }}>
               <div style={{
                 width: "70%", aspectRatio: "1/1", borderRadius: "50%",
-                border: `1px solid ${section.accent}30`,
+                border: `1px solid ${oklchAlpha(section.accent, 30)}`,
                 position: "absolute",
               }} />
               <div style={{
                 width: "45%", aspectRatio: "1/1", borderRadius: "50%",
-                border: `1px solid ${section.accent}50`,
+                border: `1px solid ${oklchAlpha(section.accent, 50)}`,
                 position: "absolute",
               }} />
               <div style={{
                 width: "25%", aspectRatio: "1/1", borderRadius: "50%",
-                background: `${section.accent}18`,
-                border: `1px solid ${section.accent}70`,
+                background: oklchAlpha(section.accent, 18),
+                border: `1px solid ${oklchAlpha(section.accent, 70)}`,
                 position: "absolute",
               }} />
             </div>
@@ -148,12 +149,12 @@ function SectionBlock({ section, index }: { section: typeof SECTIONS[0]; index: 
             }}>
               <div style={{
                 width: "55%", aspectRatio: "4/3", borderRadius: "1.5rem",
-                background: `${section.accent}15`,
-                border: `1.5px dashed ${section.accent}40`,
+                background: oklchAlpha(section.accent, 15),
+                border: `1.5px dashed ${oklchAlpha(section.accent, 40)}`,
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}>
                 <span style={{
-                  color: `${section.accent}80`, fontSize: "0.7rem", fontWeight: 700,
+                  color: oklchAlpha(section.accent, 80), fontSize: "0.7rem", fontWeight: 700,
                   letterSpacing: "0.12em", textTransform: "uppercase", textAlign: "center",
                   fontFamily: "'Barlow Condensed', sans-serif",
                 }}>
@@ -168,7 +169,7 @@ function SectionBlock({ section, index }: { section: typeof SECTIONS[0]; index: 
           position: "absolute", bottom: "2rem", left: isLeft ? "2rem" : "auto", right: isLeft ? "auto" : "2rem",
           fontFamily: "'Barlow Condensed', sans-serif",
           fontWeight: 900, fontSize: "6rem", lineHeight: 1,
-          color: `${section.accent}12`, userSelect: "none",
+          color: oklchAlpha(section.accent, 12), userSelect: "none",
         }}>
           0{index + 1}
         </div>
@@ -210,19 +211,19 @@ function SectionBlock({ section, index }: { section: typeof SECTIONS[0]; index: 
           style={{
             display: "inline-flex", alignItems: "center", gap: "0.5rem",
             padding: "0.875rem 2rem", borderRadius: "999px",
-            background: `${section.accent}20`,
-            border: `1.5px solid ${section.accent}60`,
+            background: oklchAlpha(section.accent, 20),
+            border: `1.5px solid ${oklchAlpha(section.accent, 60)}`,
             color: "white", fontWeight: 700, fontSize: "0.9rem",
             textDecoration: "none", fontFamily: "'Barlow', sans-serif",
             transition: "all 0.2s",
             alignSelf: "flex-start",
           }}
           onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.background = `${section.accent}35`;
+            (e.currentTarget as HTMLElement).style.background = oklchAlpha(section.accent, 35);
             (e.currentTarget as HTMLElement).style.transform = "translateX(4px)";
           }}
           onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.background = `${section.accent}20`;
+            (e.currentTarget as HTMLElement).style.background = oklchAlpha(section.accent, 20);
             (e.currentTarget as HTMLElement).style.transform = "translateX(0)";
           }}
         >
@@ -250,7 +251,7 @@ export default function WhatIsSilly() {
           position: "absolute", top: "50%", left: "50%",
           transform: "translate(-50%, -50%)",
           width: 600, height: 300,
-          background: `radial-gradient(ellipse, ${C.vivid}20 0%, transparent 70%)`,
+          background: `radial-gradient(ellipse, ${oklchAlpha(C.vivid, 20)} 0%, transparent 70%)`,
           pointerEvents: "none",
         }} />
         <span style={{
@@ -284,14 +285,14 @@ export default function WhatIsSilly() {
               href={`#${s.id}`}
               style={{
                 padding: "0.5rem 1.25rem", borderRadius: "999px",
-                border: `1.5px solid ${s.accent}50`,
+                border: `1.5px solid ${oklchAlpha(s.accent, 50)}`,
                 color: "white", fontSize: "0.82rem", fontWeight: 700,
                 textDecoration: "none", fontFamily: "'Barlow', sans-serif",
-                background: `${s.accent}15`,
+                background: oklchAlpha(s.accent, 15),
                 transition: "background 0.2s",
               }}
-              onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = `${s.accent}30`)}
-              onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = `${s.accent}15`)}
+              onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = oklchAlpha(s.accent, 30))}
+              onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = oklchAlpha(s.accent, 15))}
             >
               {s.tag}
             </a>
@@ -324,14 +325,14 @@ export default function WhatIsSilly() {
           Explore the full Silly lineup — lab tested, vegan, and crafted for real results.
         </p>
         <Link
-          href="/shop"
+          href="/collections/all"
           style={{
             display: "inline-flex", alignItems: "center", gap: "0.5rem",
             padding: "1rem 2.5rem", borderRadius: "999px",
             background: `linear-gradient(135deg, ${C.bright}, ${C.pink})`,
             color: "white", fontWeight: 800, fontSize: "1rem",
             textDecoration: "none", fontFamily: "'Barlow', sans-serif",
-            boxShadow: `0 8px 32px ${C.vivid}40`,
+            boxShadow: `0 8px 32px ${oklchAlpha(C.vivid, 40)}`,
             transition: "transform 0.2s",
           }}
           onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.transform = "scale(1.04)")}

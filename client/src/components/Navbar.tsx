@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { ShoppingCart, ChevronDown, Menu, X } from "lucide-react";
+import { ShoppingCart, ChevronDown, Grid2x2 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useSiteAsset } from "@/hooks/useSiteAssets";
 import { AssetPlaceholder } from "@/components/AssetPlaceholder";
 import type { AssetSectionKey } from "@shared/assetSections";
+import MobileMenu from "@/components/MobileMenu";
 
 const PRODUCTS: {
   key: string;
@@ -206,7 +207,7 @@ export default function Navbar() {
                     Premium mushroom supplements for every vibe
                   </p>
                   <Link
-                    href="/shop"
+                    href="/collections/all"
                     style={{
                       display: "inline-flex",
                       alignItems: "center",
@@ -285,8 +286,7 @@ export default function Navbar() {
 
           {[
           { label: "WHAT IS SILLY?", href: "/what-is-silly" },
-          { label: "BLOG", href: "/blogs/news" },
-          { label: "FAQ", href: "/faq" },
+          { label: "FAQ", href: "/pages/faq" },
           { label: "LAB REPORTS", href: "/lab-reports" },
         ].map((item) => (
             <Link
@@ -313,14 +313,18 @@ export default function Navbar() {
 
         {/* Right side: Cart */}
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-          <Link href="/cart" style={{ position: "relative", color: "white", textDecoration: "none" }}>
+          <Link href="/cart" style={{
+            position: "relative", color: "white", textDecoration: "none",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            width: 44, height: 44,
+          }}>
             <ShoppingCart size={22} />
             {totalQuantity > 0 && (
               <span
                 style={{
                   position: "absolute",
-                  top: -7,
-                  right: -7,
+                  top: 2,
+                  right: 2,
                   background: "#a855f7",
                   color: "white",
                   borderRadius: "999px",
@@ -338,77 +342,34 @@ export default function Navbar() {
             )}
           </Link>
 
-          {/* Mobile hamburger */}
+          {/* Mobile menu trigger — circular grid icon */}
           <button
             className="md:hidden"
-            onClick={() => setMobileOpen((v) => !v)}
-            style={{ background: "none", border: "none", color: "white", cursor: "pointer", padding: "0.25rem" }}
+            onClick={() => setMobileOpen(true)}
+            aria-label="Open menu"
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center",
+              width: 44, height: 44, borderRadius: "999px",
+              background: "oklch(0.18 0.07 295)", border: "1px solid oklch(0.28 0.09 295)",
+              color: "white", cursor: "pointer",
+            }}
           >
-            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+            <Grid2x2 size={20} />
           </button>
         </div>
       </nav>
 
-      {/* Mobile menu */}
-      {mobileOpen && (
-        <div
-          className="md:hidden"
-          style={{
-            background: "oklch(0.10 0.04 295)",
-            borderTop: "1px solid oklch(0.22 0.08 295)",
-            padding: "1rem 1.5rem 1.5rem",
-          }}
-        >
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-            <p style={{ color: "oklch(0.55 0.10 295)", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.1em", margin: "0 0 0.5rem" }}>
-              SHOP
-            </p>
-            {PRODUCTS.map((p) => (
-              <Link
-                key={p.key}
-                href={p.href}
-                style={{
-                  color: "white",
-                  textDecoration: "none",
-                  padding: "0.6rem 0.75rem",
-                  borderRadius: "0.5rem",
-                  fontWeight: 600,
-                  fontSize: "0.95rem",
-                  background: "oklch(0.15 0.06 295)",
-                  marginBottom: "0.25rem",
-                }}
-              >
-                {p.label}
-              </Link>
-            ))}
-            <Link href="/shop" style={{ color: "#a855f7", textDecoration: "none", padding: "0.5rem 0.75rem", fontWeight: 600 }}>
-              Shop All →
-            </Link>
-            <hr style={{ border: "none", borderTop: "1px solid oklch(0.22 0.08 295)", margin: "0.75rem 0" }} />
-            {[
-              { label: "What is Silly?", href: "/what-is-silly" },
-              { label: "Blog", href: "/blogs/news" },
-              { label: "FAQ", href: "/faq" },
-              { label: "Lab Reports", href: "/lab-reports" },
-            ].map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                style={{
-                  color: "white",
-                  textDecoration: "none",
-                  padding: "0.6rem 0.75rem",
-                  borderRadius: "0.5rem",
-                  fontWeight: 600,
-                  fontSize: "0.95rem",
-                }}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
+      <MobileMenu
+        open={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        links={[
+          { label: "Shop All", href: "/collections/all" },
+          ...PRODUCTS.map(p => ({ label: p.label, href: p.href })),
+          { label: "What is Silly?", href: "/what-is-silly" },
+          { label: "FAQ", href: "/pages/faq" },
+          { label: "Lab Reports", href: "/lab-reports" },
+        ]}
+      />
 
       <style>{`
         @keyframes fadeInDown {

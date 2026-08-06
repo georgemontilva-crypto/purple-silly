@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { Link } from "wouter";
+import { oklchAlpha } from "@/lib/color";
 
 const C = {
   deep: "oklch(0.09 0.04 295)",
@@ -32,7 +33,7 @@ export default function FAQSection() {
         <div className="space-y-3">
           {faqs.map((faq, i) => (
             <div key={i} className="rounded-2xl overflow-hidden transition-all duration-200"
-              style={{ background: C.dark, border: `1px solid ${open === i ? C.vivid + "60" : C.mid}` }}>
+              style={{ background: C.dark, border: `1px solid ${open === i ? oklchAlpha(C.vivid, 60) : C.mid}` }}>
               <button onClick={() => setOpen(open === i ? null : i)}
                 className="w-full flex items-center justify-between px-6 py-5 text-left gap-4">
                 <span className="font-bold text-base text-white leading-snug">{faq.q}</span>
