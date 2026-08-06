@@ -170,7 +170,7 @@ function Overview() {
 
 function AdminDashboardLoading() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
+    <div className="admin-shell flex min-h-screen items-center justify-center bg-background">
       <div className="flex items-center gap-3 text-primary">
         <Loader2 className="animate-spin" size={22} />
         <span className="font-condensed text-lg font-extrabold">Loading...</span>
@@ -181,7 +181,7 @@ function AdminDashboardLoading() {
 
 function AccessDenied() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-background px-4 text-center">
+    <div className="admin-shell flex min-h-screen flex-col items-center justify-center gap-3 bg-background px-4 text-center">
       <ShieldAlert size={48} className="text-accent" />
       <h1 className="font-condensed text-3xl font-black text-foreground">Access Denied</h1>
       <p className="text-muted-foreground">You need admin privileges to access this area.</p>
@@ -212,7 +212,7 @@ export default function AdminDashboard() {
     // grows taller than the screen — that's what makes <main> below the only
     // scrolling region, while the sidebar (already `fixed` on desktop, a
     // Sheet drawer on mobile) stays put.
-    <SidebarProvider className="h-svh overflow-hidden">
+    <SidebarProvider className="admin-shell h-svh overflow-hidden">
       <Sidebar collapsible="icon">
         <SidebarHeader className="h-14 justify-center border-b border-sidebar-border px-3">
           <div className="flex items-center gap-2 font-condensed text-lg font-black text-sidebar-foreground">

@@ -30,7 +30,7 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
+    <div className="admin-shell flex min-h-screen items-center justify-center bg-background px-4 text-foreground">
       <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-6">
         <div className="space-y-1 text-center">
           <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
