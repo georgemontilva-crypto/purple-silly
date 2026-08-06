@@ -16,18 +16,7 @@ import {
   Trash2,
   UploadCloud,
 } from "lucide-react";
-
-const C = {
-  dark: "oklch(0.10 0.05 295)",
-  mid: "oklch(0.18 0.06 295)",
-  border: "oklch(0.18 0.06 295)",
-  vivid: "oklch(0.52 0.28 295)",
-  bright: "oklch(0.62 0.28 295)",
-  pink: "oklch(0.72 0.22 320)",
-  green: "oklch(0.60 0.25 160)",
-  text: "oklch(0.92 0.02 295)",
-  muted: "oklch(0.55 0.07 295)",
-};
+import { ADMIN_COLORS as C, alpha } from "@/lib/adminTheme";
 
 const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
 const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5MB
@@ -74,6 +63,52 @@ interface PendingUpload {
   height?: number;
 }
 
+function IconButton({
+  children,
+  onClick,
+  href,
+  tone = "muted",
+  active = false,
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  href?: string;
+  tone?: "muted" | "vivid" | "pink" | "green";
+  active?: boolean;
+}) {
+  const [hover, setHover] = useState(false);
+  const color = tone === "vivid" ? C.vivid : tone === "pink" ? C.pink : tone === "green" ? C.green : C.muted;
+  const style: React.CSSProperties = {
+    flex: tone === "muted" && !href ? undefined : 1,
+    display: "flex", alignItems: "center", justifyContent: "center",
+    padding: href ? "0.35rem 0.5rem" : "0.35rem",
+    background: active ? alpha(C.green, 20) : hover ? alpha(color, 20) : alpha(color, 10),
+    border: `1px solid ${active ? C.green : hover ? color : alpha(color, 35)}`,
+    borderRadius: "0.4rem",
+    color: active ? C.green : color,
+    cursor: "pointer",
+    transition: "background 0.15s, border-color 0.15s, color 0.15s",
+    textDecoration: "none",
+  };
+  const props = {
+    style,
+    onMouseEnter: () => setHover(true),
+    onMouseLeave: () => setHover(false),
+  };
+  if (href) {
+    return (
+      <a href={href} target="_blank" rel="noreferrer" {...props}>
+        {children}
+      </a>
+    );
+  }
+  return (
+    <button onClick={onClick} {...props}>
+      {children}
+    </button>
+  );
+}
+
 function SectionCard({
   sectionKey,
   assets,
@@ -87,9 +122,12 @@ function SectionCard({
   const utils = trpc.useUtils();
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
+  const [dropHover, setDropHover] = useState(false);
   const [pending, setPending] = useState<PendingUpload | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [cancelHover, setCancelHover] = useState(false);
+  const [confirmHover, setConfirmHover] = useState(false);
 
   const upload = trpc.admin.assets.upload.useMutation({
     onSuccess: () => {
@@ -156,8 +194,8 @@ function SectionCard({
   return (
     <div
       style={{
-        background: C.dark,
-        border: `1px solid ${C.border}`,
+        background: C.panel,
+        border: `1px solid ${alpha(C.border, 35)}`,
         borderRadius: "1rem",
         padding: "1.25rem",
       }}
@@ -180,7 +218,7 @@ function SectionCard({
           </div>
         </div>
         <div style={{ textAlign: "right", flexShrink: 0 }}>
-          <div style={{ color: C.vivid, fontWeight: 700, fontSize: "0.8rem" }}>
+          <div style={{ color: C.bright, fontWeight: 700, fontSize: "0.8rem" }}>
             {meta.width}×{meta.height}px recomendado
           </div>
           <div style={{ color: C.muted, fontSize: "0.75rem", marginTop: "0.15rem" }}>
@@ -216,8 +254,8 @@ function SectionCard({
             <div
               key={asset.id}
               style={{
-                background: C.mid,
-                border: `1px solid ${C.border}`,
+                background: C.panelAlt,
+                border: `1px solid ${alpha(C.border, 35)}`,
                 borderRadius: "0.6rem",
                 overflow: "hidden",
               }}
@@ -225,7 +263,7 @@ function SectionCard({
               <div
                 style={{
                   aspectRatio: "1/1",
-                  background: `${C.vivid}10`,
+                  background: alpha(C.vivid, 10),
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -263,61 +301,20 @@ function SectionCard({
                   </div>
                 ) : null}
                 <div style={{ display: "flex", gap: "0.3rem" }}>
-                  <button
-                    onClick={() => copyUrl(asset.id, asset.url)}
-                    title="Copiar URL"
-                    style={{
-                      flex: 1,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      padding: "0.35rem",
-                      background: copiedId === asset.id ? `${C.green}20` : `${C.vivid}15`,
-                      border: `1px solid ${copiedId === asset.id ? C.green : C.vivid}30`,
-                      borderRadius: "0.4rem",
-                      color: copiedId === asset.id ? C.green : C.vivid,
-                      cursor: "pointer",
-                    }}
-                  >
+                  <IconButton onClick={() => copyUrl(asset.id, asset.url)} tone="vivid" active={copiedId === asset.id}>
                     {copiedId === asset.id ? <Check size={13} /> : <Copy size={13} />}
-                  </button>
-                  <a
-                    href={asset.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    title="Abrir"
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      padding: "0.35rem 0.5rem",
-                      background: C.dark,
-                      border: `1px solid ${C.border}`,
-                      borderRadius: "0.4rem",
-                      color: C.muted,
-                    }}
-                  >
+                  </IconButton>
+                  <IconButton href={asset.url} tone="muted">
                     <ExternalLink size={13} />
-                  </a>
-                  <button
+                  </IconButton>
+                  <IconButton
+                    tone="pink"
                     onClick={() => {
                       if (confirm(`¿Eliminar "${asset.label}"?`)) deleteAsset.mutate({ id: asset.id });
                     }}
-                    title="Eliminar"
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      padding: "0.35rem 0.5rem",
-                      background: `${C.pink}10`,
-                      border: `1px solid ${C.pink}25`,
-                      borderRadius: "0.4rem",
-                      color: C.pink,
-                      cursor: "pointer",
-                    }}
                   >
                     <Trash2 size={13} />
-                  </button>
+                  </IconButton>
                 </div>
               </div>
             </div>
@@ -342,7 +339,7 @@ function SectionCard({
       {atLimit && !pending ? (
         <div
           style={{
-            border: `1px dashed ${C.border}`,
+            border: `1px dashed ${alpha(C.border, 35)}`,
             borderRadius: "0.6rem",
             padding: "0.75rem 1rem",
             color: C.muted,
@@ -355,10 +352,10 @@ function SectionCard({
       ) : pending ? (
         <div
           style={{
-            border: `1px solid ${C.vivid}40`,
+            border: `1px solid ${alpha(C.vivid, 40)}`,
             borderRadius: "0.6rem",
             padding: "0.9rem",
-            background: `${C.vivid}08`,
+            background: alpha(C.vivid, 8),
           }}
         >
           <div style={{ display: "flex", gap: "0.75rem", marginBottom: "0.75rem" }}>
@@ -370,7 +367,7 @@ function SectionCard({
                 height: 72,
                 objectFit: "cover",
                 borderRadius: "0.5rem",
-                border: `1px solid ${C.border}`,
+                border: `1px solid ${alpha(C.border, 35)}`,
                 flexShrink: 0,
               }}
             />
@@ -382,8 +379,8 @@ function SectionCard({
                 style={{
                   width: "100%",
                   padding: "0.45rem 0.65rem",
-                  background: C.mid,
-                  border: `1px solid ${C.border}`,
+                  background: C.panelAlt,
+                  border: `1px solid ${alpha(C.border, 35)}`,
                   borderRadius: "0.4rem",
                   color: C.text,
                   fontSize: "0.85rem",
@@ -407,23 +404,28 @@ function SectionCard({
           <div style={{ display: "flex", gap: "0.5rem" }}>
             <button
               onClick={cancelPending}
+              onMouseEnter={() => setCancelHover(true)}
+              onMouseLeave={() => setCancelHover(false)}
               disabled={upload.isPending}
               style={{
                 flex: 1,
                 padding: "0.5rem",
-                background: C.mid,
-                border: `1px solid ${C.border}`,
+                background: cancelHover ? C.panelAlt : "transparent",
+                border: `1px solid ${alpha(C.border, 35)}`,
                 borderRadius: "0.5rem",
                 color: C.muted,
                 fontWeight: 600,
                 fontSize: "0.82rem",
                 cursor: "pointer",
+                transition: "background 0.15s",
               }}
             >
               Cancelar
             </button>
             <button
               onClick={confirmUpload}
+              onMouseEnter={() => setConfirmHover(true)}
+              onMouseLeave={() => setConfirmHover(false)}
               disabled={upload.isPending}
               style={{
                 flex: 2,
@@ -439,7 +441,8 @@ function SectionCard({
                 fontWeight: 700,
                 fontSize: "0.82rem",
                 cursor: upload.isPending ? "default" : "pointer",
-                opacity: upload.isPending ? 0.7 : 1,
+                opacity: upload.isPending ? 0.7 : confirmHover ? 0.85 : 1,
+                transition: "opacity 0.15s",
               }}
             >
               {upload.isPending ? <Loader2 size={14} className="animate-spin" /> : <UploadCloud size={14} />}
@@ -461,19 +464,21 @@ function SectionCard({
             if (f) handleFile(f);
           }}
           onClick={() => inputRef.current?.click()}
+          onMouseEnter={() => setDropHover(true)}
+          onMouseLeave={() => setDropHover(false)}
           style={{
-            border: `2px dashed ${dragging ? C.vivid : C.border}`,
+            border: `2px dashed ${dragging ? C.vivid : dropHover ? alpha(C.border, 60) : alpha(C.border, 35)}`,
             borderRadius: "0.6rem",
             padding: "1rem",
             textAlign: "center",
             cursor: "pointer",
-            background: dragging ? `${C.vivid}08` : "transparent",
+            background: dragging ? alpha(C.vivid, 8) : dropHover ? C.panelAlt : "transparent",
             transition: "border-color 0.15s, background 0.15s",
           }}
         >
           <ImagePlus size={20} style={{ color: C.muted, marginBottom: "0.35rem" }} />
           <div style={{ color: C.muted, fontSize: "0.82rem" }}>
-            Arrastra una imagen o <span style={{ color: C.vivid, fontWeight: 700 }}>haz clic para elegir</span>
+            Arrastra una imagen o <span style={{ color: C.bright, fontWeight: 700 }}>haz clic para elegir</span>
           </div>
           <div style={{ color: C.muted, fontSize: "0.72rem", marginTop: "0.2rem" }}>
             JPG, PNG o WebP · máx. {formatBytes(MAX_FILE_BYTES)}
