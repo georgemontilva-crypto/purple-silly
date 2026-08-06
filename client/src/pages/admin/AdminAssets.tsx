@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import {
   ASSET_SECTION_KEYS,
@@ -10,6 +10,7 @@ import {
   Check,
   Copy,
   ExternalLink,
+  GripVertical,
   ImageOff,
   ImagePlus,
   Loader2,
@@ -140,6 +141,56 @@ function SectionCard({
     onSuccess: () => utils.admin.assets.list.invalidate(),
   });
 
+  /**
+   * Sections that hold several images (hero-carousel) are ORDERED, and the
+   * order is meaningful — it's the sequence the storefront renders them
+   * in. Single-image sections have nothing to sort, so they don't get the
+   * drag affordances.
+   */
+  const isOrdered = meta.maxImages > 1;
+
+  // Applied while the reorder request is in flight, so the thumbnails stay
+  // where they were dropped instead of snapping back to the server's old
+  // order for the length of the round trip.
+  const [localOrder, setLocalOrder] = useState<number[] | null>(null);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
+  const reorder = trpc.admin.assets.reorder.useMutation({
+    onSuccess: async () => {
+      await utils.admin.assets.list.invalidate();
+      setLocalOrder(null);
+    },
+    onError: e => {
+      setError(e.message);
+      setLocalOrder(null);
+    },
+  });
+
+  const orderedAssets = useMemo(() => {
+    if (!localOrder) return assets;
+    const byId = new Map(assets.map(a => [a.id, a]));
+    const next = localOrder.map(id => byId.get(id)).filter((a): a is SiteAsset => !!a);
+    // Fall back to the server's order if the two have diverged (e.g. a
+    // delete landed while a drag was pending) rather than dropping a row.
+    return next.length === assets.length ? next : assets;
+  }, [assets, localOrder]);
+
+  function handleReorderDrop(targetIndex: number) {
+    setDragOverIndex(null);
+    if (dragIndex === null || dragIndex === targetIndex) {
+      setDragIndex(null);
+      return;
+    }
+    const next = [...orderedAssets];
+    const [moved] = next.splice(dragIndex, 1);
+    next.splice(targetIndex, 0, moved);
+    setDragIndex(null);
+    setError(null);
+    setLocalOrder(next.map(a => a.id));
+    reorder.mutate({ section: sectionKey, orderedIds: next.map(a => a.id) });
+  }
+
   const atLimit = assets.length >= meta.maxImages;
 
   async function handleFile(file: File) {
@@ -224,6 +275,29 @@ function SectionCard({
           <div style={{ color: C.muted, fontSize: "0.75rem", marginTop: "0.15rem" }}>
             {assets.length} / {meta.maxImages} imagen{meta.maxImages === 1 ? "" : "es"}
           </div>
+          {isOrdered && assets.length > 1 && (
+            <div
+              style={{
+                color: reorder.isPending ? C.bright : C.muted,
+                fontSize: "0.72rem",
+                marginTop: "0.15rem",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "flex-end",
+                gap: "0.25rem",
+              }}
+            >
+              {reorder.isPending ? (
+                <>
+                  <Loader2 size={11} className="animate-spin" /> Guardando orden...
+                </>
+              ) : (
+                <>
+                  <GripVertical size={11} /> Arrastra para reordenar
+                </>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -250,34 +324,103 @@ function SectionCard({
             marginBottom: "1rem",
           }}
         >
-          {assets.map(asset => (
+          {orderedAssets.map((asset, index) => (
             <div
               key={asset.id}
+              draggable={isOrdered}
+              onDragStart={isOrdered ? () => setDragIndex(index) : undefined}
+              onDragOver={
+                isOrdered
+                  ? e => {
+                      e.preventDefault();
+                      setDragOverIndex(index);
+                    }
+                  : undefined
+              }
+              onDragLeave={isOrdered ? () => setDragOverIndex(null) : undefined}
+              onDrop={isOrdered ? () => handleReorderDrop(index) : undefined}
+              onDragEnd={
+                isOrdered
+                  ? () => {
+                      setDragIndex(null);
+                      setDragOverIndex(null);
+                    }
+                  : undefined
+              }
               style={{
                 background: C.panelAlt,
-                border: `1px solid ${alpha(C.border, 35)}`,
+                border: `1px solid ${
+                  isOrdered && dragOverIndex === index ? C.vivid : alpha(C.border, 35)
+                }`,
                 borderRadius: "0.6rem",
                 overflow: "hidden",
+                opacity: isOrdered && dragIndex === index ? 0.45 : 1,
+                transition: "border-color 0.15s, opacity 0.15s",
               }}
             >
               <div
                 style={{
-                  aspectRatio: "1/1",
+                  position: "relative",
+                  // Preview at the section's own aspect ratio, so a 3:4
+                  // carousel slide isn't square-cropped into something that
+                  // looks nothing like what the storefront will show.
+                  aspectRatio: `${meta.width}/${meta.height}`,
                   background: alpha(C.vivid, 10),
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   overflow: "hidden",
+                  cursor: isOrdered ? "grab" : "default",
                 }}
               >
                 <img
                   src={asset.url}
                   alt={asset.label}
+                  draggable={false}
                   style={{ width: "100%", height: "100%", objectFit: "cover" }}
                   onError={e => {
                     (e.target as HTMLImageElement).style.display = "none";
                   }}
                 />
+                {isOrdered && (
+                  <>
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: 4,
+                        left: 4,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.2rem",
+                        padding: "0.15rem 0.35rem",
+                        background: "rgba(0,0,0,0.6)",
+                        borderRadius: "0.3rem",
+                      }}
+                    >
+                      <GripVertical size={12} color="white" />
+                      <span style={{ color: "white", fontSize: "0.65rem", fontWeight: 700 }}>
+                        {index + 1}
+                      </span>
+                    </div>
+                    {index === 0 && (
+                      <span
+                        style={{
+                          position: "absolute",
+                          bottom: 4,
+                          left: 4,
+                          padding: "0.1rem 0.4rem",
+                          background: alpha(C.vivid, 85),
+                          borderRadius: "999px",
+                          color: "white",
+                          fontSize: "0.6rem",
+                          fontWeight: 700,
+                        }}
+                      >
+                        Primera
+                      </span>
+                    )}
+                  </>
+                )}
               </div>
               <div style={{ padding: "0.6rem" }}>
                 <div
