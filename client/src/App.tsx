@@ -8,6 +8,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { CartProvider } from "./contexts/CartContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import PromoPopup from "./components/PromoPopup";
 import Home from "./pages/Home";
 import ShopPage from "./pages/ShopPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
@@ -52,6 +53,9 @@ function StorefrontLayout() {
         <StorefrontRouter />
       </div>
       <Footer />
+      {/* Mounted here rather than in App so it can only ever appear on the
+          storefront — never over /admin, /login, /signup or /verify-email. */}
+      <PromoPopup />
     </div>
   );
 }
