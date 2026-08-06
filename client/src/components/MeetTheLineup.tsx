@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
-import { Star, ShoppingCart } from "lucide-react";
+import { Package, ShoppingCart } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
-import { useSiteAssets } from "@/hooks/useSiteAssets";
-import { AssetPlaceholder } from "@/components/AssetPlaceholder";
+import { trpc } from "@/lib/trpc";
 
 const C = {
   deep:   "oklch(0.09 0.04 295)",
@@ -15,13 +14,20 @@ const C = {
   yellow: "oklch(0.88 0.20 95)",
 };
 
-const FALLBACK = [
-  { id: "1", title: "Super Silly Dots — Natural", handle: "super-silly-dots-natural", price: { amount: "14.99", currencyCode: "USD" }, image: null as string | null, rating: 4.9, reviews: 128 },
-  { id: "2", title: "Super Silly Dots — Blue Razz", handle: "super-silly-dots-blue-razz", price: { amount: "14.99", currencyCode: "USD" }, image: null as string | null, rating: 4.8, reviews: 94 },
-  { id: "3", title: "Super Silly Dots — Cherry Berry", handle: "super-silly-dots-cherry-berry", price: { amount: "14.99", currencyCode: "USD" }, image: null as string | null, rating: 4.7, reviews: 76 },
-];
+type FeaturedProduct = {
+  id: number;
+  title: string;
+  slug: string;
+  priceCents: number | null;
+  imageUrl: string | null;
+  imageAlt: string;
+  inStock: boolean;
+};
 
-type FallbackProduct = typeof FALLBACK[0];
+function formatPrice(cents: number | null): string {
+  if (cents === null) return "";
+  return `$${(cents / 100).toFixed(2)}`;
+}
 
 /* ─── Animated purple smoke canvas ─── */
 function SmokeCanvas() {
@@ -107,31 +113,24 @@ function SmokeCanvas() {
   );
 }
 
-/* ─── Star rating ─── */
-function StarRating({ rating }: { rating: number }) {
-  return (
-    <div className="flex items-center gap-0.5">
-      {[1,2,3,4,5].map(i => (
-        <Star key={i} size={11}
-          fill={i <= Math.round(rating) ? C.yellow : "transparent"}
-          stroke={i <= Math.round(rating) ? C.yellow : "oklch(0.40 0.06 295)"} />
-      ))}
-    </div>
-  );
-}
-
 /* ─── Product card with glassmorphism ─── */
-function ProductCard({ product }: { product: FallbackProduct }) {
+function ProductCard({ product }: { product: FeaturedProduct }) {
   const { addItem } = useCart();
   const [adding, setAdding] = useState(false);
 
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault();
+    if (!product.inStock) return;
     setAdding(true);
     addItem(
-      product.id,
+      String(product.id),
       1,
-      { title: product.title, variantTitle: "Default", price: product.price, image: product.image ? { url: product.image, altText: product.title } : null }
+      {
+        title: product.title,
+        variantTitle: "Default",
+        price: { amount: product.priceCents ? (product.priceCents / 100).toFixed(2) : "0", currencyCode: "USD" },
+        image: product.imageUrl ? { url: product.imageUrl, altText: product.imageAlt } : null,
+      }
     );
     setTimeout(() => setAdding(false), 900);
   };
@@ -147,40 +146,36 @@ function ProductCard({ product }: { product: FallbackProduct }) {
         boxShadow: "0 8px 32px rgba(124,58,237,0.15), inset 0 1px 0 rgba(255,255,255,0.06)",
       }}
     >
-      <Link href={`/products/${product.handle}`}>
+      <Link href={`/products/${product.slug}`}>
         <div
           className="aspect-square overflow-hidden flex items-center justify-center p-6 cursor-pointer"
           style={{ background: "rgba(124,58,237,0.08)" }}
         >
-          {product.image ? (
+          {product.imageUrl ? (
             <img
-              src={product.image}
-              alt={product.title}
+              src={product.imageUrl}
+              alt={product.imageAlt}
               className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
               style={{ filter: "drop-shadow(0 12px 32px rgba(124,58,237,0.5))" }}
             />
           ) : (
-            <AssetPlaceholder width={600} height={600} variant="dark" />
+            <Package size={48} strokeWidth={1.5} style={{ color: "oklch(0.55 0.10 295)" }} />
           )}
         </div>
       </Link>
       <div className="p-5 flex flex-col flex-1">
-        <Link href={`/products/${product.handle}`}>
-          <h3 className="font-extrabold font-condensed text-white text-lg leading-tight mb-1 hover:opacity-80 transition-opacity cursor-pointer">
+        <Link href={`/products/${product.slug}`}>
+          <h3 className="font-extrabold font-condensed text-white text-lg leading-tight mb-3 hover:opacity-80 transition-opacity cursor-pointer">
             {product.title}
           </h3>
         </Link>
-        <div className="flex items-center gap-2 mb-3">
-          <StarRating rating={product.rating} />
-          <span className="text-xs" style={{ color: "oklch(0.55 0.06 295)" }}>({product.reviews})</span>
-        </div>
         <div className="flex items-center justify-between mt-auto">
           <span className="text-xl font-extrabold" style={{ color: C.pink }}>
-            ${parseFloat(product.price.amount).toFixed(2)}
+            {product.inStock ? formatPrice(product.priceCents) : "Sold out"}
           </span>
           <button
             onClick={handleAdd}
-            disabled={adding}
+            disabled={adding || !product.inStock}
             className="flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm text-white transition-all active:scale-95 disabled:opacity-70"
             style={{ background: adding ? C.vivid : `linear-gradient(135deg, ${C.bright}, ${C.pink})` }}
           >
@@ -195,9 +190,10 @@ function ProductCard({ product }: { product: FallbackProduct }) {
 
 /* ─── Main section ─── */
 export default function MeetTheLineup() {
-  // TODO: reemplazar por catálogo propio (tablas locales) cuando esté listo.
-  const { assets } = useSiteAssets("meet-the-lineup");
-  const products: FallbackProduct[] = FALLBACK.map((p, i) => ({ ...p, image: assets[i]?.url ?? null }));
+  const { data: products } = trpc.catalog.list.useQuery({ featured: true, limit: 9 });
+
+  // No featured products published yet -> render nothing, not a broken empty section.
+  if (!products || products.length === 0) return null;
 
   return (
     <section

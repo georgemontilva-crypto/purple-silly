@@ -29,8 +29,8 @@ function StorefrontRouter() {
       <Route path="/what-is-silly" component={WhatIsSilly} />
       <Route path="/lab-reports" component={LabReportsPage} />
       <Route path="/collections/all" component={ShopPage} />
-      <Route path="/collections/:handle" component={ShopPage} />
-      <Route path="/products/:handle" component={ProductDetailPage} />
+      <Route path="/collections/:categorySlug" component={ShopPage} />
+      <Route path="/products/:slug" component={ProductDetailPage} />
       <Route path="/pages/about-us" component={AboutPage} />
       <Route path="/pages/faq" component={FAQPage} />
       <Route path="/pages/contact" component={ContactPage} />

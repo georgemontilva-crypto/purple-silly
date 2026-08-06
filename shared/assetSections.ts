@@ -5,27 +5,19 @@
  *
  * A key maps 1:1 to a single named visual slot (e.g. one specific product
  * card) whenever that slot has its own identity — otherwise it's ambiguous
- * which uploaded image is meant to go where. The one exception is
- * "meet-the-lineup", which is a flexible pool of featured-product photos
- * with no fixed identity per slot, so it stays a single multi-image gallery.
+ * which uploaded image is meant to go where.
+ *
+ * choose-your-ride-* and meet-the-lineup used to live here, but both
+ * sections now pull real products from the catalog (Fase 3, Parte 4)
+ * instead of static assets — removed rather than left dangling.
  */
 export const ASSET_SECTION_KEYS = [
   "logo-navbar",
   "logo-footer",
   "hero-background",
-  "choose-your-ride-dots-1",
-  "choose-your-ride-dots-2",
-  "choose-your-ride-dots-3",
-  "choose-your-ride-euphoria-1",
-  "choose-your-ride-euphoria-2",
-  "choose-your-ride-euphoria-3",
-  "choose-your-ride-bites-1",
-  "choose-your-ride-bites-2",
-  "choose-your-ride-bites-3",
   "navbar-dropdown-dots",
   "navbar-dropdown-euphoria",
   "navbar-dropdown-bites",
-  "meet-the-lineup",
   "what-is-silly-intro",
   "what-is-silly-dots",
   "what-is-silly-euphoria",
@@ -64,69 +56,6 @@ export const ASSET_SECTIONS: Record<AssetSectionKey, AssetSectionMeta> = {
     maxImages: 1,
     description: "Imagen de fondo de la sección Hero, en el home.",
   },
-  "choose-your-ride-dots-1": {
-    label: "Choose Your Ride — Silly Dots — Mega Dose",
-    width: 800,
-    height: 600,
-    maxImages: 1,
-    description: "Tab \"Silly Dots\" en \"Choose Your Ride\" (home), tarjeta 1 de 3: Mega Dose.",
-  },
-  "choose-your-ride-dots-2": {
-    label: "Choose Your Ride — Silly Dots — Hero Dose",
-    width: 800,
-    height: 600,
-    maxImages: 1,
-    description: "Tab \"Silly Dots\" en \"Choose Your Ride\" (home), tarjeta 2 de 3: Hero Dose.",
-  },
-  "choose-your-ride-dots-3": {
-    label: "Choose Your Ride — Silly Dots — Super Dose",
-    width: 800,
-    height: 600,
-    maxImages: 1,
-    description: "Tab \"Silly Dots\" en \"Choose Your Ride\" (home), tarjeta 3 de 3: Super Dose.",
-  },
-  "choose-your-ride-euphoria-1": {
-    label: "Choose Your Ride — Silly Euphoria — Original",
-    width: 800,
-    height: 600,
-    maxImages: 1,
-    description: "Tab \"Silly Euphoria\" en \"Choose Your Ride\" (home), tarjeta 1 de 3: Original.",
-  },
-  "choose-your-ride-euphoria-2": {
-    label: "Choose Your Ride — Silly Euphoria — Tropical",
-    width: 800,
-    height: 600,
-    maxImages: 1,
-    description: "Tab \"Silly Euphoria\" en \"Choose Your Ride\" (home), tarjeta 2 de 3: Tropical (coming soon).",
-  },
-  "choose-your-ride-euphoria-3": {
-    label: "Choose Your Ride — Silly Euphoria — Berry",
-    width: 800,
-    height: 600,
-    maxImages: 1,
-    description: "Tab \"Silly Euphoria\" en \"Choose Your Ride\" (home), tarjeta 3 de 3: Berry (coming soon).",
-  },
-  "choose-your-ride-bites-1": {
-    label: "Choose Your Ride — Silly Bites — Original",
-    width: 800,
-    height: 600,
-    maxImages: 1,
-    description: "Tab \"Silly Bites Gummies\" en \"Choose Your Ride\" (home), tarjeta 1 de 3: Original.",
-  },
-  "choose-your-ride-bites-2": {
-    label: "Choose Your Ride — Silly Bites — Watermelon",
-    width: 800,
-    height: 600,
-    maxImages: 1,
-    description: "Tab \"Silly Bites Gummies\" en \"Choose Your Ride\" (home), tarjeta 2 de 3: Watermelon (coming soon).",
-  },
-  "choose-your-ride-bites-3": {
-    label: "Choose Your Ride — Silly Bites — Mango",
-    width: 800,
-    height: 600,
-    maxImages: 1,
-    description: "Tab \"Silly Bites Gummies\" en \"Choose Your Ride\" (home), tarjeta 3 de 3: Mango (coming soon).",
-  },
   "navbar-dropdown-dots": {
     label: "Navbar Dropdown — Silly Dots",
     width: 400,
@@ -147,13 +76,6 @@ export const ASSET_SECTIONS: Record<AssetSectionKey, AssetSectionMeta> = {
     height: 400,
     maxImages: 1,
     description: "Miniatura de \"Silly Bites Gummies\" en el mega-menú SHOP del navbar.",
-  },
-  "meet-the-lineup": {
-    label: "Meet the Lineup",
-    width: 600,
-    height: 600,
-    maxImages: 6,
-    description: "Fotos de producto destacadas en \"Meet the Lineup\" (home) — pool flexible, no atado a un producto fijo.",
   },
   "what-is-silly-intro": {
     label: "What is Silly? — Intro",

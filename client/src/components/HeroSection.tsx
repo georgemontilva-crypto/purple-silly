@@ -79,7 +79,7 @@ export default function HeroSection() {
               style={{ background: `linear-gradient(135deg, ${C.bright}, ${C.pink})`, boxShadow: `0 8px 40px ${C.vivid}55` }}>
               SHOP SILLY DOTS →
             </Link>
-            <Link href="/shop"
+            <Link href="/collections/all"
               className="inline-flex items-center gap-2 px-8 py-4 rounded-full font-bold text-base text-white transition-all hover:bg-white/10 border"
               style={{ borderColor: "oklch(0.35 0.12 295)" }}>
               Shop All Products

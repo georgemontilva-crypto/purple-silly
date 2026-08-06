@@ -1,155 +1,189 @@
 import { useState } from "react";
-import { Link } from "wouter";
-import { Star, ChevronDown, ChevronUp, ShoppingCart, ArrowLeft } from "lucide-react";
-import { useCart } from "@/contexts/CartContext";
+import { Link, useParams } from "wouter";
+import {
+  ArrowLeft,
+  ChevronDown,
+  ChevronUp,
+  FlaskConical,
+  Leaf,
+  Loader2,
+  Minus,
+  MapPin,
+  Package,
+  Plus,
+  RotateCcw,
+  ShoppingCart,
+} from "lucide-react";
+import { trpc } from "@/lib/trpc";
 import AnnouncementBar from "@/components/AnnouncementBar";
 import NewsletterSection from "@/components/NewsletterSection";
 
-// TODO: reemplazar por catálogo propio (tablas locales) cuando esté listo.
-interface CatalogVariant {
-  id: string;
-  title: string;
-  price: { amount: string; currencyCode: string };
-  compareAtPrice: { amount: string; currencyCode: string } | null;
-  availableForSale: boolean;
-  selectedOptions: { name: string; value: string }[];
+function formatCents(cents: number): string {
+  return `$${(cents / 100).toFixed(2)}`;
 }
 
-interface CatalogProduct {
-  id: string;
-  handle: string;
-  title: string;
-  description: string;
-  images: { nodes: Array<{ url: string; altText: string | null }> };
-  priceRange: { minVariantPrice: { amount: string; currencyCode: string } };
-  variants: { nodes: CatalogVariant[] };
-}
-
-function formatPrice(price: { amount: string; currencyCode: string }): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: price.currencyCode,
-  }).format(parseFloat(price.amount));
-}
-
-const PLACEHOLDER: CatalogProduct = {
-  id: "p1", handle: "party-tablets-blue-razz",
-  title: "Party Tablets - Blue Razz",
-  description: "High-energy euphoria for late-night socializing. A clean, plant-powered boost for your best nights out.",
-  images: { nodes: [] },
-  priceRange: { minVariantPrice: { amount: "24.99", currencyCode: "USD" } },
-  variants: { nodes: [
-    { id: "v1", title: "1 Pack", price: { amount: "24.99", currencyCode: "USD" }, compareAtPrice: null, availableForSale: true, selectedOptions: [{ name: "Size", value: "1 Pack" }] },
-    { id: "v2", title: "3 Pack", price: { amount: "64.99", currencyCode: "USD" }, compareAtPrice: { amount: "74.97", currencyCode: "USD" }, availableForSale: true, selectedOptions: [{ name: "Size", value: "3 Pack" }] },
-    { id: "v3", title: "6 Pack", price: { amount: "119.99", currencyCode: "USD" }, compareAtPrice: { amount: "149.94", currencyCode: "USD" }, availableForSale: true, selectedOptions: [{ name: "Size", value: "6 Pack" }] },
-  ]},
-};
-
-const expectations = [
-  { emoji: "🎭", title: "Epic mood elevation", desc: "Feel genuinely uplifted and positive from the first wave." },
-  { emoji: "⚡", title: "Smooth, steady energy", desc: "Clean energy without the jitters or crash." },
-  { emoji: "🌙", title: "Gentle landing with no crash", desc: "A smooth, comfortable come-down every time." },
-  { emoji: "☀️", title: "A brighter & more positive mindset", desc: "See the world through a more optimistic lens." },
-  { emoji: "🤝", title: "Increased social ease & openness", desc: "Connect more naturally with everyone around you." },
-  { emoji: "✨", title: "Clean & balanced, start to finish", desc: "No harsh peaks, no rough edges." },
+const TRUST_BADGES = [
+  { icon: Leaf, label: "100% Natural" },
+  { icon: FlaskConical, label: "Lab Tested" },
+  { icon: MapPin, label: "Made in USA" },
+  { icon: RotateCcw, label: "60-Day Returns" },
 ];
 
+function Accordion({ title, content, defaultOpen = false }: { title: string; content: string; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="border border-gray-200 rounded-2xl overflow-hidden">
+      <button onClick={() => setOpen(o => !o)} className="w-full flex items-center justify-between gap-4 p-4 text-left">
+        <span className="font-bold text-sm text-[oklch(0.22_0.08_265)]">{title}</span>
+        {open ? <ChevronUp size={16} className="text-[oklch(0.62_0.25_340)] flex-shrink-0" /> : <ChevronDown size={16} className="text-gray-400 flex-shrink-0" />}
+      </button>
+      {open && <div className="px-4 pb-4 text-sm text-gray-600 leading-relaxed whitespace-pre-line">{content}</div>}
+    </div>
+  );
+}
+
 export default function ProductDetailPage() {
-  // TODO: reemplazar por catálogo propio (tablas locales) cuando esté listo,
-  // buscando el producto real por :handle en vez de mostrar siempre el mismo.
-  const product = PLACEHOLDER;
-  const [selectedVariant, setSelectedVariant] = useState<CatalogVariant | null>(PLACEHOLDER.variants.nodes[0] ?? null);
+  const { slug } = useParams<{ slug: string }>();
+  const { data: product, isLoading } = trpc.catalog.product.useQuery({ slug: slug ?? "" }, { enabled: Boolean(slug) });
+
   const [selectedImage, setSelectedImage] = useState(0);
+  const [selectedVariantId, setSelectedVariantId] = useState<number | null>(null);
+  const [selectedBundleId, setSelectedBundleId] = useState<number | null>(null);
   const [qty, setQty] = useState(1);
-  const [faqOpen, setFaqOpen] = useState<number | null>(null);
-  const { addItem, isLoading: cartLoading } = useCart();
 
-  const handleAddToCart = async () => {
-    if (!selectedVariant) return;
-    for (let i = 0; i < qty; i++) await addItem(selectedVariant.id);
-  };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center gap-2 text-gray-400">
+        <Loader2 size={22} className="animate-spin" /> Loading product...
+      </div>
+    );
+  }
 
-  const images = product.images.nodes.length > 0 ? product.images.nodes : null;
-  const price = selectedVariant?.price ?? product.priceRange.minVariantPrice;
-  const compareAt = selectedVariant?.compareAtPrice;
-  const discount = compareAt ? Math.round((1 - parseFloat(price.amount) / parseFloat(compareAt.amount)) * 100) : null;
+  if (!product) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-3 text-center px-4">
+        <Package size={40} className="text-gray-300" strokeWidth={1.5} />
+        <p className="text-gray-500">Product not found.</p>
+        <Link href="/collections/all" className="text-sm font-bold text-[oklch(0.62_0.25_340)]">← Back to Shop</Link>
+      </div>
+    );
+  }
 
-  const productFaqs = [
-    { q: "What's in it?", a: "Purple Organics products contain premium Kanna extract (Sceletium tortuosum), caffeine, and L-Theanine — all natural, third-party lab tested ingredients." },
-    { q: "How do I take it?", a: "Take the suggested serving size listed on the label. For tablets, allow them to dissolve under your tongue for best results. For gummies, chew thoroughly." },
-    { q: "Is it safe to mix with alcohol?", a: "We recommend avoiding mixing Purple Organics products with alcohol or other substances. Always use responsibly." },
-    { q: "Will it show up on a drug test?", a: "Kanna (Sceletium tortuosum) is not a controlled substance and is not tested for in standard drug screenings. However, we always recommend consulting your employer or testing provider." },
-  ];
+  const selectedVariant = product.variants.find(v => v.id === selectedVariantId) ?? product.variants[0] ?? null;
+  const selectedBundle = product.bundles.find(b => b.id === selectedBundleId) ?? product.bundles[0] ?? null;
+
+  const hasBundles = product.bundles.length > 0;
+  const priceCents = hasBundles ? (selectedBundle?.priceCents ?? 0) : (selectedVariant?.priceCents ?? 0);
+  const compareAtCents = hasBundles ? selectedBundle?.compareAtCents : selectedVariant?.compareAtCents;
+  const savingsPct = compareAtCents && compareAtCents > priceCents
+    ? Math.round((1 - priceCents / compareAtCents) * 100)
+    : null;
+
+  const inStock = hasBundles ? true : Boolean(selectedVariant && selectedVariant.stock > 0);
+  const images = product.images;
+  const activeImage = images[selectedImage] ?? images[0];
+
+  const accordions = [
+    { title: "Ingredients", content: product.ingredients },
+    { title: "How to Take", content: product.howToTake },
+    { title: "Disclaimer", content: product.disclaimer },
+  ].filter((a): a is { title: string; content: string } => Boolean(a.content));
 
   return (
     <div className="min-h-screen flex flex-col">
       <AnnouncementBar />
       <main className="flex-1">
-        {/* Breadcrumb */}
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-4">
           <Link href="/collections/all" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-[oklch(0.22_0.08_265)] transition-colors font-medium">
             <ArrowLeft size={14} /> Back to Shop
           </Link>
         </div>
 
-        {/* Product section */}
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 pb-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
-            {/* Images */}
-            <div className="space-y-3">
-              <div className="aspect-square bg-gray-100 rounded-3xl overflow-hidden">
-                {images ? (
-                  <img src={images[selectedImage]?.url} alt={images[selectedImage]?.altText ?? product.title}
-                    className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 gap-2">
-                    <div className="w-32 h-32 bg-gray-200 rounded-3xl" />
-                    <span className="text-sm font-medium">800×800px product image</span>
-                  </div>
-                )}
-              </div>
-              {images && images.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto pb-1">
+            {/* Gallery — thumbnails on the left, main image on the right */}
+            <div className="flex gap-3">
+              {images.length > 1 && (
+                <div className="flex flex-col gap-2 w-16 sm:w-20 shrink-0">
                   {images.map((img, i) => (
-                    <button key={i} onClick={() => setSelectedImage(i)}
-                      className={`flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-colors ${i === selectedImage ? "border-[oklch(0.62_0.25_340)]" : "border-transparent"}`}>
-                      <img src={img.url} alt={img.altText ?? ""} className="w-full h-full object-cover" />
+                    <button key={img.id} onClick={() => setSelectedImage(i)}
+                      className={`aspect-square rounded-xl overflow-hidden border-2 transition-colors ${i === selectedImage ? "border-[oklch(0.62_0.25_340)]" : "border-transparent"}`}>
+                      <img src={img.url} alt={img.alt ?? ""} className="w-full h-full object-cover" />
                     </button>
                   ))}
                 </div>
               )}
+              <div className="flex-1 aspect-square bg-gray-100 rounded-3xl overflow-hidden min-w-0">
+                {activeImage ? (
+                  <img src={activeImage.url} alt={activeImage.alt ?? product.title} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 gap-2">
+                    <Package size={40} strokeWidth={1.5} />
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Info */}
             <div className="space-y-5">
               <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="flex gap-0.5">
-                    {[1,2,3,4,5].map(i => <Star key={i} size={14} className="fill-[oklch(0.92_0.18_95)] text-[oklch(0.92_0.18_95)]" />)}
-                  </div>
-                  <span className="text-sm text-gray-500 font-medium">4.7 (120+ reviews)</span>
-                </div>
+                {product.category && (
+                  <p className="text-xs font-bold uppercase tracking-widest text-[oklch(0.62_0.25_340)] mb-2">{product.category.name}</p>
+                )}
                 <h1 className="font-condensed font-black text-3xl md:text-4xl text-[oklch(0.22_0.08_265)] tracking-tight leading-tight">
                   {product.title}
                 </h1>
               </div>
 
-              {/* Price */}
-              <div className="flex items-center gap-3">
-                <span className="font-extrabold text-2xl text-[oklch(0.22_0.08_265)]">{formatPrice(price)}</span>
-                {compareAt && <span className="text-lg text-gray-400 line-through">{formatPrice(compareAt)}</span>}
-                {discount && <span className="bg-[oklch(0.62_0.25_340)] text-white text-xs font-bold px-2.5 py-1 rounded-full">-{discount}%</span>}
+              {/* Benefit icons */}
+              <div className="flex flex-wrap gap-4">
+                {TRUST_BADGES.map(({ icon: Icon, label }) => (
+                  <span key={label} className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600">
+                    <Icon size={14} className="text-[oklch(0.62_0.25_340)]" /> {label}
+                  </span>
+                ))}
               </div>
 
-              {/* Variants */}
-              {product.variants.nodes.length > 1 && (
+              {/* Bundle selector */}
+              {hasBundles && (
                 <div>
-                  <p className="text-sm font-bold text-[oklch(0.22_0.08_265)] mb-2">Size</p>
+                  <p className="text-sm font-bold text-[oklch(0.22_0.08_265)] mb-2">Choose a package</p>
                   <div className="flex flex-wrap gap-2">
-                    {product.variants.nodes.map(v => (
-                      <button key={v.id} onClick={() => setSelectedVariant(v)}
-                        className={`px-4 py-2 rounded-xl border-2 font-bold text-sm transition-all ${selectedVariant?.id === v.id ? "border-[oklch(0.22_0.08_265)] bg-[oklch(0.22_0.08_265)] text-white" : "border-gray-200 text-gray-700 hover:border-[oklch(0.22_0.08_265)]"}`}>
-                        {v.title}
+                    {product.bundles.map(b => (
+                      <button key={b.id} onClick={() => setSelectedBundleId(b.id)}
+                        className={`relative px-4 py-2.5 rounded-xl border-2 font-bold text-sm transition-all ${(selectedBundle?.id ?? product.bundles[0]?.id) === b.id ? "border-[oklch(0.22_0.08_265)] bg-[oklch(0.22_0.08_265)] text-white" : "border-gray-200 text-gray-700 hover:border-[oklch(0.22_0.08_265)]"}`}>
+                        {b.badge && (
+                          <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-[oklch(0.62_0.25_340)] text-white text-[0.6rem] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
+                            {b.badge}
+                          </span>
+                        )}
+                        {b.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Price */}
+              <div className="flex items-center gap-3">
+                <span className="font-extrabold text-2xl text-[oklch(0.22_0.08_265)]">{formatCents(priceCents)}</span>
+                {compareAtCents ? <span className="text-lg text-gray-400 line-through">{formatCents(compareAtCents)}</span> : null}
+                {savingsPct ? <span className="bg-[oklch(0.62_0.25_340)] text-white text-xs font-bold px-2.5 py-1 rounded-full">Save {savingsPct}%</span> : null}
+              </div>
+
+              {/* Variant / flavor selector */}
+              {product.variants.length > 1 && (
+                <div>
+                  <p className="text-sm font-bold text-[oklch(0.22_0.08_265)] mb-2">Flavor: <span className="font-normal text-gray-500">{selectedVariant?.title}</span></p>
+                  <div className="flex flex-wrap gap-3">
+                    {product.variants.map(v => (
+                      <button key={v.id} onClick={() => setSelectedVariantId(v.id)} title={v.title}
+                        className={`w-12 h-12 rounded-full overflow-hidden border-2 transition-all flex items-center justify-center text-xs font-bold uppercase ${selectedVariant?.id === v.id ? "border-[oklch(0.62_0.25_340)] scale-105" : "border-gray-200"} ${v.stock <= 0 ? "opacity-40" : ""}`}>
+                        {v.imageUrl ? (
+                          <img src={v.imageUrl} alt={v.title} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="bg-gray-100 w-full h-full flex items-center justify-center text-gray-500">{v.title.slice(0, 2)}</span>
+                        )}
                       </button>
                     ))}
                   </div>
@@ -159,65 +193,39 @@ export default function ProductDetailPage() {
               {/* Qty + Add to cart */}
               <div className="flex gap-3">
                 <div className="flex items-center gap-2 bg-gray-100 rounded-xl px-3 py-2">
-                  <button onClick={() => setQty(Math.max(1, qty - 1))} className="w-7 h-7 rounded-lg bg-white flex items-center justify-center font-bold text-lg hover:bg-gray-50 transition-colors">-</button>
+                  <button onClick={() => setQty(q => Math.max(1, q - 1))} className="w-7 h-7 rounded-lg bg-white flex items-center justify-center hover:bg-gray-50 transition-colors" aria-label="Decrease quantity">
+                    <Minus size={14} />
+                  </button>
                   <span className="w-8 text-center font-bold text-base">{qty}</span>
-                  <button onClick={() => setQty(qty + 1)} className="w-7 h-7 rounded-lg bg-white flex items-center justify-center font-bold text-lg hover:bg-gray-50 transition-colors">+</button>
+                  <button onClick={() => setQty(q => q + 1)} className="w-7 h-7 rounded-lg bg-white flex items-center justify-center hover:bg-gray-50 transition-colors" aria-label="Increase quantity">
+                    <Plus size={14} />
+                  </button>
                 </div>
-                <button onClick={handleAddToCart} disabled={cartLoading || !selectedVariant?.availableForSale}
-                  className="flex-1 bg-[oklch(0.62_0.25_340)] text-white font-extrabold text-base py-3 rounded-xl hover:bg-[oklch(0.55_0.25_340)] transition-colors active:scale-[0.97] disabled:opacity-50 flex items-center justify-center gap-2">
+                <button disabled title="Checkout is coming soon"
+                  className="flex-1 bg-gray-300 text-white font-extrabold text-base py-3 rounded-xl cursor-not-allowed flex items-center justify-center gap-2">
                   <ShoppingCart size={18} />
-                  {cartLoading ? "Adding..." : "Add to Cart"}
+                  Coming soon
                 </button>
               </div>
+              {!inStock && !hasBundles && (
+                <p className="text-sm font-semibold text-red-500">This flavor is currently sold out.</p>
+              )}
 
-              {/* Trust badges */}
-              <div className="flex flex-wrap gap-4 py-4 border-t border-gray-100">
-                {["🌿 100% Natural", "🔬 Lab Tested", "🇺🇸 Made in USA", "✓ 60-Day Returns"].map(b => (
-                  <span key={b} className="text-xs font-semibold text-gray-600">{b}</span>
-                ))}
-              </div>
+              <Link href="/lab-reports" className="inline-block text-sm font-bold text-[oklch(0.62_0.25_340)] hover:underline">
+                View lab reports for this product →
+              </Link>
 
-              {/* Description */}
-              <div className="prose prose-sm max-w-none text-gray-600">
-                <p>{product.description}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* What to Expect */}
-          <div className="mt-16">
-            <h2 className="font-condensed font-black text-3xl md:text-4xl text-[oklch(0.22_0.08_265)] tracking-tight mb-8 text-center">
-              ✨ What to Expect ✨
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {expectations.map(({ emoji, title, desc }) => (
-                <div key={title} className="bg-[oklch(0.97_0.005_265)] rounded-2xl p-5 flex gap-4">
-                  <span className="text-2xl flex-shrink-0">{emoji}</span>
-                  <div>
-                    <p className="font-bold text-sm text-[oklch(0.22_0.08_265)] mb-1">{title}</p>
-                    <p className="text-xs text-gray-500 leading-snug">{desc}</p>
-                  </div>
+              {product.description && (
+                <div className="prose prose-sm max-w-none text-gray-600 pt-4 border-t border-gray-100">
+                  <p className="whitespace-pre-line">{product.description}</p>
                 </div>
-              ))}
-            </div>
-          </div>
+              )}
 
-          {/* Product FAQ */}
-          <div className="mt-16 max-w-2xl mx-auto">
-            <h2 className="font-condensed font-black text-3xl text-[oklch(0.22_0.08_265)] tracking-tight mb-6 text-center">
-              You've Got Questions? We've Got Answers
-            </h2>
-            <div className="space-y-3">
-              {productFaqs.map(({ q, a }, i) => (
-                <div key={q} className="border border-gray-200 rounded-2xl overflow-hidden">
-                  <button onClick={() => setFaqOpen(faqOpen === i ? null : i)}
-                    className="w-full flex items-center justify-between gap-4 p-4 text-left">
-                    <span className="font-bold text-sm text-[oklch(0.22_0.08_265)]">{q}</span>
-                    {faqOpen === i ? <ChevronUp size={16} className="text-[oklch(0.62_0.25_340)] flex-shrink-0" /> : <ChevronDown size={16} className="text-gray-400 flex-shrink-0" />}
-                  </button>
-                  {faqOpen === i && <div className="px-4 pb-4 text-sm text-gray-600 leading-relaxed">{a}</div>}
+              {accordions.length > 0 && (
+                <div className="space-y-3 pt-2">
+                  {accordions.map(a => <Accordion key={a.title} title={a.title} content={a.content} />)}
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>
@@ -226,4 +234,3 @@ export default function ProductDetailPage() {
     </div>
   );
 }
-
