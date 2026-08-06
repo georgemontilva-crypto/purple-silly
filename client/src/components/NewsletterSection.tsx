@@ -32,7 +32,7 @@ export default function NewsletterSection() {
         <p className="text-base leading-relaxed mb-10" style={{ color: "oklch(0.68 0.07 295)" }}>
           Get exclusive deals, new flavor drops, and Kanna education straight to your inbox. Plus 10% off your first order.
         </p>
-        <form onSubmit={handleSubmit} className="flex gap-2 mb-4 max-w-md mx-auto">
+        <form onSubmit={handleSubmit} className="flex gap-2 max-w-md mx-auto">
           <input type="email" value={email} onChange={e => setEmail(e.target.value)}
             placeholder="Enter your email"
             className="flex-1 px-5 py-3.5 rounded-full text-sm font-medium text-white placeholder-white/40 outline-none transition-all"
@@ -43,11 +43,6 @@ export default function NewsletterSection() {
             {loading ? "..." : "Subscribe"}
           </button>
         </form>
-        <button onClick={() => toast.info("Text PURPLE to 55555 to sign up for SMS updates!")}
-          className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full font-extrabold text-sm text-white border-2 transition-all hover:bg-white/10"
-          style={{ borderColor: C.vivid }}>
-          📱 SIGN UP FOR TEXTS
-        </button>
         <p className="mt-6 text-xs" style={{ color: "oklch(0.50 0.06 295)" }}>
           By subscribing you agree to our Privacy Policy. Unsubscribe at any time.
         </p>
