@@ -8,6 +8,7 @@ const valid = {
   bodyText: "Drop your email and we'll send the good stuff.",
   discountCode: "PURPLE20",
   buttonText: "Get my code",
+  ribbonText: "GET 20% OFF",
   showDelaySeconds: 3,
   active: true,
 };
@@ -17,13 +18,29 @@ describe("promo popup input schema", () => {
     expect(popupInputSchema.parse(valid)).toMatchObject(valid);
   });
 
-  it("treats subtitle and bodyText as the only optional copy", () => {
-    const { subtitle, bodyText, ...required } = valid;
+  it("treats subtitle, bodyText and ribbonText as the only optional copy", () => {
+    const { subtitle, bodyText, ribbonText, ...required } = valid;
     expect(() => popupInputSchema.parse(required)).not.toThrow();
     for (const key of ["title", "discountCode", "buttonText", "showDelaySeconds", "active"] as const) {
       const { [key]: _dropped, ...missing } = valid;
       expect(() => popupInputSchema.parse(missing), `"${key}" should be required`).toThrow();
     }
+  });
+
+  /**
+   * The ribbon is opt-in: no caption means no ribbon is rendered at all,
+   * so an empty string has to be as acceptable as omitting the field.
+   * Rejecting "" would strand anyone trying to clear a ribbon they'd
+   * already set.
+   */
+  it("accepts an empty ribbonText, which is how a ribbon gets removed", () => {
+    expect(() => popupInputSchema.parse({ ...valid, ribbonText: "" })).not.toThrow();
+    expect(() => popupInputSchema.parse({ ...valid, ribbonText: undefined })).not.toThrow();
+  });
+
+  it("keeps ribbonText short enough to stay on one line of the band", () => {
+    expect(() => popupInputSchema.parse({ ...valid, ribbonText: "a".repeat(48) })).not.toThrow();
+    expect(() => popupInputSchema.parse({ ...valid, ribbonText: "a".repeat(49) })).toThrow();
   });
 
   it("rejects empty strings where the popup would render a blank", () => {
@@ -83,6 +100,11 @@ describe("promo_popups table shape", () => {
   it("allows a popup with no image, so the layout must cope without one", () => {
     expect(promoPopups.imageKey.notNull).toBe(false);
     expect(promoPopups.imageUrl.notNull).toBe(false);
+  });
+
+  it("allows a popup with no ribbon, keeping the ribbon opt-in", () => {
+    expect(promoPopups.ribbonText.notNull).toBe(false);
+    expect(promoPopups.ribbonText.default).toBeUndefined();
   });
 
   it("requires the fields the popup cannot render without", () => {

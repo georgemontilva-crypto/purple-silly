@@ -34,6 +34,9 @@ export const popupFields = {
   bodyText: z.string().max(2000).optional(),
   discountCode: z.string().min(1).max(64),
   buttonText: z.string().min(1).max(128),
+  // Corner-ribbon caption. Optional end to end: absent or empty means no
+  // ribbon is rendered, so it's opt-in per popup.
+  ribbonText: z.string().max(48).optional(),
   // Capped at two minutes: a longer delay means the popup effectively
   // never fires for a normal visit, which reads as "it's broken".
   showDelaySeconds: z.number().int().min(0).max(120),

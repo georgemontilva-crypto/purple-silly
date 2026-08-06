@@ -226,6 +226,11 @@ export const promoPopups = mysqlTable("promo_popups", {
   bodyText: text("bodyText"),
   discountCode: varchar("discountCode", { length: 64 }).notNull(),
   buttonText: varchar("buttonText", { length: 128 }).notNull(),
+  // Corner ribbon caption. Nullable and optional: empty means the popup
+  // renders without a ribbon at all, so it stays opt-in per popup.
+  // Deliberately short — it has to fit on one line across a 45-degree
+  // band, and wrapping there looks broken.
+  ribbonText: varchar("ribbonText", { length: 48 }),
   imageKey: varchar("imageKey", { length: 512 }),
   imageUrl: varchar("imageUrl", { length: 1024 }),
   active: boolean("active").default(false).notNull(),
