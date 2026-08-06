@@ -93,6 +93,15 @@ const imageUploadFields = {
   imageContentType: z.enum(ALLOWED_IMAGE_MIME_TYPES).optional(),
 };
 
+// Second, independent image slot on categories — the "Choose Your Ride" card
+// image. Distinct field names since a zod object can't have two keys both
+// named imageBase64.
+const cardImageUploadFields = {
+  cardImageBase64: z.string().optional(),
+  cardImageFileName: z.string().optional(),
+  cardImageContentType: z.enum(ALLOWED_IMAGE_MIME_TYPES).optional(),
+};
+
 const productStatus = z.enum(["draft", "active", "archived"]);
 
 export const adminCatalogRouter = router({
@@ -110,12 +119,21 @@ export const adminCatalogRouter = router({
           description: z.string().optional(),
           sortOrder: z.number().int().default(0),
           ...imageUploadFields,
+          ...cardImageUploadFields,
         })
       )
       .mutation(async ({ input }) => {
         const d = await requireDb();
         const slug = await resolveCategorySlug(d, input.name, input.slug);
         const image = await uploadImageField(input, "product-categories");
+        const cardImage = await uploadImageField(
+          {
+            imageBase64: input.cardImageBase64,
+            imageFileName: input.cardImageFileName,
+            imageContentType: input.cardImageContentType,
+          },
+          "product-categories/card"
+        );
         const [result] = await d.insert(productCategories).values({
           name: input.name,
           slug,
@@ -123,6 +141,8 @@ export const adminCatalogRouter = router({
           sortOrder: input.sortOrder,
           imageKey: image?.imageKey,
           imageUrl: image?.imageUrl,
+          cardImageKey: cardImage?.imageKey,
+          cardImageUrl: cardImage?.imageUrl,
         });
         return { success: true, id: result.insertId, slug };
       }),
@@ -135,11 +155,22 @@ export const adminCatalogRouter = router({
           description: z.string().optional(),
           sortOrder: z.number().int().optional(),
           ...imageUploadFields,
+          ...cardImageUploadFields,
         })
       )
       .mutation(async ({ input }) => {
         const d = await requireDb();
-        const { id, slug: rawSlug, imageBase64, imageFileName, imageContentType, ...rest } = input;
+        const {
+          id,
+          slug: rawSlug,
+          imageBase64,
+          imageFileName,
+          imageContentType,
+          cardImageBase64,
+          cardImageFileName,
+          cardImageContentType,
+          ...rest
+        } = input;
         const data: Record<string, unknown> = { ...rest };
         if (rawSlug !== undefined) {
           data.slug = await resolveCategorySlug(d, rest.name ?? "", rawSlug, id);
@@ -148,6 +179,14 @@ export const adminCatalogRouter = router({
         if (image) {
           data.imageKey = image.imageKey;
           data.imageUrl = image.imageUrl;
+        }
+        const cardImage = await uploadImageField(
+          { imageBase64: cardImageBase64, imageFileName: cardImageFileName, imageContentType: cardImageContentType },
+          "product-categories/card"
+        );
+        if (cardImage) {
+          data.cardImageKey = cardImage.imageKey;
+          data.cardImageUrl = cardImage.imageUrl;
         }
         await d.update(productCategories).set(data).where(eq(productCategories.id, id));
         return { success: true };
@@ -166,6 +205,7 @@ export const adminCatalogRouter = router({
         }
         const [cat] = await d.select().from(productCategories).where(eq(productCategories.id, input.id)).limit(1);
         if (cat?.imageKey) await deleteFromR2(cat.imageKey);
+        if (cat?.cardImageKey) await deleteFromR2(cat.cardImageKey);
         await d.delete(productCategories).where(eq(productCategories.id, input.id));
         return { success: true };
       }),

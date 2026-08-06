@@ -21,6 +21,37 @@ const fieldStyle: React.CSSProperties = {
   outline: "none", boxSizing: "border-box",
 };
 
+function Dropzone({
+  label, preview, onClick,
+}: {
+  label: string;
+  preview: string | null;
+  onClick: () => void;
+}) {
+  return (
+    <div>
+      <label style={{ color: C.muted, fontSize: "0.7rem", fontWeight: 700, display: "block", marginBottom: "0.35rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+        {label}
+      </label>
+      <div
+        onClick={onClick}
+        style={{
+          width: 96, height: 96, flexShrink: 0, borderRadius: "0.75rem",
+          border: `1.5px dashed ${alpha(C.border, 45)}`, cursor: "pointer",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          overflow: "hidden", background: C.panelAlt,
+        }}
+      >
+        {preview ? (
+          <img src={preview} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        ) : (
+          <ImagePlus size={22} style={{ color: C.muted }} />
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function AdminProductCategories() {
   const utils = trpc.useUtils();
   const { data: cats, isLoading } = trpc.adminCatalog.categories.list.useQuery();
@@ -32,24 +63,44 @@ export default function AdminProductCategories() {
     onSuccess: () => { utils.adminCatalog.categories.list.invalidate(); toast.success("Category deleted"); },
     onError: e => toast.error(e.message),
   });
+  const updateCardImage = trpc.adminCatalog.categories.update.useMutation({
+    onSuccess: () => { utils.adminCatalog.categories.list.invalidate(); toast.success("Card image updated"); },
+    onError: e => toast.error(e.message),
+  });
 
   const fileRef = useRef<HTMLInputElement>(null);
+  const cardFileRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({ name: "", description: "", sortOrder: 0 });
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [cardFile, setCardFile] = useState<File | null>(null);
+  const [cardPreview, setCardPreview] = useState<string | null>(null);
   const [submitHover, setSubmitHover] = useState(false);
   const [hoveredDelete, setHoveredDelete] = useState<number | null>(null);
+
+  // Shared hidden input for the per-row "Card Image" uploader below — one
+  // node reused for every row rather than one ref per category.
+  const rowCardFileRef = useRef<HTMLInputElement>(null);
+  const [uploadTargetId, setUploadTargetId] = useState<number | null>(null);
 
   const resetForm = () => {
     setForm({ name: "", description: "", sortOrder: 0 });
     setFile(null);
     setPreview(null);
+    setCardFile(null);
+    setCardPreview(null);
     if (fileRef.current) fileRef.current.value = "";
+    if (cardFileRef.current) cardFileRef.current.value = "";
   };
 
   const handleFile = (f: File) => {
     setFile(f);
     setPreview(URL.createObjectURL(f));
+  };
+
+  const handleCardFile = (f: File) => {
+    setCardFile(f);
+    setCardPreview(URL.createObjectURL(f));
   };
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -63,7 +114,38 @@ export default function AdminProductCategories() {
         imageContentType: file.type,
       };
     }
-    createCat.mutate({ name: form.name, description: form.description || undefined, sortOrder: form.sortOrder, ...imageFields });
+    let cardImageFields = {};
+    if (cardFile) {
+      cardImageFields = {
+        cardImageBase64: await fileToBase64(cardFile),
+        cardImageFileName: cardFile.name,
+        cardImageContentType: cardFile.type,
+      };
+    }
+    createCat.mutate({
+      name: form.name,
+      description: form.description || undefined,
+      sortOrder: form.sortOrder,
+      ...imageFields,
+      ...cardImageFields,
+    });
+  };
+
+  const handleRowCardFile = async (f: File) => {
+    if (uploadTargetId === null) return;
+    // `let` + conditional reassignment (matching the create-form pattern
+    // above) rather than a plain const object — a union-typed spread source
+    // is what lets TS accept `file.type` (a plain `string`) against the
+    // mutation's narrower literal-union input type.
+    let cardImageFields = {};
+    if (f) {
+      cardImageFields = {
+        cardImageBase64: await fileToBase64(f),
+        cardImageFileName: f.name,
+        cardImageContentType: f.type,
+      };
+    }
+    updateCardImage.mutate({ id: uploadTargetId, ...cardImageFields });
   };
 
   return (
@@ -73,6 +155,8 @@ export default function AdminProductCategories() {
       </h2>
       <p style={{ color: C.muted, fontSize: "0.85rem", margin: "-1rem 0 1.5rem" }}>
         Separadas de las categorías de Lab Reports. Estas alimentan la tienda (Shop, Choose Your Ride).
+        "Card Image" es la imagen que se usa en las tarjetas de Choose Your Ride — una categoría solo
+        aparece ahí si tiene Card Image Y al menos un producto activo.
       </p>
 
       {/* Create form */}
@@ -81,23 +165,14 @@ export default function AdminProductCategories() {
         borderRadius: "1rem", padding: "1.5rem", marginBottom: "2rem",
         display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "flex-start",
       }}>
-        <div
-          onClick={() => fileRef.current?.click()}
-          style={{
-            width: 96, height: 96, flexShrink: 0, borderRadius: "0.75rem",
-            border: `1.5px dashed ${alpha(C.border, 45)}`, cursor: "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            overflow: "hidden", background: C.panelAlt,
-          }}
-        >
-          {preview ? (
-            <img src={preview} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          ) : (
-            <ImagePlus size={22} style={{ color: C.muted }} />
-          )}
-          <input ref={fileRef} type="file" accept={ALLOWED_MIME_TYPES.join(",")} style={{ display: "none" }}
-            onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
-        </div>
+        <Dropzone label="Image" preview={preview} onClick={() => fileRef.current?.click()} />
+        <input ref={fileRef} type="file" accept={ALLOWED_MIME_TYPES.join(",")} style={{ display: "none" }}
+          onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
+
+        <Dropzone label="Card Image" preview={cardPreview} onClick={() => cardFileRef.current?.click()} />
+        <input ref={cardFileRef} type="file" accept={ALLOWED_MIME_TYPES.join(",")} style={{ display: "none" }}
+          onChange={e => { const f = e.target.files?.[0]; if (f) handleCardFile(f); }} />
+
         <div style={{ flex: "1 1 200px" }}>
           <label style={{ color: C.muted, fontSize: "0.75rem", fontWeight: 700, display: "block", marginBottom: "0.4rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>Name</label>
           <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Silly Dots" style={fieldStyle} />
@@ -124,6 +199,19 @@ export default function AdminProductCategories() {
         </button>
       </form>
 
+      {/* Shared hidden input for the per-row card-image uploader below */}
+      <input
+        ref={rowCardFileRef}
+        type="file"
+        accept={ALLOWED_MIME_TYPES.join(",")}
+        style={{ display: "none" }}
+        onChange={e => {
+          const f = e.target.files?.[0];
+          if (f) handleRowCardFile(f);
+          e.target.value = "";
+        }}
+      />
+
       {isLoading ? (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem", color: C.muted, padding: "3rem", fontSize: "0.9rem" }}>
           <Loader2 size={18} className="animate-spin" /> Cargando categorías...
@@ -145,6 +233,40 @@ export default function AdminProductCategories() {
               <div style={{ width: 44, height: 44, borderRadius: "0.5rem", overflow: "hidden", background: C.panelAlt, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 {cat.imageUrl ? <img src={cat.imageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <FolderTree size={18} style={{ color: C.muted }} />}
               </div>
+
+              <div
+                onClick={() => { setUploadTargetId(cat.id); rowCardFileRef.current?.click(); }}
+                title="Upload/replace Card Image (used in Choose Your Ride)"
+                style={{
+                  position: "relative", width: 44, height: 44, borderRadius: "0.5rem", overflow: "hidden",
+                  background: C.panelAlt, flexShrink: 0, cursor: "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  border: `1.5px dashed ${cat.cardImageUrl ? "transparent" : alpha(C.border, 45)}`,
+                }}
+              >
+                {cat.cardImageUrl ? (
+                  <img src={cat.cardImageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ) : (
+                  <ImagePlus size={16} style={{ color: C.muted }} />
+                )}
+                {updateCardImage.isPending && updateCardImage.variables?.id === cat.id && (
+                  <div style={{
+                    position: "absolute", inset: 0, background: "rgba(0,0,0,0.55)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    <Loader2 size={14} className="animate-spin" style={{ color: "white" }} />
+                  </div>
+                )}
+                <span style={{
+                  position: "absolute", bottom: 0, left: 0, right: 0,
+                  background: "rgba(0,0,0,0.6)", color: "white", fontSize: "0.5rem",
+                  fontWeight: 700, textAlign: "center", letterSpacing: "0.03em",
+                  textTransform: "uppercase", padding: "1px 0",
+                }}>
+                  Card
+                </span>
+              </div>
+
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ color: C.text, fontWeight: 700, fontSize: "1rem" }}>{cat.name}</div>
                 <div style={{ color: C.muted, fontSize: "0.8rem" }}>/{cat.slug} {cat.description ? `· ${cat.description}` : ""} · orden {cat.sortOrder}</div>

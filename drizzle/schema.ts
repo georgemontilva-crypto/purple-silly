@@ -115,6 +115,11 @@ export const productCategories = mysqlTable("product_categories", {
   description: text("description"),
   imageKey: varchar("imageKey", { length: 512 }),
   imageUrl: varchar("imageUrl", { length: 1024 }),
+  // Dedicated "Choose Your Ride" card image (Fase 3C) — separate from the
+  // general imageKey/imageUrl pair above, which isn't consumed by any
+  // storefront section today.
+  cardImageKey: varchar("cardImageKey", { length: 512 }),
+  cardImageUrl: varchar("cardImageUrl", { length: 1024 }),
   sortOrder: int("sortOrder").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
