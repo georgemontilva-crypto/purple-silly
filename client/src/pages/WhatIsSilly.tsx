@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
+import { motion } from "framer-motion";
 import { useSiteAsset } from "@/hooks/useSiteAssets";
 import { oklchAlpha } from "@/lib/color";
+import { revealItemVariants } from "@/components/motion/Reveal";
 import type { AssetSectionKey } from "@shared/assetSections";
 
 const C = {
@@ -65,39 +66,21 @@ const SECTIONS = [
   },
 ];
 
-function useInView(threshold = 0.25) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setVisible(true); },
-      { threshold }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-  return { ref, visible };
-}
-
 function SectionBlock({ section, index }: { section: typeof SECTIONS[0]; index: number }) {
-  const { ref, visible } = useInView(0.15);
   const isLeft = section.imgSide === "left";
   const { asset } = useSiteAsset(section.assetKey);
 
   return (
-    <div
-      ref={ref}
+    <motion.div
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.15 }}
+      variants={revealItemVariants}
       style={{
         display: "grid",
         gridTemplateColumns: "1fr 1fr",
         gap: "0",
         minHeight: "90vh",
-        opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(40px)",
-        transition: "opacity 0.7s ease-out, transform 0.7s ease-out",
-        transitionDelay: "0.1s",
       }}
       className="section-block"
     >
@@ -230,7 +213,7 @@ function SectionBlock({ section, index }: { section: typeof SECTIONS[0]; index: 
           {section.cta.label}
         </Link>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

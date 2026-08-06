@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { oklchAlpha } from "@/lib/color";
+import { Reveal, RevealItem, RevealStagger } from "@/components/motion/Reveal";
 
 const C = {
   deep:   "oklch(0.07 0.04 295)",
@@ -27,7 +28,7 @@ export default function LabReportsPage() {
     <div style={{ background: C.deep, minHeight: "100vh", color: C.text }}>
 
       {/* Hero */}
-      <div style={{
+      <Reveal style={{
         padding: "6rem 2rem 4rem",
         textAlign: "center",
         position: "relative",
@@ -63,10 +64,10 @@ export default function LabReportsPage() {
         }}>
           Every Purple Co product is third-party tested for purity, potency, and safety. Download our Certificates of Analysis below.
         </p>
-      </div>
+      </Reveal>
 
       {/* Category filters */}
-      <div style={{
+      <Reveal style={{
         padding: "2rem",
         borderBottom: `1px solid ${C.border}`,
         display: "flex",
@@ -106,7 +107,7 @@ export default function LabReportsPage() {
             {cat.name}
           </button>
         ))}
-      </div>
+      </Reveal>
 
       {/* Reports grid */}
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "3rem 2rem" }}>
@@ -129,14 +130,14 @@ export default function LabReportsPage() {
             </p>
           </div>
         ) : (
-          <div style={{
+          <RevealStagger style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
             gap: "1.25rem",
           }}>
             {reports.map(report => (
+              <RevealItem key={report.id}>
               <div
-                key={report.id}
                 style={{
                   background: oklchAlpha(C.vivid, 8),
                   border: `1.5px solid ${C.border}`,
@@ -231,8 +232,9 @@ export default function LabReportsPage() {
                   ↓ Download PDF
                 </a>
               </div>
+              </RevealItem>
             ))}
-          </div>
+          </RevealStagger>
         )}
       </div>
     </div>

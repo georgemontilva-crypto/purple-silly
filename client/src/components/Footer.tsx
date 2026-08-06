@@ -1,5 +1,6 @@
 import { Link } from "wouter";
 import { useSiteAsset } from "@/hooks/useSiteAssets";
+import { Reveal } from "@/components/motion/Reveal";
 
 const C = {
   deep: "oklch(0.07 0.03 295)",
@@ -35,7 +36,7 @@ export default function Footer() {
   const { asset: logo } = useSiteAsset("logo-footer");
   return (
     <footer style={{ background: C.deep, borderTop: `1px solid ${C.mid}` }}>
-      <div className="max-w-[1280px] mx-auto px-4 sm:px-8 py-16">
+      <Reveal className="max-w-[1280px] mx-auto px-4 sm:px-8 py-16">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-12 pb-10"
           style={{ borderBottom: `1px solid ${C.mid}` }}>
           <Link href="/">
@@ -83,7 +84,7 @@ export default function Footer() {
             © {new Date().getFullYear()} Purple Organics. All rights reserved. These statements have not been evaluated by the Food and Drug Administration. This product is not intended to diagnose, treat, cure, or prevent any disease. For adults 21+ only. Keep out of reach of children.
           </p>
         </div>
-      </div>
+      </Reveal>
     </footer>
   );
 }

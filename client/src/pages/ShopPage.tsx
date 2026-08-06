@@ -5,6 +5,7 @@ import { trpc } from "@/lib/trpc";
 import { useCart } from "@/contexts/CartContext";
 import AnnouncementBar from "@/components/AnnouncementBar";
 import NewsletterSection from "@/components/NewsletterSection";
+import { Reveal, RevealItem, RevealStagger } from "@/components/motion/Reveal";
 
 function formatPrice(cents: number | null): string {
   if (cents === null) return "—";
@@ -94,7 +95,7 @@ export default function ShopPage() {
       <AnnouncementBar />
       <main className="flex-1 py-12">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+          <Reveal className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
             <h1 className="font-condensed font-black text-4xl md:text-5xl text-[oklch(0.22_0.08_265)] tracking-tight">Shop All</h1>
             {categories && categories.length > 0 && (
               <div className="flex bg-white rounded-2xl p-1 gap-1 shadow-sm border border-gray-100 self-start flex-wrap">
@@ -110,7 +111,7 @@ export default function ShopPage() {
                 ))}
               </div>
             )}
-          </div>
+          </Reveal>
 
           {isLoading ? (
             <div className="flex items-center justify-center gap-2 text-gray-400 py-24">
@@ -122,13 +123,13 @@ export default function ShopPage() {
               <p className="text-base">No products here yet — check back soon.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-              {products.map(p => <ProductCard key={p.id} product={p} />)}
-            </div>
+            <RevealStagger className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+              {products.map(p => <RevealItem key={p.id}><ProductCard product={p} /></RevealItem>)}
+            </RevealStagger>
           )}
         </div>
       </main>
-      <NewsletterSection />
+      <Reveal><NewsletterSection /></Reveal>
     </div>
   );
 }

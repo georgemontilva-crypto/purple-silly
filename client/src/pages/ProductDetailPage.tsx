@@ -17,6 +17,7 @@ import {
 import { trpc } from "@/lib/trpc";
 import AnnouncementBar from "@/components/AnnouncementBar";
 import NewsletterSection from "@/components/NewsletterSection";
+import { Reveal, RevealItem, RevealStagger } from "@/components/motion/Reveal";
 
 function formatCents(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
@@ -102,7 +103,7 @@ export default function ProductDetailPage() {
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 pb-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
             {/* Gallery — thumbnails on the left, main image on the right */}
-            <div className="flex gap-3">
+            <Reveal className="flex gap-3">
               {images.length > 1 && (
                 <div className="flex flex-col gap-2 w-16 sm:w-20 shrink-0">
                   {images.map((img, i) => (
@@ -122,10 +123,10 @@ export default function ProductDetailPage() {
                   </div>
                 )}
               </div>
-            </div>
+            </Reveal>
 
             {/* Info */}
-            <div className="space-y-5">
+            <Reveal className="space-y-5">
               <div>
                 {product.category && (
                   <p className="text-xs font-bold uppercase tracking-widest text-[oklch(0.62_0.25_340)] mb-2">{product.category.name}</p>
@@ -222,15 +223,19 @@ export default function ProductDetailPage() {
               )}
 
               {accordions.length > 0 && (
-                <div className="space-y-3 pt-2">
-                  {accordions.map(a => <Accordion key={a.title} title={a.title} content={a.content} />)}
-                </div>
+                <RevealStagger className="space-y-3 pt-2">
+                  {accordions.map(a => (
+                    <RevealItem key={a.title}>
+                      <Accordion title={a.title} content={a.content} />
+                    </RevealItem>
+                  ))}
+                </RevealStagger>
               )}
-            </div>
+            </Reveal>
           </div>
         </div>
       </main>
-      <NewsletterSection />
+      <Reveal><NewsletterSection /></Reveal>
     </div>
   );
 }

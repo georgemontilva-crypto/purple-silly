@@ -1,6 +1,7 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
+import { MotionConfig } from "framer-motion";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -58,25 +59,30 @@ function StorefrontLayout() {
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider defaultTheme="light">
-        <CartProvider>
-          <TooltipProvider>
-            <Toaster position="top-right" richColors />
-            <CustomCursor />
-            {/* /admin, /login, /signup and /verify-email get their own clean
-                layout — no storefront Navbar/Footer. Everything else falls
-                through to StorefrontLayout, which has its own inner Switch
-                for the rest of the site. */}
-            <Switch>
-              <Route path="/admin" component={AdminDashboard} />
-              <Route path="/login" component={Login} />
-              <Route path="/signup" component={Signup} />
-              <Route path="/verify-email" component={VerifyEmail} />
-              <Route component={StorefrontLayout} />
-            </Switch>
-          </TooltipProvider>
-        </CartProvider>
-      </ThemeProvider>
+      {/* reducedMotion="user" makes every framer-motion animation site-wide
+          (scroll reveals, particle bursts, etc.) automatically respect the
+          OS-level prefers-reduced-motion setting — no per-component checks. */}
+      <MotionConfig reducedMotion="user">
+        <ThemeProvider defaultTheme="light">
+          <CartProvider>
+            <TooltipProvider>
+              <Toaster position="top-right" richColors />
+              <CustomCursor />
+              {/* /admin, /login, /signup and /verify-email get their own clean
+                  layout — no storefront Navbar/Footer. Everything else falls
+                  through to StorefrontLayout, which has its own inner Switch
+                  for the rest of the site. */}
+              <Switch>
+                <Route path="/admin" component={AdminDashboard} />
+                <Route path="/login" component={Login} />
+                <Route path="/signup" component={Signup} />
+                <Route path="/verify-email" component={VerifyEmail} />
+                <Route component={StorefrontLayout} />
+              </Switch>
+            </TooltipProvider>
+          </CartProvider>
+        </ThemeProvider>
+      </MotionConfig>
     </ErrorBoundary>
   );
 }
