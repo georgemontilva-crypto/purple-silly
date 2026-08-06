@@ -2,8 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   BLUR_END_DEG,
   BLUR_START_DEG,
+  FADE_END_DEG,
+  FADE_START_DEG,
   HERO_LAYOUTS,
   MAX_DIM,
+  edgeFade,
   MIN_RING_SLOTS,
   PHYSICS,
   activeImageIndex,
@@ -196,18 +199,33 @@ describe("slotVisual", () => {
   });
 
   /**
-   * The whole point of the change: depth comes from `dim`, never from
-   * making the card itself see-through. A translucent card lets the
-   * panel's gradients read through it, which is the washed-out look this
-   * replaced.
+   * Depth at the FRONT of the arc comes from `dim`, never from making the
+   * card see-through — a translucent card lets the panel's gradients read
+   * through it, which is the washed-out look this replaced.
    */
-  it("keeps cards fully opaque across the entire visible arc", () => {
+  it("keeps the front of the arc fully opaque", () => {
     for (const total of [8, 9, 10, 12, 14]) {
-      const lastVisible = total / 2 - 1.2;
-      for (let offset = 0; offset <= lastVisible; offset += 0.25) {
-        expect(slotVisual(offset, total, DESKTOP).opacity, `total ${total} offset ${offset}`).toBe(1);
+      // Everything square-enough to the viewer to read as a solid card.
+      for (let angle = 0; angle <= FADE_START_DEG; angle += 5) {
+        const offset = angle / DESKTOP.angleStep;
+        expect(slotVisual(offset, total, DESKTOP).opacity, `total ${total} ${angle}deg`).toBe(1);
       }
     }
+  });
+
+  /**
+   * The regression this guards. Tying the fade to slot index put the
+   * whole fade zone behind the ~90-degree backface cutoff, so no card on
+   * screen ever faded — the ring ended on a hard-edged opaque slab with
+   * its border at full strength instead of dissolving.
+   */
+  it("dissolves the outermost VISIBLE card rather than ending hard", () => {
+    // Measured rotations from a 12-slot desktop ring.
+    const outermostVisible = 70;
+    const offset = outermostVisible / DESKTOP.angleStep;
+    const v = slotVisual(offset, 12, DESKTOP);
+    expect(v.opacity).toBeLessThan(0.8);
+    expect(v.opacity).toBeGreaterThan(0);
   });
 
   it("still fades the back of the ring to exactly 0 so recycling is never seen", () => {
@@ -247,6 +265,44 @@ describe("slotVisual", () => {
   it("never exceeds the layout's blur ceiling", () => {
     for (let offset = 0; offset <= 8; offset += 0.5) {
       expect(slotVisual(offset, 16, DESKTOP).blurPx).toBeLessThanOrEqual(DESKTOP.maxBlurPx);
+    }
+  });
+});
+
+describe("edgeFade", () => {
+  it("leaves the front of the arc completely solid", () => {
+    for (let deg = 0; deg <= FADE_START_DEG; deg += 5) {
+      expect(edgeFade(deg), `${deg}deg`).toBe(1);
+    }
+  });
+
+  it("is symmetric between the two sides of the ring", () => {
+    for (const deg of [30, 58, 70, 85, 91]) {
+      expect(edgeFade(-deg)).toBe(edgeFade(deg));
+    }
+  });
+
+  it("reaches 0 by the time the card has turned away", () => {
+    expect(edgeFade(FADE_END_DEG)).toBe(0);
+    expect(edgeFade(140)).toBe(0);
+  });
+
+  it("eases rather than snapping, so cards don't blink out", () => {
+    const mid = (FADE_START_DEG + FADE_END_DEG) / 2;
+    expect(edgeFade(mid)).toBeCloseTo(0.5);
+    expect(edgeFade(mid)).toBeLessThan(edgeFade(mid - 10));
+    expect(edgeFade(mid)).toBeGreaterThan(edgeFade(mid + 10));
+  });
+
+  it("starts fading only after blur has begun, so cards soften then dissolve", () => {
+    expect(FADE_START_DEG).toBeGreaterThanOrEqual(BLUR_START_DEG);
+  });
+
+  it("stays within 0..1 at any angle", () => {
+    for (let deg = -360; deg <= 360; deg += 7) {
+      const f = edgeFade(deg);
+      expect(f).toBeGreaterThanOrEqual(0);
+      expect(f).toBeLessThanOrEqual(1);
     }
   });
 });

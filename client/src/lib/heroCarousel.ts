@@ -145,10 +145,11 @@ export interface SlotVisual {
   readonly rotateY: number;
   readonly scale: number;
   /**
-   * Element opacity. Used ONLY for the hand-off at the back of the ring —
-   * it stays at 1 across the whole visible arc, so cards never go
-   * see-through and never let the panel background read through them.
-   * Depth darkening is `dim` instead.
+   * Element opacity. 1 across the front of the arc — those cards must
+   * stay solid, with nothing of the panel reading through them — then
+   * easing to 0 as a card turns into the back of the ring, so the
+   * filmstrip dissolves at its edges instead of ending on a hard-edged
+   * slab. Depth darkening in between is `dim`.
    */
   readonly opacity: number;
   /**
@@ -181,18 +182,48 @@ export function slotVisual(
   const rad = (angle * Math.PI) / 180;
   const dist = Math.abs(offset);
 
+  // Slot-based backstop. The angle fade below is what's actually visible,
+  // but this guarantees 0 at the ring's back for ANY geometry — if a very
+  // small angular step ever meant the back slot hadn't turned past the
+  // fade angle, the recycling hand-off would otherwise be on screen.
   const edge = total / 2 - 1.2;
+  const backstop = dist > edge ? Math.max(0, 1 - (dist - edge) * 1.6) : 1;
 
   return {
     x: Math.sin(rad) * opts.radius,
     z: Math.cos(rad) * opts.radius - opts.radius,
     rotateY: -angle,
     scale: Math.max(0.5, 1 - dist * 0.11),
-    opacity: dist > edge ? Math.max(0, 1 - (dist - edge) * 1.6) : 1,
+    opacity: Math.min(edgeFade(angle), backstop),
     dim: Math.min(MAX_DIM, dist * DIM_PER_SLOT),
     blurPx: opts.maxBlurPx * blurRamp(angle),
     zIndex: 100 - Math.round(dist * 10),
   };
+}
+
+/** Rotation past which a card begins dissolving into the back of the ring. */
+export const FADE_START_DEG = 58;
+/** Rotation by which it's gone. Just past the backface cutoff. */
+export const FADE_END_DEG = 92;
+
+/**
+ * 1 for every card that should render solid, easing to 0 as one turns
+ * into the back of the ring.
+ *
+ * Keyed on rotation for the same reason blurRamp is, and fixing the same
+ * mistake. Tying the fade to slot index put the whole fade zone behind
+ * the ~90-degree point where backface-visibility already stops painting
+ * the card, so nothing on screen ever faded: the outermost visible card
+ * sat at full opacity with its border and shadow at full strength, and
+ * the filmstrip ended on a hard-edged slab instead of dissolving.
+ *
+ * The cards at the front stay at exactly 1 — they must not go
+ * translucent, which is what made them look washed out before.
+ */
+export function edgeFade(angleDeg: number): number {
+  const turn = Math.abs(angleDeg);
+  const t = (turn - FADE_START_DEG) / (FADE_END_DEG - FADE_START_DEG);
+  return 1 - Math.min(1, Math.max(0, t));
 }
 
 /** Card rotation past which blur starts easing in, in degrees. */
