@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { FolderTree, Loader2 } from "lucide-react";
 
 const C = {
   border: "oklch(0.18 0.06 295)",
@@ -74,10 +75,17 @@ export default function AdminCategories() {
 
       {/* List */}
       {isLoading ? (
-        <div style={{ color: C.muted, padding: "2rem", textAlign: "center" }}>Loading...</div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem", color: C.muted, padding: "3rem", fontSize: "0.9rem" }}>
+          <Loader2 size={18} className="animate-spin" /> Cargando categorías...
+        </div>
+      ) : !cats || cats.length === 0 ? (
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.5rem", color: C.muted, padding: "3rem", textAlign: "center", border: `1px dashed ${C.border}`, borderRadius: "1rem" }}>
+          <FolderTree size={28} style={{ opacity: 0.5 }} />
+          <span style={{ fontSize: "0.9rem" }}>No categories yet. Add one above.</span>
+        </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-          {cats?.map(cat => (
+          {cats.map(cat => (
             <div key={cat.id} style={{
               display: "flex", alignItems: "center", justifyContent: "space-between",
               padding: "1rem 1.25rem",
@@ -101,9 +109,6 @@ export default function AdminCategories() {
               </button>
             </div>
           ))}
-          {(!cats || cats.length === 0) && (
-            <div style={{ color: C.muted, padding: "2rem", textAlign: "center" }}>No categories yet.</div>
-          )}
         </div>
       )}
     </div>

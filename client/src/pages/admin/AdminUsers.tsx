@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { Loader2, Users as UsersIcon } from "lucide-react";
 
 const C = {
   bg:     "oklch(0.07 0.04 295)",
@@ -45,7 +46,9 @@ export default function AdminUsers() {
       </div>
 
       {isLoading ? (
-        <div style={{ color: C.muted, padding: "2rem", textAlign: "center" }}>Loading users...</div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem", color: C.muted, padding: "3rem", fontSize: "0.9rem" }}>
+          <Loader2 size={18} className="animate-spin" /> Cargando usuarios...
+        </div>
       ) : (
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
@@ -95,7 +98,10 @@ export default function AdminUsers() {
             </tbody>
           </table>
           {filtered.length === 0 && (
-            <div style={{ color: C.muted, padding: "2rem", textAlign: "center" }}>No users found.</div>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.5rem", color: C.muted, padding: "3rem", textAlign: "center" }}>
+              <UsersIcon size={28} style={{ opacity: 0.5 }} />
+              <span style={{ fontSize: "0.9rem" }}>No users found.</span>
+            </div>
           )}
         </div>
       )}

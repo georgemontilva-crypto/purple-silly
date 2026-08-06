@@ -35,6 +35,16 @@
   --color-input: oklch(0.20 0.08 295);
   --color-ring: oklch(0.62 0.28 295);
 
+  /* Sidebar (used by /admin) */
+  --color-sidebar: oklch(0.10 0.05 295);
+  --color-sidebar-foreground: oklch(0.92 0.02 295);
+  --color-sidebar-primary: oklch(0.52 0.28 295);
+  --color-sidebar-primary-foreground: oklch(0.99 0 0);
+  --color-sidebar-accent: oklch(0.20 0.08 295);
+  --color-sidebar-accent-foreground: oklch(0.62 0.28 295);
+  --color-sidebar-border: oklch(0.18 0.06 295);
+  --color-sidebar-ring: oklch(0.62 0.28 295);
+
   --radius-sm: 0.5rem;
   --radius-md: 0.75rem;
   --radius-lg: 1rem;

@@ -1,308 +1,288 @@
 import { useEffect, useState } from "react";
+import { Link, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Link, useLocation } from "wouter";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  ArrowLeft,
+  FlaskConical,
+  FolderTree,
+  Image as ImageIcon,
+  LayoutDashboard,
+  Loader2,
+  LogOut,
+  type LucideIcon,
+  ShieldAlert,
+  Users,
+} from "lucide-react";
 import AdminUsers from "./AdminUsers";
 import AdminLabReports from "./AdminLabReports";
 import AdminCategories from "./AdminCategories";
 import AdminAssets from "./AdminAssets";
 
-const C = {
-  bg:     "oklch(0.07 0.04 295)",
-  sidebar:"oklch(0.10 0.05 295)",
-  border: "oklch(0.18 0.06 295)",
-  vivid:  "oklch(0.52 0.28 295)",
-  bright: "oklch(0.62 0.28 295)",
-  pink:   "oklch(0.72 0.22 320)",
-  text:   "oklch(0.92 0.02 295)",
-  muted:  "oklch(0.55 0.07 295)",
-};
+type AdminTab = "overview" | "categories" | "lab-reports" | "assets" | "users";
 
-type AdminTab = "overview" | "categories" | "users" | "lab-reports" | "assets";
-
-const NAV_ITEMS: { id: AdminTab; label: string; icon: string }[] = [
-  { id: "overview",    label: "Overview",     icon: "◈" },
-  { id: "categories",  label: "Categories",   icon: "◆" },
-  { id: "lab-reports", label: "Lab Reports",  icon: "◎" },
-  { id: "assets",      label: "Assets",       icon: "🖼" },
-  { id: "users",       label: "Users",        icon: "✦" },
+const NAV_ITEMS: { id: AdminTab; label: string; icon: LucideIcon }[] = [
+  { id: "overview", label: "Overview", icon: LayoutDashboard },
+  { id: "categories", label: "Categories", icon: FolderTree },
+  { id: "lab-reports", label: "Lab Reports", icon: FlaskConical },
+  { id: "assets", label: "Assets", icon: ImageIcon },
+  { id: "users", label: "Users", icon: Users },
 ];
 
-function StatCard({ label, value, accent }: { label: string; value: number | string; accent: string }) {
+function StatCard({
+  label,
+  value,
+  icon: Icon,
+  isLoading,
+}: {
+  label: string;
+  value: number;
+  icon: LucideIcon;
+  isLoading: boolean;
+}) {
   return (
-    <div style={{
-      background: `${accent}12`,
-      border: `1.5px solid ${accent}30`,
-      borderRadius: "1rem",
-      padding: "1.5rem",
-      flex: "1 1 160px",
-      minWidth: 0,
-    }}>
-      <div style={{ color: accent, fontSize: "2rem", fontWeight: 900, fontFamily: "'Barlow Condensed', sans-serif", lineHeight: 1 }}>
-        {value}
+    <Card className="min-w-[160px] flex-1 gap-3 py-5">
+      <CardContent className="flex items-center gap-4 px-5">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
+          <Icon size={20} />
+        </div>
+        <div className="min-w-0">
+          {isLoading ? (
+            <Skeleton className="h-7 w-12" />
+          ) : (
+            <div className="font-condensed text-2xl leading-none font-black text-foreground">{value}</div>
+          )}
+          <div className="mt-1.5 text-xs font-semibold tracking-wide text-muted-foreground uppercase">{label}</div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function Overview() {
+  const { data: stats, isLoading: statsLoading } = trpc.admin.stats.useQuery();
+  const { data: categories, isLoading: catsLoading } = trpc.admin.categories.list.useQuery();
+  const { data: reports, isLoading: reportsLoading } = trpc.admin.labReports.listAdmin.useQuery();
+
+  return (
+    <div className="space-y-6">
+      <h2 className="font-condensed text-2xl font-black text-foreground">Dashboard Overview</h2>
+
+      <div className="flex flex-wrap gap-4">
+        <StatCard label="Total Users" value={stats?.users ?? 0} icon={Users} isLoading={statsLoading} />
+        <StatCard label="Lab Reports" value={stats?.labReports ?? 0} icon={FlaskConical} isLoading={statsLoading} />
+        <StatCard label="Categories" value={stats?.categories ?? 0} icon={FolderTree} isLoading={statsLoading} />
       </div>
-      <div style={{ color: C.muted, fontSize: "0.8rem", marginTop: "0.4rem", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase" }}>
-        {label}
+
+      <Card>
+        <CardContent className="px-5">
+          <h3 className="mb-4 font-condensed text-lg font-extrabold text-foreground">Recent Lab Reports</h3>
+          {reportsLoading ? (
+            <div className="space-y-2">
+              {[1, 2, 3].map(i => (
+                <Skeleton key={i} className="h-14 w-full rounded-lg" />
+              ))}
+            </div>
+          ) : !reports || reports.length === 0 ? (
+            <div className="flex flex-col items-center gap-2 py-8 text-center text-muted-foreground">
+              <FlaskConical size={28} className="opacity-50" />
+              <p className="text-sm">No lab reports yet. Upload your first report in the Lab Reports tab.</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {reports.slice(0, 5).map(r => (
+                <div
+                  key={r.id}
+                  className="flex items-center justify-between gap-3 rounded-lg border border-border bg-primary/5 px-4 py-3"
+                >
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-semibold text-foreground">{r.title}</div>
+                    <div className="truncate text-xs text-muted-foreground">
+                      {r.productName} · {r.testDate}
+                    </div>
+                  </div>
+                  <span
+                    className={`shrink-0 rounded-full px-2.5 py-0.5 text-[0.7rem] font-bold ${
+                      r.isPublished ? "bg-primary/20 text-primary" : "bg-accent/20 text-accent"
+                    }`}
+                  >
+                    {r.isPublished ? "Published" : "Draft"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="px-5">
+          <h3 className="mb-4 font-condensed text-lg font-extrabold text-foreground">Report Categories</h3>
+          {catsLoading ? (
+            <div className="flex flex-wrap gap-2">
+              {[1, 2, 3].map(i => (
+                <Skeleton key={i} className="h-7 w-24 rounded-full" />
+              ))}
+            </div>
+          ) : !categories || categories.length === 0 ? (
+            <div className="flex flex-col items-center gap-2 py-8 text-center text-muted-foreground">
+              <FolderTree size={28} className="opacity-50" />
+              <p className="text-sm">No categories yet. Create one in the Categories tab.</p>
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {categories.map(cat => (
+                <span
+                  key={cat.id}
+                  className="rounded-full border border-accent/30 bg-accent/15 px-3 py-1 text-sm font-semibold text-foreground"
+                >
+                  {cat.name}
+                </span>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function AdminDashboardLoading() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex items-center gap-3 text-primary">
+        <Loader2 className="animate-spin" size={22} />
+        <span className="font-condensed text-lg font-extrabold">Loading...</span>
       </div>
     </div>
   );
 }
 
-function Overview() {
-  const { data: stats, isLoading } = trpc.admin.stats.useQuery();
-  const { data: categories } = trpc.admin.categories.list.useQuery();
-  const { data: reports } = trpc.admin.labReports.listAdmin.useQuery();
-
+function AccessDenied() {
   return (
-    <div>
-      <h2 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: "2rem", color: C.text, margin: "0 0 1.5rem" }}>
-        Dashboard Overview
-      </h2>
-      {/* Stats row */}
-      <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginBottom: "2rem" }}>
-        <StatCard label="Total Users" value={isLoading ? "—" : stats?.users ?? 0} accent={C.vivid} />
-        <StatCard label="Lab Reports" value={isLoading ? "—" : stats?.labReports ?? 0} accent={C.pink} />
-        <StatCard label="Categories" value={isLoading ? "—" : stats?.categories ?? 0} accent="oklch(0.60 0.25 185)" />
-      </div>
-
-      {/* Recent Lab Reports */}
-      <div style={{
-        background: `${C.vivid}08`,
-        border: `1px solid ${C.border}`,
-        borderRadius: "1rem",
-        padding: "1.5rem",
-        marginBottom: "1.5rem",
-      }}>
-        <h3 style={{ color: C.text, fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800, fontSize: "1.1rem", margin: "0 0 1rem" }}>
-          Recent Lab Reports
-        </h3>
-        {!reports || reports.length === 0 ? (
-          <p style={{ color: C.muted, fontSize: "0.9rem" }}>No lab reports yet. Upload your first report in the Lab Reports tab.</p>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-            {reports.slice(0, 5).map(r => (
-              <div key={r.id} style={{
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                padding: "0.75rem 1rem",
-                background: `${C.vivid}08`,
-                borderRadius: "0.5rem",
-                border: `1px solid ${C.border}`,
-              }}>
-                <div>
-                  <div style={{ color: C.text, fontWeight: 600, fontSize: "0.9rem" }}>{r.title}</div>
-                  <div style={{ color: C.muted, fontSize: "0.75rem" }}>{r.productName} · {r.testDate}</div>
-                </div>
-                <span style={{
-                  padding: "0.2rem 0.6rem", borderRadius: "999px", fontSize: "0.7rem", fontWeight: 700,
-                  background: r.isPublished ? `${C.vivid}25` : `${C.pink}25`,
-                  color: r.isPublished ? C.vivid : C.pink,
-                }}>
-                  {r.isPublished ? "Published" : "Draft"}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Categories summary */}
-      <div style={{
-        background: `${C.pink}08`,
-        border: `1px solid ${C.border}`,
-        borderRadius: "1rem",
-        padding: "1.5rem",
-      }}>
-        <h3 style={{ color: C.text, fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800, fontSize: "1.1rem", margin: "0 0 1rem" }}>
-          Report Categories
-        </h3>
-        <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
-          {categories?.map(cat => (
-            <span key={cat.id} style={{
-              padding: "0.4rem 1rem", borderRadius: "999px",
-              background: `${C.pink}18`, border: `1px solid ${C.pink}35`,
-              color: C.text, fontSize: "0.85rem", fontWeight: 600,
-            }}>
-              {cat.name}
-            </span>
-          ))}
-        </div>
-      </div>
+    <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-background px-4 text-center">
+      <ShieldAlert size={48} className="text-accent" />
+      <h1 className="font-condensed text-3xl font-black text-foreground">Access Denied</h1>
+      <p className="text-muted-foreground">You need admin privileges to access this area.</p>
+      <Link href="/" className="mt-1 inline-flex items-center gap-1.5 font-bold text-primary hover:underline">
+        <ArrowLeft size={15} /> Back to Store
+      </Link>
     </div>
   );
 }
 
 export default function AdminDashboard() {
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
   const [, setLocation] = useLocation();
   const [tab, setTab] = useState<AdminTab>("overview");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
     if (!loading && !user) setLocation("/login");
   }, [loading, user, setLocation]);
 
-  if (loading || !user) {
-    return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: C.bg }}>
-        <div style={{ color: C.vivid, fontSize: "1.5rem", fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800 }}>Loading...</div>
-      </div>
-    );
-  }
+  if (loading || !user) return <AdminDashboardLoading />;
+  if (user.role !== "admin") return <AccessDenied />;
 
-  if (user.role !== "admin") {
-    return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: C.bg, flexDirection: "column", gap: "1rem" }}>
-        <div style={{ color: C.pink, fontSize: "3rem" }}>⛔</div>
-        <h1 style={{ color: C.text, fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: "2rem", margin: 0 }}>Access Denied</h1>
-        <p style={{ color: C.muted, margin: 0 }}>You need admin privileges to access this area.</p>
-        <Link href="/" style={{ color: C.vivid, fontWeight: 700, textDecoration: "none" }}>← Back to Store</Link>
-      </div>
-    );
-  }
-
-  const SIDEBAR_W = sidebarOpen ? 240 : 64;
+  const activeItem = NAV_ITEMS.find(n => n.id === tab)!;
+  const initial = (user.name || user.email).charAt(0).toUpperCase();
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: C.bg, fontFamily: "'Barlow', sans-serif" }}>
-      {/* Sidebar */}
-      <aside style={{
-        width: SIDEBAR_W,
-        minWidth: SIDEBAR_W,
-        background: C.sidebar,
-        borderRight: `1px solid ${C.border}`,
-        display: "flex",
-        flexDirection: "column",
-        transition: "width 0.2s, min-width 0.2s",
-        overflow: "hidden",
-        position: "sticky",
-        top: 0,
-        height: "100vh",
-        zIndex: 10,
-      }}>
-        {/* Logo area */}
-        <div style={{
-          padding: "1.25rem 1rem",
-          borderBottom: `1px solid ${C.border}`,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "0.5rem",
-        }}>
-          {sidebarOpen && (
-            <span style={{ color: C.vivid, fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: "1.1rem", whiteSpace: "nowrap" }}>
-              Admin Panel
-            </span>
-          )}
-          <button
-            onClick={() => setSidebarOpen(o => !o)}
-            style={{
-              background: "none", border: "none", cursor: "pointer",
-              color: C.muted, fontSize: "1.2rem", padding: "0.25rem",
-              borderRadius: "0.4rem", transition: "color 0.15s",
-              marginLeft: sidebarOpen ? "auto" : 0,
-            }}
-            title={sidebarOpen ? "Collapse" : "Expand"}
-          >
-            {sidebarOpen ? "◀" : "▶"}
-          </button>
-        </div>
-
-        {/* Nav items */}
-        <nav style={{ flex: 1, padding: "0.75rem 0.5rem", display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-          {NAV_ITEMS.map(item => (
-            <button
-              key={item.id}
-              onClick={() => setTab(item.id)}
-              title={item.label}
-              style={{
-                display: "flex", alignItems: "center", gap: "0.75rem",
-                padding: "0.65rem 0.75rem",
-                borderRadius: "0.6rem",
-                border: "none",
-                background: tab === item.id ? `${C.vivid}20` : "transparent",
-                color: tab === item.id ? C.vivid : C.muted,
-                cursor: "pointer",
-                fontWeight: tab === item.id ? 700 : 500,
-                fontSize: "0.9rem",
-                textAlign: "left",
-                transition: "background 0.15s, color 0.15s",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-              }}
-            >
-              <span style={{ fontSize: "1rem", flexShrink: 0 }}>{item.icon}</span>
-              {sidebarOpen && <span>{item.label}</span>}
-            </button>
-          ))}
-        </nav>
-
-        {/* Bottom: back to store */}
-        <div style={{ padding: "0.75rem 0.5rem", borderTop: `1px solid ${C.border}` }}>
-          <Link
-            href="/"
-            style={{
-              display: "flex", alignItems: "center", gap: "0.75rem",
-              padding: "0.65rem 0.75rem",
-              borderRadius: "0.6rem",
-              color: C.muted,
-              textDecoration: "none",
-              fontSize: "0.85rem",
-              fontWeight: 500,
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              transition: "color 0.15s",
-            }}
-          >
-            <span style={{ flexShrink: 0 }}>←</span>
-            {sidebarOpen && <span>Back to Store</span>}
-          </Link>
-        </div>
-      </aside>
-
-      {/* Main content */}
-      <main style={{ flex: 1, minWidth: 0, padding: "2rem", overflowY: "auto" }}>
-        {/* Top bar */}
-        <div style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          marginBottom: "2rem", paddingBottom: "1rem",
-          borderBottom: `1px solid ${C.border}`,
-        }}>
-          <div>
-            <div style={{ color: C.muted, fontSize: "0.75rem", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "0.2rem" }}>
-              Purple Co
+    <SidebarProvider>
+      <Sidebar collapsible="icon">
+        <SidebarHeader className="h-14 justify-center border-b border-sidebar-border px-3">
+          <div className="flex items-center gap-2 font-condensed text-lg font-black text-sidebar-foreground">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sm text-sidebar-primary-foreground">
+              P
             </div>
-            <h1 style={{
-              fontFamily: "'Barlow Condensed', sans-serif",
-              fontWeight: 900, fontSize: "1.6rem",
-              color: C.text, margin: 0,
-            }}>
-              {NAV_ITEMS.find(n => n.id === tab)?.label ?? "Dashboard"}
-            </h1>
+            <span className="truncate group-data-[collapsible=icon]:hidden">Purple Co Admin</span>
           </div>
-          <div style={{
-            display: "flex", alignItems: "center", gap: "0.75rem",
-            padding: "0.5rem 1rem",
-            background: `${C.vivid}12`,
-            border: `1px solid ${C.vivid}30`,
-            borderRadius: "999px",
-          }}>
-            <span style={{ color: C.vivid, fontSize: "0.75rem" }}>●</span>
-            <span style={{ color: C.text, fontSize: "0.85rem", fontWeight: 600 }}>{user.name ?? user.email}</span>
-            <span style={{
-              background: `${C.pink}25`, color: C.pink,
-              fontSize: "0.65rem", fontWeight: 800, letterSpacing: "0.05em",
-              padding: "0.15rem 0.5rem", borderRadius: "999px", textTransform: "uppercase",
-            }}>Admin</span>
-          </div>
-        </div>
+        </SidebarHeader>
 
-        {/* Tab content */}
-        {tab === "overview"    && <Overview />}
-        {tab === "categories"  && <AdminCategories />}
-        {tab === "lab-reports" && <AdminLabReports />}
-        {tab === "assets"      && <AdminAssets />}
-        {tab === "users"       && <AdminUsers />}
-      </main>
-    </div>
+        <SidebarContent>
+          <SidebarMenu className="px-2 py-2">
+            {NAV_ITEMS.map(item => (
+              <SidebarMenuItem key={item.id}>
+                <SidebarMenuButton isActive={tab === item.id} onClick={() => setTab(item.id)} tooltip={item.label}>
+                  <item.icon />
+                  <span>{item.label}</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarContent>
+
+        <SidebarFooter className="border-t border-sidebar-border p-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left hover:bg-sidebar-accent group-data-[collapsible=icon]:justify-center">
+                <Avatar className="h-8 w-8 shrink-0 border border-sidebar-border">
+                  <AvatarFallback className="bg-sidebar-accent text-xs font-bold text-sidebar-accent-foreground">
+                    {initial}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
+                  <p className="truncate text-sm font-semibold text-sidebar-foreground">{user.name || user.email}</p>
+                  <p className="truncate text-xs text-sidebar-foreground/60">{user.email}</p>
+                </div>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-52">
+              <DropdownMenuItem onClick={() => setLocation("/")}>
+                <ArrowLeft className="mr-2 h-4 w-4" /> Back to Store
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={logout} className="text-destructive focus:text-destructive">
+                <LogOut className="mr-2 h-4 w-4" /> Sign out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </SidebarFooter>
+      </Sidebar>
+
+      <SidebarInset>
+        <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border px-4">
+          <SidebarTrigger />
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span className="text-xs font-semibold tracking-wide uppercase">Purple Co</span>
+            <span>/</span>
+            <span className="font-condensed text-base font-extrabold text-foreground">{activeItem.label}</span>
+          </div>
+          <div className="ml-auto hidden items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 sm:flex">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+            <span className="text-xs font-semibold text-foreground">{user.name || user.email}</span>
+            <span className="rounded-full bg-accent/20 px-2 py-0.5 text-[0.65rem] font-extrabold tracking-wide text-accent uppercase">
+              Admin
+            </span>
+          </div>
+        </header>
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">
+          {tab === "overview" && <Overview />}
+          {tab === "categories" && <AdminCategories />}
+          {tab === "lab-reports" && <AdminLabReports />}
+          {tab === "assets" && <AdminAssets />}
+          {tab === "users" && <AdminUsers />}
+        </main>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
