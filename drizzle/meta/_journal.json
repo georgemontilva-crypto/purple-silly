@@ -29,6 +29,13 @@
       "when": 1785970000000,
       "tag": "0003_add_password_auth",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1785979290340,
+      "tag": "0004_lame_night_nurse",
+      "breakpoints": true
     }
   ]
 }

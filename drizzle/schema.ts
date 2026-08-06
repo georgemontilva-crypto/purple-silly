@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { boolean, int, json, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow (email + password, sessions signed with
@@ -74,3 +74,96 @@ export const siteAssets = mysqlTable("site_assets", {
 
 export type SiteAsset = typeof siteAssets.$inferSelect;
 export type InsertSiteAsset = typeof siteAssets.$inferInsert;
+
+// ─── Catalog ──────────────────────────────────────────────────────────────
+// No DB-level foreign keys, matching the existing labReports/labReportCategories
+// convention in this file — relations are enforced at the app layer.
+
+// Product Categories (separate from lab_report_categories above — do not conflate).
+export const productCategories = mysqlTable("product_categories", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 128 }).notNull(),
+  slug: varchar("slug", { length: 128 }).notNull().unique(),
+  description: text("description"),
+  imageKey: varchar("imageKey", { length: 512 }),
+  imageUrl: varchar("imageUrl", { length: 1024 }),
+  sortOrder: int("sortOrder").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ProductCategory = typeof productCategories.$inferSelect;
+export type InsertProductCategory = typeof productCategories.$inferInsert;
+
+export const products = mysqlTable("products", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 256 }).notNull(),
+  slug: varchar("slug", { length: 256 }).notNull().unique(),
+  description: text("description"),
+  status: mysqlEnum("status", ["draft", "active", "archived"]).default("draft").notNull(),
+  featured: boolean("featured").default(false).notNull(),
+  categoryId: int("categoryId"),
+  tags: json("tags").$type<string[]>().notNull(),
+  seoTitle: varchar("seoTitle", { length: 256 }),
+  seoDescription: varchar("seoDescription", { length: 512 }),
+  // Product detail page accordions (Part 4) — plain text, not jsonb: MySQL's
+  // JSON type adds no value here since each is rendered as one text block.
+  ingredients: text("ingredients"),
+  howToTake: text("howToTake"),
+  disclaimer: text("disclaimer"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Product = typeof products.$inferSelect;
+export type InsertProduct = typeof products.$inferInsert;
+
+// Variants: flavor/size options, each independently priced and stocked.
+export const productVariants = mysqlTable("product_variants", {
+  id: int("id").autoincrement().primaryKey(),
+  productId: int("productId").notNull(),
+  title: varchar("title", { length: 128 }).notNull(),
+  sku: varchar("sku", { length: 128 }),
+  priceCents: int("priceCents").notNull(),
+  compareAtCents: int("compareAtCents"),
+  stock: int("stock").default(0).notNull(),
+  imageKey: varchar("imageKey", { length: 512 }),
+  imageUrl: varchar("imageUrl", { length: 1024 }),
+  position: int("position").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ProductVariant = typeof productVariants.$inferSelect;
+export type InsertProductVariant = typeof productVariants.$inferInsert;
+
+// Bundles: quantity-based pricing tiers (e.g. "3pk", "6pk"), independent of variants.
+export const productBundles = mysqlTable("product_bundles", {
+  id: int("id").autoincrement().primaryKey(),
+  productId: int("productId").notNull(),
+  label: varchar("label", { length: 128 }).notNull(),
+  quantity: int("quantity").notNull(),
+  priceCents: int("priceCents").notNull(),
+  compareAtCents: int("compareAtCents"),
+  badge: varchar("badge", { length: 64 }),
+  position: int("position").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ProductBundle = typeof productBundles.$inferSelect;
+export type InsertProductBundle = typeof productBundles.$inferInsert;
+
+// Gallery images, ordered by `position`.
+export const productImages = mysqlTable("product_images", {
+  id: int("id").autoincrement().primaryKey(),
+  productId: int("productId").notNull(),
+  r2Key: varchar("r2Key", { length: 512 }).notNull(),
+  url: varchar("url", { length: 1024 }).notNull(),
+  alt: varchar("alt", { length: 256 }),
+  position: int("position").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ProductImage = typeof productImages.$inferSelect;
+export type InsertProductImage = typeof productImages.$inferInsert;
