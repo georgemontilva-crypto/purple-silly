@@ -108,10 +108,11 @@ export default function Navbar() {
         zIndex: 100,
       }}
     >
-      {/* Desktop-only glow + particles integrated into the bar itself —
-          not rendered at all under md (gated by useIsMobile below), and
-          sits behind the nav content (nav gets its own stacking context). */}
-      {!isMobile && <NavbarGlow />}
+      {/* Glow + particles integrated into the bar itself, on both sizes.
+          `compact` thins the animated field on phones; the gradients are
+          identical either way. Sits behind the nav content (nav gets its
+          own stacking context). */}
+      <NavbarGlow compact={isMobile} />
 
       <nav
         style={{
