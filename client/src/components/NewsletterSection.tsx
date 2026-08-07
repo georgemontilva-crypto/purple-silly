@@ -128,12 +128,23 @@ export default function NewsletterSection({
     </>
   );
 
-  // No h-full on the panel: stretched to match the FAQ column, it left a
-  // few hundred pixels of empty lilac under the form. It hugs its content
-  // and sits at the top of the column instead (the grid is items-start).
+  /*
+   * lg:h-full makes the panel match the height of the FAQ column beside
+   * it; the flex column with justify-center then keeps its contents
+   * optically centred rather than stranded at the top of a tall block.
+   *
+   * Both are scoped to lg because that's the only breakpoint where there
+   * IS a second column. Stacked below it, the panel is the only item in
+   * its grid row, so an unscoped h-full would resolve against its own
+   * content height — harmless, but it would also mean any future change
+   * to the mobile layout silently starts stretching it.
+   */
   if (isPanel) {
     return (
-      <div className="rounded-3xl p-7 sm:p-9" style={{ background: PANEL.bg }}>
+      <div
+        className="rounded-3xl p-7 sm:p-9 lg:h-full lg:flex lg:flex-col lg:justify-center"
+        style={{ background: PANEL.bg }}
+      >
         {body}
       </div>
     );

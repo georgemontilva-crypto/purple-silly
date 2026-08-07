@@ -1,3 +1,5 @@
+import { AmbientGlow } from "@/components/motion/AmbientGlow";
+
 const rows = [
   {
     feature: "PLANT POWERED",
@@ -43,7 +45,8 @@ const cols = [
 
 export default function ComparisonSection() {
   return (
-    <section className="py-16 md:py-24 bg-[oklch(0.13_0.04_265)]">
+    <section className="ambient-glow-host py-16 md:py-24 bg-[oklch(0.13_0.04_265)]">
+      <AmbientGlow variant="b" />
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6">
         <div className="text-center mb-10">
           <h2 className="font-condensed font-black text-4xl md:text-5xl text-white tracking-tight mb-3">

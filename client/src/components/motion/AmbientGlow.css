@@ -1,0 +1,177 @@
+/*
+ * Ambient background glow for a home section.
+ *
+ * WHY THIS EXISTS AT ALL, given #ambient-orbs in index.css: that layer is
+ * `position: fixed` at z-index -1 behind the whole document, and it still
+ * works. What changed is the sections — Benefits, Comparison, Reviews and
+ * FAQ each paint an OPAQUE background, and an opaque background hides
+ * anything behind the page. So the site's glow didn't break, it got
+ * covered. Putting a glow inside the sections is the only way to have it
+ * on top of their own background but still under their content.
+ *
+ * NEVER OVER THE CONTENT. This is the failure this file is built to
+ * prevent, and CSS makes it easy to get wrong: per the stacking spec a
+ * POSITIONED element with z-index auto/0 paints above normal in-flow
+ * content in the same stacking context regardless of DOM order — which is
+ * exactly how the earlier bug put glows over the cards.
+ *
+ * The fix here does not rely on remembering to raise every content
+ * wrapper's z-index. The SECTION gets `isolation: isolate`, making it a
+ * stacking context of its own, and the glow layer sits at z-index -1
+ * inside it. A negative-z child of a stacking context paints above that
+ * context's own background and below all of its in-flow content — the
+ * same arrangement #ambient-orbs uses against the root. Content needs no
+ * z-index of its own, and the layer cannot escape the section.
+ */
+
+.ambient-glow-host {
+  position: relative;
+  isolation: isolate;
+}
+
+.ambient-glow {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  /* Keeps the blooms from spilling into neighbouring sections, which
+     would stack two half-glows at the seam. */
+  overflow: hidden;
+}
+
+/*
+ * Each bloom is one radial-gradient on a full-bleed layer — no extra
+ * elements, no `filter: blur()`, and no animation. Blur is what makes a
+ * glow expensive (a blurred layer repaints rather than composites), and
+ * these are static, so there is nothing per-frame for the compositor to
+ * do while scrolling. That's the whole performance story on mobile.
+ *
+ * Every gradient ends on the SAME colour at 0% alpha rather than the
+ * `transparent` keyword. `transparent` is rgba(0,0,0,0), so fading to it
+ * drags the colour through black on the way out and leaves a dirty grey
+ * halo — the same trap already documented for .orb in index.css.
+ *
+ * `closest-side` on circles, and generous percentage radii, so the alpha
+ * has genuinely reached zero well inside the layer's bounds. Nothing gets
+ * clipped mid-fade, which is what produces a visible disc edge.
+ */
+.ambient-glow--a {
+  background:
+    radial-gradient(
+      circle 620px at 12% 18%,
+      oklch(0.62 0.28 295 / 18%) 0%,
+      oklch(0.62 0.28 295 / 11%) 26%,
+      oklch(0.62 0.28 295 / 5%) 50%,
+      oklch(0.62 0.28 295 / 1.5%) 72%,
+      oklch(0.62 0.28 295 / 0%) 100%
+    ),
+    radial-gradient(
+      circle 560px at 88% 78%,
+      oklch(0.72 0.22 320 / 15%) 0%,
+      oklch(0.72 0.22 320 / 9%) 28%,
+      oklch(0.72 0.22 320 / 4%) 52%,
+      oklch(0.72 0.22 320 / 1.2%) 74%,
+      oklch(0.72 0.22 320 / 0%) 100%
+    );
+}
+
+/* Mirrored placement, so two stacked sections don't read as the same
+   image repeated down the page. */
+.ambient-glow--b {
+  background:
+    radial-gradient(
+      circle 600px at 85% 12%,
+      oklch(0.62 0.28 295 / 16%) 0%,
+      oklch(0.62 0.28 295 / 10%) 26%,
+      oklch(0.62 0.28 295 / 4.5%) 50%,
+      oklch(0.62 0.28 295 / 1.4%) 72%,
+      oklch(0.62 0.28 295 / 0%) 100%
+    ),
+    radial-gradient(
+      circle 520px at 8% 82%,
+      oklch(0.72 0.22 320 / 13%) 0%,
+      oklch(0.72 0.22 320 / 8%) 28%,
+      oklch(0.72 0.22 320 / 3.5%) 52%,
+      oklch(0.72 0.22 320 / 1%) 74%,
+      oklch(0.72 0.22 320 / 0%) 100%
+    );
+}
+
+/* Centred single bloom, for sections whose content is centre-weighted. */
+.ambient-glow--c {
+  background:
+    radial-gradient(
+      circle 700px at 50% 0%,
+      oklch(0.62 0.28 295 / 16%) 0%,
+      oklch(0.62 0.28 295 / 9%) 30%,
+      oklch(0.62 0.28 295 / 3.5%) 55%,
+      oklch(0.62 0.28 295 / 1%) 76%,
+      oklch(0.62 0.28 295 / 0%) 100%
+    ),
+    radial-gradient(
+      circle 480px at 20% 95%,
+      oklch(0.72 0.22 320 / 12%) 0%,
+      oklch(0.72 0.22 320 / 7%) 30%,
+      oklch(0.72 0.22 320 / 3%) 55%,
+      oklch(0.72 0.22 320 / 0.8%) 76%,
+      oklch(0.72 0.22 320 / 0%) 100%
+    );
+}
+
+/*
+ * Phones: the blooms shrink with the viewport rather than staying at a
+ * desktop radius, where a 620px circle on a 390px screen is most of the
+ * screen and reads as a flat wash instead of a light.
+ */
+@media (max-width: 640px) {
+  .ambient-glow--a,
+  .ambient-glow--b,
+  .ambient-glow--c {
+    background-size: 100% 100%;
+  }
+  .ambient-glow--a {
+    background:
+      radial-gradient(
+        circle 340px at 10% 15%,
+        oklch(0.62 0.28 295 / 16%) 0%,
+        oklch(0.62 0.28 295 / 7%) 40%,
+        oklch(0.62 0.28 295 / 0%) 100%
+      ),
+      radial-gradient(
+        circle 300px at 92% 80%,
+        oklch(0.72 0.22 320 / 13%) 0%,
+        oklch(0.72 0.22 320 / 6%) 40%,
+        oklch(0.72 0.22 320 / 0%) 100%
+      );
+  }
+  .ambient-glow--b {
+    background:
+      radial-gradient(
+        circle 330px at 88% 12%,
+        oklch(0.62 0.28 295 / 15%) 0%,
+        oklch(0.62 0.28 295 / 7%) 40%,
+        oklch(0.62 0.28 295 / 0%) 100%
+      ),
+      radial-gradient(
+        circle 290px at 6% 85%,
+        oklch(0.72 0.22 320 / 12%) 0%,
+        oklch(0.72 0.22 320 / 5%) 40%,
+        oklch(0.72 0.22 320 / 0%) 100%
+      );
+  }
+  .ambient-glow--c {
+    background:
+      radial-gradient(
+        circle 360px at 50% 0%,
+        oklch(0.62 0.28 295 / 15%) 0%,
+        oklch(0.62 0.28 295 / 6%) 42%,
+        oklch(0.62 0.28 295 / 0%) 100%
+      ),
+      radial-gradient(
+        circle 280px at 18% 96%,
+        oklch(0.72 0.22 320 / 11%) 0%,
+        oklch(0.72 0.22 320 / 5%) 42%,
+        oklch(0.72 0.22 320 / 0%) 100%
+      );
+  }
+}
