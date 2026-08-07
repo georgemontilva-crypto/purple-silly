@@ -1,0 +1,77 @@
+/*
+ * Undulating wave along the navbar's bottom edge.
+ *
+ * It hangs BELOW the bar rather than inside it, so it doesn't eat into the
+ * navbar's height or push the logo and links around. It lives inside the
+ * <header>, which means it inherits the header's stacking context and
+ * paints over the page content scrolling underneath — and it takes no
+ * pointer events, so nothing under it becomes unclickable.
+ */
+.navbar-wave {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  /* Fixed height, on purpose. The SVG stretches horizontally (see
+     preserveAspectRatio below) but never vertically, so the wave keeps the
+     same crest depth on a 360px phone as on a 2560px monitor instead of
+     being squashed flat or stretched into a hill. */
+  height: 34px;
+  overflow: hidden;
+  pointer-events: none;
+  /* Above the page content that scrolls under the sticky header, below the
+     nav row itself (which sets z-index: 1 on its own). */
+  z-index: 0;
+}
+
+.navbar-wave__svg {
+  display: block;
+  /* Twice the container width, holding two identical halves. Translating
+     by exactly -50% therefore lands the second half precisely where the
+     first began — the loop has no seam and no jump. */
+  width: 200%;
+  height: 100%;
+  /* The element carries preserveAspectRatio="none" as an ATTRIBUTE (it is
+     not a CSS property), which lets the path stretch to whatever width the
+     viewport is instead of tiling into visible repeats on a wide screen or
+     being clipped on a narrow one. */
+  animation: navbar-wave-drift 9s linear infinite;
+  /* transform only — the compositor can run this without repainting the
+     path each frame. No blur, no filter, nothing that forces raster. */
+  will-change: transform;
+}
+
+/* Second, slower layer at lower opacity. Two waves crossing at different
+   speeds is what reads as motion in water; one alone reads as a sliding
+   image. */
+.navbar-wave__svg--back {
+  position: absolute;
+  inset: 0;
+  animation-duration: 14s;
+  animation-direction: reverse;
+  opacity: 0.8;
+}
+
+@keyframes navbar-wave-drift {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 640px) {
+  .navbar-wave {
+    /* Shallower on a phone: 34px of wave under a compact bar is a lot of
+       the first screenful. */
+    height: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navbar-wave__svg {
+    animation: none;
+    will-change: auto;
+  }
+}

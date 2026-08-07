@@ -9,6 +9,7 @@ import type { AssetSectionKey } from "@shared/assetSections";
 import MobileMenu from "@/components/MobileMenu";
 import AccountMenu from "@/components/AccountMenu";
 import { NavbarGlow } from "@/components/motion/NavbarGlow";
+import { NavbarWave } from "@/components/motion/NavbarWave";
 
 const PRODUCTS: {
   key: string;
@@ -100,7 +101,8 @@ export default function Navbar() {
     <header
       style={{
         background: "oklch(0.10 0.04 295)",
-        borderBottom: "1px solid oklch(0.22 0.08 295)",
+        // No borderBottom: NavbarWave IS the bottom edge now, and a straight
+        // rule under a wavy one just reads as a mistake.
         position: "sticky",
         top: 0,
         zIndex: 100,
@@ -428,6 +430,11 @@ export default function Navbar() {
           </button>
         </div>
       </nav>
+
+      {/* The bar's bottom edge. Absolutely positioned at top:100% inside
+          this header, so it hangs below the bar without adding to its
+          height or shifting the nav row. */}
+      <NavbarWave />
 
       <MobileMenu
         open={mobileOpen}
