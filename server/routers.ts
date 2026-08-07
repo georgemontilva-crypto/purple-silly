@@ -8,6 +8,7 @@ import { homeReelsRouter } from "./routers/homeReels";
 import { leadsRouter } from "./routers/leads";
 import { promoPopupsRouter } from "./routers/promoPopups";
 import { reviewsRouter } from "./routers/reviews";
+import { wholesaleRouter } from "./routers/wholesale";
 
 export const appRouter = router({
   system: systemRouter,
@@ -19,6 +20,7 @@ export const appRouter = router({
   leads: leadsRouter,
   promoPopups: promoPopupsRouter,
   reviews: reviewsRouter,
+  wholesale: wholesaleRouter,
 });
 
 export type AppRouter = typeof appRouter;
