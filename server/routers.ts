@@ -7,6 +7,7 @@ import { catalogRouter } from "./routers/catalog";
 import { homeReelsRouter } from "./routers/homeReels";
 import { leadsRouter } from "./routers/leads";
 import { promoPopupsRouter } from "./routers/promoPopups";
+import { reviewsRouter } from "./routers/reviews";
 
 export const appRouter = router({
   system: systemRouter,
@@ -17,6 +18,7 @@ export const appRouter = router({
   homeReels: homeReelsRouter,
   leads: leadsRouter,
   promoPopups: promoPopupsRouter,
+  reviews: reviewsRouter,
 });
 
 export type AppRouter = typeof appRouter;
