@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { ADMIN_COLORS as C, alpha } from "@/lib/adminTheme";
-import PromoPopupCard, { type PromoPopupMode } from "@/components/PromoPopupCard";
+import PromoPopupCard, {
+  type PromoPopupMode,
+} from "@/components/PromoPopupCard";
+import PromoRibbon from "@/components/PromoRibbon";
 import "@/components/PromoPopup.css";
 import type { PromoPopup } from "../../../../drizzle/schema";
 import {
@@ -108,7 +111,10 @@ function Field({
       <label style={labelStyle}>
         {label}
         {hint && (
-          <span style={{ color: alpha(C.muted, 70), fontWeight: 500 }}> · {hint}</span>
+          <span style={{ color: alpha(C.muted, 70), fontWeight: 500 }}>
+            {" "}
+            · {hint}
+          </span>
         )}
       </label>
       {children}
@@ -190,8 +196,14 @@ export default function AdminPopups() {
 
   function save() {
     setError(null);
-    if (!draft.title.trim() || !draft.discountCode.trim() || !draft.buttonText.trim()) {
-      setError("Título, código de descuento y texto del botón son obligatorios.");
+    if (
+      !draft.title.trim() ||
+      !draft.discountCode.trim() ||
+      !draft.buttonText.trim()
+    ) {
+      setError(
+        "Título, código de descuento y texto del botón son obligatorios."
+      );
       return;
     }
     const payload = {
@@ -253,8 +265,8 @@ export default function AdminPopups() {
             Popups de descuento
           </h2>
           <p style={{ color: C.muted, fontSize: "0.9rem", margin: 0 }}>
-            Solo un popup puede estar activo a la vez. Al activar uno, los demás se
-            desactivan automáticamente.
+            Solo un popup puede estar activo a la vez. Al activar uno, los demás
+            se desactivan automáticamente.
           </p>
         </div>
         <button
@@ -295,15 +307,35 @@ export default function AdminPopups() {
           }}
         >
           {isLoading ? (
-            <div style={{ display: "flex", gap: "0.5rem", color: C.muted, fontSize: "0.85rem", padding: "0.5rem" }}>
+            <div
+              style={{
+                display: "flex",
+                gap: "0.5rem",
+                color: C.muted,
+                fontSize: "0.85rem",
+                padding: "0.5rem",
+              }}
+            >
               <Loader2 size={16} className="animate-spin" /> Cargando...
             </div>
           ) : (popups?.length ?? 0) === 0 ? (
-            <div style={{ color: C.muted, fontSize: "0.85rem", padding: "0.75rem" }}>
+            <div
+              style={{
+                color: C.muted,
+                fontSize: "0.85rem",
+                padding: "0.75rem",
+              }}
+            >
               Aún no hay popups. Crea el primero.
             </div>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.5rem",
+              }}
+            >
               {popups!.map(p => (
                 <div
                   key={p.id}
@@ -312,11 +344,19 @@ export default function AdminPopups() {
                     padding: "0.7rem",
                     borderRadius: "0.6rem",
                     cursor: "pointer",
-                    background: selectedId === p.id ? alpha(C.vivid, 18) : C.panelAlt,
+                    background:
+                      selectedId === p.id ? alpha(C.vivid, 18) : C.panelAlt,
                     border: `1px solid ${selectedId === p.id ? C.vivid : alpha(C.border, 30)}`,
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.3rem" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.4rem",
+                      marginBottom: "0.3rem",
+                    }}
+                  >
                     <span
                       style={{
                         width: 8,
@@ -339,8 +379,21 @@ export default function AdminPopups() {
                       {p.title || "(sin título)"}
                     </span>
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.5rem" }}>
-                    <span style={{ color: p.active ? C.green : C.muted, fontSize: "0.72rem", fontWeight: 700 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: "0.5rem",
+                    }}
+                  >
+                    <span
+                      style={{
+                        color: p.active ? C.green : C.muted,
+                        fontSize: "0.72rem",
+                        fontWeight: 700,
+                      }}
+                    >
                       {p.active ? "ACTIVO" : "inactivo"} · {p.showDelaySeconds}s
                     </span>
                     {!p.active && (
@@ -389,7 +442,9 @@ export default function AdminPopups() {
             Selecciona un popup de la lista o crea uno nuevo.
           </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+          >
             <div
               style={{
                 background: C.panel,
@@ -398,7 +453,9 @@ export default function AdminPopups() {
                 padding: "1.25rem",
               }}
             >
-              <div style={{ color: C.text, fontWeight: 700, marginBottom: "1rem" }}>
+              <div
+                style={{ color: C.text, fontWeight: 700, marginBottom: "1rem" }}
+              >
                 {isNew ? "Nuevo popup" : `Editar popup #${selectedId}`}
               </div>
 
@@ -406,7 +463,9 @@ export default function AdminPopups() {
                 <input
                   value={draft.title}
                   maxLength={LIMITS.title}
-                  onChange={e => setDraft(d => ({ ...d, title: e.target.value }))}
+                  onChange={e =>
+                    setDraft(d => ({ ...d, title: e.target.value }))
+                  }
                   placeholder="20% OFF tu primera orden"
                   style={fieldStyle}
                 />
@@ -416,7 +475,9 @@ export default function AdminPopups() {
                 <input
                   value={draft.subtitle}
                   maxLength={LIMITS.subtitle}
-                  onChange={e => setDraft(d => ({ ...d, subtitle: e.target.value }))}
+                  onChange={e =>
+                    setDraft(d => ({ ...d, subtitle: e.target.value }))
+                  }
                   placeholder="Bienvenido a Purple Organics"
                   style={fieldStyle}
                 />
@@ -426,28 +487,48 @@ export default function AdminPopups() {
                 <textarea
                   value={draft.bodyText}
                   maxLength={LIMITS.bodyText}
-                  onChange={e => setDraft(d => ({ ...d, bodyText: e.target.value }))}
+                  onChange={e =>
+                    setDraft(d => ({ ...d, bodyText: e.target.value }))
+                  }
                   rows={3}
                   placeholder="Déjanos tu correo y te damos un descuento..."
-                  style={{ ...fieldStyle, resize: "vertical", fontFamily: "inherit" }}
+                  style={{
+                    ...fieldStyle,
+                    resize: "vertical",
+                    fontFamily: "inherit",
+                  }}
                 />
               </Field>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "0.75rem",
+                }}
+              >
                 <Field label="Código de descuento">
                   <input
                     value={draft.discountCode}
                     maxLength={LIMITS.discountCode}
-                    onChange={e => setDraft(d => ({ ...d, discountCode: e.target.value }))}
+                    onChange={e =>
+                      setDraft(d => ({ ...d, discountCode: e.target.value }))
+                    }
                     placeholder="PURPLE20"
-                    style={{ ...fieldStyle, fontFamily: "ui-monospace, monospace", letterSpacing: "0.05em" }}
+                    style={{
+                      ...fieldStyle,
+                      fontFamily: "ui-monospace, monospace",
+                      letterSpacing: "0.05em",
+                    }}
                   />
                 </Field>
                 <Field label="Texto del botón">
                   <input
                     value={draft.buttonText}
                     maxLength={LIMITS.buttonText}
-                    onChange={e => setDraft(d => ({ ...d, buttonText: e.target.value }))}
+                    onChange={e =>
+                      setDraft(d => ({ ...d, buttonText: e.target.value }))
+                    }
                     style={fieldStyle}
                   />
                 </Field>
@@ -455,19 +536,31 @@ export default function AdminPopups() {
 
               <Field
                 label="Cinta de esquina"
-                hint={`opcional · vacío = sin cinta · máx. ${LIMITS.ribbonText}`}
+                hint={`botón fijo que reabre el popup · vacío = sin cinta · máx. ${LIMITS.ribbonText}`}
               >
                 <input
                   value={draft.ribbonText}
                   maxLength={LIMITS.ribbonText}
-                  onChange={e => setDraft(d => ({ ...d, ribbonText: e.target.value }))}
+                  onChange={e =>
+                    setDraft(d => ({ ...d, ribbonText: e.target.value }))
+                  }
                   placeholder="GET 20% OFF"
                   style={{ ...fieldStyle, textTransform: "uppercase" }}
                 />
               </Field>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem", alignItems: "start" }}>
-                <Field label="Retraso" hint={`${LIMITS.delayMin}–${LIMITS.delayMax} s`}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "0.75rem",
+                  alignItems: "start",
+                }}
+              >
+                <Field
+                  label="Retraso"
+                  hint={`${LIMITS.delayMin}–${LIMITS.delayMax} s`}
+                >
                   <input
                     type="number"
                     min={LIMITS.delayMin}
@@ -478,7 +571,10 @@ export default function AdminPopups() {
                         ...d,
                         showDelaySeconds: Math.max(
                           LIMITS.delayMin,
-                          Math.min(LIMITS.delayMax, Math.round(Number(e.target.value) || 0))
+                          Math.min(
+                            LIMITS.delayMax,
+                            Math.round(Number(e.target.value) || 0)
+                          )
                         ),
                       }))
                     }
@@ -501,9 +597,17 @@ export default function AdminPopups() {
                     <input
                       type="checkbox"
                       checked={draft.active}
-                      onChange={e => setDraft(d => ({ ...d, active: e.target.checked }))}
+                      onChange={e =>
+                        setDraft(d => ({ ...d, active: e.target.checked }))
+                      }
                     />
-                    <span style={{ color: draft.active ? C.green : C.muted, fontSize: "0.82rem", fontWeight: 700 }}>
+                    <span
+                      style={{
+                        color: draft.active ? C.green : C.muted,
+                        fontSize: "0.82rem",
+                        fontWeight: 700,
+                      }}
+                    >
                       {draft.active ? "Activo en el sitio" : "Inactivo"}
                     </span>
                   </label>
@@ -526,7 +630,13 @@ export default function AdminPopups() {
                     Guarda el popup primero para poder subir la imagen.
                   </div>
                 ) : selected?.imageUrl ? (
-                  <div style={{ display: "flex", gap: "0.6rem", alignItems: "center" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "0.6rem",
+                      alignItems: "center",
+                    }}
+                  >
                     <img
                       src={selected.imageUrl}
                       alt=""
@@ -538,7 +648,13 @@ export default function AdminPopups() {
                         border: `1px solid ${alpha(C.border, 35)}`,
                       }}
                     />
-                    <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "0.35rem",
+                      }}
+                    >
                       <button
                         onClick={() => inputRef.current?.click()}
                         style={{
@@ -558,7 +674,10 @@ export default function AdminPopups() {
                         <UploadCloud size={12} /> Reemplazar
                       </button>
                       <button
-                        onClick={() => selectedId !== null && removeImage.mutate({ id: selectedId })}
+                        onClick={() =>
+                          selectedId !== null &&
+                          removeImage.mutate({ id: selectedId })
+                        }
                         style={{
                           display: "flex",
                           alignItems: "center",
@@ -598,14 +717,20 @@ export default function AdminPopups() {
                   >
                     {uploadImage.isPending ? (
                       <>
-                        <Loader2 size={16} className="animate-spin" /> Subiendo...
+                        <Loader2 size={16} className="animate-spin" />{" "}
+                        Subiendo...
                       </>
                     ) : (
                       <>
-                        <ImagePlus size={18} style={{ marginBottom: "0.25rem" }} />
+                        <ImagePlus
+                          size={18}
+                          style={{ marginBottom: "0.25rem" }}
+                        />
                         <div>
                           Arrastra una imagen o{" "}
-                          <span style={{ color: C.bright, fontWeight: 700 }}>haz clic</span>
+                          <span style={{ color: C.bright, fontWeight: 700 }}>
+                            haz clic
+                          </span>
                         </div>
                       </>
                     )}
@@ -625,7 +750,15 @@ export default function AdminPopups() {
               </Field>
 
               {error && (
-                <div style={{ color: C.pink, fontSize: "0.8rem", marginBottom: "0.75rem" }}>{error}</div>
+                <div
+                  style={{
+                    color: C.pink,
+                    fontSize: "0.8rem",
+                    marginBottom: "0.75rem",
+                  }}
+                >
+                  {error}
+                </div>
               )}
 
               <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
@@ -650,13 +783,21 @@ export default function AdminPopups() {
                     opacity: saving ? 0.7 : 1,
                   }}
                 >
-                  {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                  {saving ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <Check size={14} />
+                  )}
                   {isNew ? "Crear popup" : "Guardar cambios"}
                 </button>
                 {!isNew && selectedId !== null && (
                   <button
                     onClick={() => {
-                      if (confirm("¿Eliminar este popup? También se borrará su imagen.")) {
+                      if (
+                        confirm(
+                          "¿Eliminar este popup? También se borrará su imagen."
+                        )
+                      ) {
                         remove.mutate({ id: selectedId });
                       }
                     }}
@@ -700,9 +841,12 @@ export default function AdminPopups() {
                 }}
               >
                 <div>
-                  <div style={{ color: C.text, fontWeight: 700 }}>Vista previa</div>
+                  <div style={{ color: C.text, fontWeight: 700 }}>
+                    Vista previa
+                  </div>
                   <div style={{ color: C.muted, fontSize: "0.75rem" }}>
-                    Refleja los cambios sin guardar. Es el mismo componente que el sitio.
+                    Refleja los cambios sin guardar. Es el mismo componente que
+                    el sitio.
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: "0.35rem" }}>
@@ -712,7 +856,10 @@ export default function AdminPopups() {
                       onClick={() => setPreviewMode(mode)}
                       style={{
                         padding: "0.35rem 0.7rem",
-                        background: previewMode === mode ? alpha(C.vivid, 22) : "transparent",
+                        background:
+                          previewMode === mode
+                            ? alpha(C.vivid, 22)
+                            : "transparent",
                         border: `1px solid ${previewMode === mode ? C.vivid : alpha(C.border, 35)}`,
                         borderRadius: "0.4rem",
                         color: previewMode === mode ? C.bright : C.muted,
@@ -721,7 +868,9 @@ export default function AdminPopups() {
                         cursor: "pointer",
                       }}
                     >
-                      {mode === "form" ? "Visitante sin sesión" : "Usuario con sesión"}
+                      {mode === "form"
+                        ? "Visitante sin sesión"
+                        : "Usuario con sesión"}
                     </button>
                   ))}
                 </div>
@@ -729,9 +878,14 @@ export default function AdminPopups() {
 
               {/* The card is built for a full-width overlay; scaling it down
                   keeps it readable inside the admin panel without touching
-                  the shared stylesheet. */}
+                  the shared stylesheet.
+
+                  `position: relative` is load-bearing: it's what the ribbon
+                  anchors to in preview mode, standing in for the window
+                  corner it pins to on the storefront. */}
               <div
                 style={{
+                  position: "relative",
                   background: "rgba(8,3,20,0.72)",
                   borderRadius: "0.6rem",
                   padding: "1rem",
@@ -740,12 +894,17 @@ export default function AdminPopups() {
                   overflow: "hidden",
                 }}
               >
-                <div style={{ transform: "scale(0.78)", transformOrigin: "top center", width: "100%" }}>
+                <div
+                  style={{
+                    transform: "scale(0.78)",
+                    transformOrigin: "top center",
+                    width: "100%",
+                  }}
+                >
                   <div
                     className={
                       "promo-dialog" +
-                      (selected?.imageUrl ? "" : " promo-dialog--no-image") +
-                      (draft.ribbonText.trim() ? " promo-dialog--ribbon" : "")
+                      (selected?.imageUrl ? "" : " promo-dialog--no-image")
                     }
                     style={{ margin: "0 auto" }}
                   >
@@ -755,13 +914,17 @@ export default function AdminPopups() {
                       bodyText={draft.bodyText}
                       discountCode={draft.discountCode || "TU-CODIGO"}
                       buttonText={draft.buttonText || "Botón"}
-                      ribbonText={draft.ribbonText}
                       imageUrl={selected?.imageUrl}
                       mode={previewMode}
                       preview
                     />
                   </div>
                 </div>
+
+                {/* Outside the scaled wrapper and outside the dialog: on the
+                    storefront the ribbon is pinned to the window, not to the
+                    popup, so the preview shows it in the frame's corner. */}
+                <PromoRibbon text={draft.ribbonText} preview />
               </div>
             </div>
           </div>
