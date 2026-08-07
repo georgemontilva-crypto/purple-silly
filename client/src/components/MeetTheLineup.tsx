@@ -141,18 +141,16 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
     e.preventDefault();
     if (!product.inStock) return;
     setAdding(true);
-    addItem(String(product.id), 1, {
+    // No variant or bundle from a card — the listing doesn't offer that
+    // choice, so this adds the product's base line. Picking a flavour or a
+    // pack happens on the product page.
+    addItem({
+      productId: product.id,
       title: product.title,
-      variantTitle: "Default",
-      price: {
-        amount: product.priceCents
-          ? (product.priceCents / 100).toFixed(2)
-          : "0",
-        currencyCode: "USD",
-      },
-      image: product.imageUrl
-        ? { url: product.imageUrl, altText: product.imageAlt }
-        : null,
+      unitPriceCents: product.priceCents ?? 0,
+      slug: product.slug,
+      imageUrl: product.imageUrl,
+      quantity: 1,
     });
     setTimeout(() => setAdding(false), 900);
   };
