@@ -147,6 +147,24 @@
   }
 
   /*
+   * The home page's vertical rhythm, in one place.
+   *
+   * Every section used to set its own py-24 (96px top AND bottom), so
+   * between any two of them sat 192px of nothing — on a 900px viewport
+   * that's a fifth of the screen showing neither section. They also
+   * disagreed: some were py-24, others py-16 md:py-24, and the reels
+   * section had its own clamp, so the gaps were uneven as well as large.
+   *
+   * One fluid value, applied by all of them: 56px on a phone up to 88px
+   * on a wide screen, i.e. 112–176px between neighbours. Closer, still
+   * clearly separate, and identical everywhere.
+   */
+  .section-y {
+    padding-top: clamp(3.5rem, 6vw, 5.5rem);
+    padding-bottom: clamp(3.5rem, 6vw, 5.5rem);
+  }
+
+  /*
    * Hides the scrollbar on a track the user drags or swipes directly.
    * Shared by the mobile card rows (comparison table, reviews) — the row
    * itself is the control, and a bar under it reads as a rendering bug on

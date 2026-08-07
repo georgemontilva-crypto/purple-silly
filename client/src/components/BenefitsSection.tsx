@@ -45,7 +45,7 @@ const benefits = [
 export default function BenefitsSection() {
   return (
     <section
-      className="ambient-glow-host py-24 px-4"
+      className="ambient-glow-host section-y px-4"
       style={{ background: C.dark }}
     >
       <AmbientGlow variant="a" />

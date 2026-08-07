@@ -81,6 +81,10 @@ export default function HeroSection() {
                 </>
               )}
             </h1>
+            {/* The tagline only appears alongside an uploaded logo. Without
+                one the wordmark IS "Get Groovy, Stay Purple", and printing
+                it twice in a row reads as a rendering bug. */}
+            {logo && <p className="hero-tagline">Get Groovy, Stay Purple</p>}
           </header>
 
           <HeroCarousel slides={slides} active={inView} />

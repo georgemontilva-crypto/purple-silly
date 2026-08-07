@@ -153,7 +153,7 @@ export default function ReviewsSection() {
 
   return (
     <section
-      className="ambient-glow-host py-16 md:py-24 px-4 sm:px-6"
+      className="ambient-glow-host section-y px-4 sm:px-6"
       style={{ background: C.deep }}
       aria-labelledby="reviews-title"
     >

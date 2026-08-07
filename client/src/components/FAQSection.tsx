@@ -64,7 +64,7 @@ export default function FAQSection() {
   const [open, setOpen] = useState<number | null>(null);
   return (
     <section
-      className="ambient-glow-host py-24 px-4"
+      className="ambient-glow-host section-y px-4"
       style={{ background: C.deep }}
     >
       <AmbientGlow variant="c" />

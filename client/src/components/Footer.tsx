@@ -31,8 +31,12 @@ const COLS = [
       // route, so this link has been landing on "Page not found".
       { label: "What is Silly?", href: "/what-is-silly" },
       { label: "Wholesale", href: "/wholesale" },
-      { label: "Blog", href: "/blogs/news" },
-      { label: "Loyalty Program", href: "/pages/loyalty" },
+      // Blog (/blogs/news) and Loyalty Program (/pages/loyalty) have no
+      // page behind them, so they render as plain text rather than links —
+      // a dead link is a worse promise than no link. Give them an href
+      // when the page exists and they light up again.
+      { label: "Blog", href: null },
+      { label: "Loyalty Program", href: null },
       { label: "Do Not Sell My Info", href: "/pages/do-not-sell" },
     ],
   },
@@ -71,7 +75,7 @@ export default function Footer() {
     <footer style={{ background: C.deep, borderTop: `1px solid ${C.mid}` }}>
       <Reveal className="max-w-[1280px] mx-auto px-4 sm:px-8 py-16">
         <div
-          className="flex justify-center sm:justify-start mb-12 pb-10"
+          className="flex flex-col items-center sm:items-start gap-3 mb-12 pb-10"
           style={{ borderBottom: `1px solid ${C.mid}` }}
         >
           <Link href="/">
@@ -94,6 +98,20 @@ export default function Footer() {
               </span>
             )}
           </Link>
+          {/* The brand line, directly under the mark — the one place on
+              every page where it always appears. */}
+          <p
+            className="text-sm sm:text-base"
+            style={{
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontWeight: 800,
+              letterSpacing: "0.16em",
+              textTransform: "uppercase",
+              color: C.pink,
+            }}
+          >
+            Get Groovy, Stay Purple
+          </p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-10 mb-12">
           {COLS.map(col => (
@@ -104,8 +122,19 @@ export default function Footer() {
               <ul className="space-y-3">
                 {col.links.map(link => (
                   <li key={link.label}>
-                    {link.href.startsWith("http") ||
-                    link.href.startsWith("mailto") ? (
+                    {link.href === null ? (
+                      // No page yet. Rendered as dimmed, non-interactive
+                      // text: still shows what's coming without promising a
+                      // destination that doesn't exist.
+                      <span
+                        className="text-sm cursor-default"
+                        style={{ color: "oklch(0.40 0.05 295)" }}
+                        title="Coming soon"
+                      >
+                        {link.label}
+                      </span>
+                    ) : link.href.startsWith("http") ||
+                      link.href.startsWith("mailto") ? (
                       <a
                         href={link.href}
                         className="text-sm transition-colors hover:text-white"
@@ -160,6 +189,26 @@ export default function Footer() {
               <Icon size={19} aria-hidden="true" />
             </a>
           ))}
+        </div>
+
+        {/* Verbatim from the client's site — legally required wording, not
+            marketing copy, so it is not ours to shorten or rephrase. */}
+        <div
+          className="pt-8 border-t space-y-2 mb-6"
+          style={{ borderColor: C.mid }}
+        >
+          <h4 className="font-extrabold text-xs uppercase tracking-widest text-white">
+            FDA Disclaimer
+          </h4>
+          <p
+            className="text-xs leading-relaxed max-w-3xl"
+            style={{ color: "oklch(0.52 0.05 295)" }}
+          >
+            The sale of mushroom products to minors is prohibited by law. This
+            is an age restricted product and age verification is required at
+            sale. Louisiana State Act 159 prohibits growing, selling, or
+            possessing Amanita muscaria.
+          </p>
         </div>
 
         <div className="pt-8 border-t space-y-3" style={{ borderColor: C.mid }}>
