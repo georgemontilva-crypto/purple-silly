@@ -312,23 +312,27 @@
 .hero-card__img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
   /*
-   * Anchored to the top, not centred.
+   * contain, not cover: the whole artwork is always visible.
    *
-   * The card is 3:4 and the artwork is 1080x1440, which is also 3:4 — so
-   * in theory cover crops nothing. In practice an uploaded image is often
-   * a few pixels off that ratio, and centred cover then trims BOTH edges
-   * equally. The flavour name lives in the top corner of these images, so
-   * losing even a sliver from the top costs the one piece of information
-   * the card exists to show; losing it from the bottom costs background.
-   * Top-anchoring makes that trade deliberate instead of accidental.
-   *
-   * cover rather than contain on purpose: contain would letterbox every
-   * off-ratio image against the card, which is far more visible than a
-   * few pixels trimmed off the bottom.
+   * cover guarantees the card is filled but crops whatever doesn't fit —
+   * and top-anchoring it only moved the loss from the top edge to the
+   * sides. The flavour name sits in a corner of these images, so ANY crop
+   * can take it. contain fits the entire image inside the card instead;
+   * the cost is bars where the ratio doesn't match, which is the right
+   * trade for a card whose whole job is showing the product.
    */
-  object-position: top center;
+  object-fit: contain;
+  /* Centred, so any bars split evenly instead of pooling on one edge. */
+  object-position: center;
+  /*
+   * The letterbox colour. Set on the IMAGE, not left to the card's
+   * gradient underneath: a flat tone reads as a deliberate mat, whereas
+   * a gradient showing through only at the top and bottom of some cards
+   * reads as a hole. Solid means all four cards mat identically however
+   * their artwork is proportioned.
+   */
+  background: oklch(0.18 0.08 298);
   display: block;
   pointer-events: none;
   -webkit-user-drag: none;
