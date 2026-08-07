@@ -1,0 +1,395 @@
+/*
+ * Wholesale application form.
+ *
+ * This is a fourteen-field form that a shop owner may well fill in on a
+ * phone behind a counter. Everything here serves getting through it:
+ * generous targets, two columns only where the pairs genuinely belong
+ * together, and errors attached to the field that caused them.
+ */
+
+.wholesale {
+  position: relative;
+  background: oklch(0.09 0.04 295);
+}
+
+/* ── Hero ── */
+
+.wholesale__hero {
+  position: relative;
+  isolation: isolate;
+  min-height: clamp(220px, 34vw, 380px);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  text-align: center;
+}
+
+.wholesale__hero-img,
+.wholesale__hero-placeholder {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.wholesale__hero-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  /* Darkest at the bottom, where the copy sits, and fading up so the
+     image still reads at the top. */
+  background: linear-gradient(
+    to bottom,
+    oklch(0.09 0.04 295 / 55%),
+    oklch(0.09 0.04 295 / 82%) 60%,
+    oklch(0.09 0.04 295) 100%
+  );
+}
+
+.wholesale__hero-copy {
+  padding: clamp(2.5rem, 7vw, 4rem) 1.25rem;
+}
+
+.wholesale__eyebrow {
+  margin: 0 0 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: oklch(0.72 0.22 320);
+}
+
+.wholesale__title {
+  margin: 0;
+  font-family: "Barlow Condensed", ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(2.4rem, 8vw, 4.5rem);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+  color: #fff;
+}
+
+.wholesale__lede {
+  max-width: 34rem;
+  margin: 0.9rem auto 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: oklch(0.78 0.06 295);
+}
+
+/* ── Form ── */
+
+.wholesale__body {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: clamp(2rem, 6vw, 3.5rem) clamp(1.1rem, 5vw, 2rem)
+    clamp(3rem, 8vw, 5rem);
+}
+
+.wholesale-grid {
+  display: grid;
+  /* One column by default — a phone gets a single stack, always. */
+  grid-template-columns: 1fr;
+  gap: 1.15rem;
+}
+
+@media (min-width: 768px) {
+  .wholesale-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  /* Full width unless explicitly paired. Business name, address, the
+     dropdown and the notes all want the whole row; first/last name and
+     city/postcode read better side by side. */
+  .wholesale-field {
+    grid-column: 1 / -1;
+  }
+  .wholesale-field--half {
+    grid-column: span 1;
+  }
+}
+
+.wholesale-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.wholesale-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: oklch(0.8 0.07 300);
+}
+
+.wholesale-label span {
+  color: oklch(0.72 0.22 320);
+}
+
+.wholesale-optional {
+  margin-left: 0.35rem;
+  font-weight: 500;
+  font-size: 0.72rem;
+  color: oklch(0.6 0.05 295);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.wholesale-input {
+  width: 100%;
+  /* 48px of target, and 16px of text so iOS doesn't zoom the page on
+     focus — which on a form this long means fourteen zooms. */
+  min-height: 48px;
+  padding: 0.75rem 0.95rem;
+  border-radius: 12px;
+  border: 1px solid oklch(0.35 0.1 295);
+  background: oklch(0.14 0.05 295);
+  color: #fff;
+  font-family: inherit;
+  font-size: 16px;
+  outline: none;
+  box-sizing: border-box;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.wholesale-input:focus {
+  border-color: oklch(0.62 0.28 295);
+  box-shadow: 0 0 0 3px oklch(0.62 0.28 295 / 25%);
+}
+
+.wholesale-input::placeholder {
+  color: oklch(0.55 0.06 295);
+}
+
+select.wholesale-input {
+  /* The native arrow disappears against a dark control in some engines;
+     this draws our own and keeps room for it. */
+  appearance: none;
+  padding-right: 2.5rem;
+  background-image:
+    linear-gradient(45deg, transparent 50%, oklch(0.75 0.1 300) 50%),
+    linear-gradient(135deg, oklch(0.75 0.1 300) 50%, transparent 50%);
+  background-position:
+    calc(100% - 20px) calc(50% + 2px),
+    calc(100% - 14px) calc(50% + 2px);
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
+}
+
+.wholesale-textarea {
+  min-height: 120px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.wholesale-field--invalid .wholesale-input {
+  border-color: oklch(0.6 0.22 25);
+}
+
+.wholesale-error {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: oklch(0.72 0.19 25);
+}
+
+/* ── Attachment ── */
+
+.wholesale-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 140px;
+  padding: 1.25rem;
+  border-radius: 14px;
+  /* Dashed, because a dashed rectangle is the one shape everyone already
+     reads as "drop a file here". */
+  border: 2px dashed oklch(0.45 0.14 295);
+  background: oklch(0.12 0.05 295);
+  color: oklch(0.7 0.1 300);
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+
+.wholesale-drop:hover,
+.wholesale-drop:focus-visible {
+  border-color: oklch(0.62 0.28 295);
+  background: oklch(0.15 0.06 295);
+  outline: none;
+}
+
+.wholesale-drop--over {
+  border-color: oklch(0.72 0.22 320);
+  background: oklch(0.18 0.08 295);
+}
+
+.wholesale-drop__title {
+  margin: 0.25rem 0 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.wholesale-drop__hint {
+  margin: 0;
+  font-size: 0.78rem;
+  color: oklch(0.62 0.06 295);
+}
+
+.wholesale-file {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  max-width: 100%;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.wholesale-file__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wholesale-file__remove {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid oklch(0.4 0.12 295);
+  background: transparent;
+  color: oklch(0.78 0.08 300);
+  cursor: pointer;
+}
+
+.wholesale-file__remove:hover {
+  border-color: oklch(0.72 0.22 320);
+  color: #fff;
+}
+
+.wholesale-progress {
+  height: 6px;
+  margin-top: 0.6rem;
+  border-radius: 999px;
+  background: oklch(0.25 0.08 295);
+  overflow: hidden;
+}
+
+.wholesale-progress__bar {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    oklch(0.62 0.28 295),
+    oklch(0.72 0.22 320)
+  );
+  transition: width 0.2s;
+}
+
+/* ── Submit + messages ── */
+
+.wholesale-form-error {
+  margin: 1.25rem 0 0;
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  border: 1px solid oklch(0.6 0.22 25 / 45%);
+  background: oklch(0.35 0.14 25 / 30%);
+  color: oklch(0.9 0.08 25);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.wholesale-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 54px;
+  margin-top: 1.75rem;
+  padding: 0.9rem 1.5rem;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(
+    135deg,
+    oklch(0.62 0.28 295),
+    oklch(0.72 0.22 320)
+  );
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+
+.wholesale-submit:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.wholesale-submit:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+
+@media (min-width: 768px) {
+  .wholesale-submit {
+    width: auto;
+    min-width: 260px;
+  }
+}
+
+/* ── Confirmation ── */
+
+.wholesale-done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.8rem;
+  padding: clamp(2.5rem, 8vw, 4rem) 1.5rem;
+  border-radius: 20px;
+  border: 1px solid oklch(0.52 0.28 295 / 30%);
+  background: oklch(0.13 0.05 295);
+}
+
+.wholesale-done__icon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: oklch(0.6 0.17 150 / 18%);
+  border: 1px solid oklch(0.6 0.17 150 / 45%);
+  color: oklch(0.82 0.15 150);
+}
+
+.wholesale-done__title {
+  margin: 0;
+  font-family: "Barlow Condensed", ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(1.9rem, 5vw, 2.5rem);
+  font-weight: 900;
+  color: #fff;
+}
+
+.wholesale-done__text {
+  max-width: 34rem;
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: oklch(0.78 0.06 295);
+}
+
+.wholesale-done__text strong {
+  color: #fff;
+}

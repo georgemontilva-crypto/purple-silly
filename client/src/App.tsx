@@ -19,6 +19,7 @@ import ContactPage from "./pages/ContactPage";
 import PolicyPage from "./pages/PolicyPage";
 import LegalPage from "./pages/LegalPage";
 import ProductVerification from "./pages/ProductVerification";
+import WholesalePage from "./pages/WholesalePage";
 import CustomCursor from "./components/CustomCursor";
 import { usePointerFine } from "./hooks/usePointerFine";
 import { useScrollToTop } from "./hooks/useScrollToTop";
@@ -48,6 +49,7 @@ function StorefrontRouter() {
       {/* The real policies, copied verbatim from the client's live site. */}
       <Route path="/policies/:slug" component={LegalPage} />
       <Route path="/product-verification" component={ProductVerification} />
+      <Route path="/wholesale" component={WholesalePage} />
 
       {/*
         Legacy paths. PolicyPage used to serve WRITTEN-FROM-SCRATCH legal

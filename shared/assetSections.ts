@@ -32,6 +32,7 @@ export const ASSET_SECTION_KEYS = [
   "what-is-silly-dots",
   "what-is-silly-euphoria",
   "what-is-silly-bites",
+  "wholesale-hero",
 ] as const;
 
 export type AssetSectionKey = (typeof ASSET_SECTION_KEYS)[number];
@@ -88,49 +89,60 @@ export const ASSET_SECTIONS: Record<AssetSectionKey, AssetSectionMeta> = {
     width: 400,
     height: 400,
     maxImages: 1,
-    description: "Miniatura de \"Silly Dots\" en el mega-menú SHOP del navbar.",
+    description: 'Miniatura de "Silly Dots" en el mega-menú SHOP del navbar.',
   },
   "navbar-dropdown-euphoria": {
     label: "Navbar Dropdown — Silly Euphoria",
     width: 400,
     height: 400,
     maxImages: 1,
-    description: "Miniatura de \"Silly Euphoria\" en el mega-menú SHOP del navbar.",
+    description:
+      'Miniatura de "Silly Euphoria" en el mega-menú SHOP del navbar.',
   },
   "navbar-dropdown-bites": {
     label: "Navbar Dropdown — Silly Bites",
     width: 400,
     height: 400,
     maxImages: 1,
-    description: "Miniatura de \"Silly Bites Gummies\" en el mega-menú SHOP del navbar.",
+    description:
+      'Miniatura de "Silly Bites Gummies" en el mega-menú SHOP del navbar.',
   },
   "what-is-silly-intro": {
     label: "What is Silly? — Intro",
     width: 1200,
     height: 800,
     maxImages: 1,
-    description: "Página \"What is Silly?\", sección Intro (la primera, arriba de todo).",
+    description:
+      'Página "What is Silly?", sección Intro (la primera, arriba de todo).',
   },
   "what-is-silly-dots": {
     label: "What is Silly? — Silly Dots",
     width: 1200,
     height: 800,
     maxImages: 1,
-    description: "Página \"What is Silly?\", sección Silly Dots.",
+    description: 'Página "What is Silly?", sección Silly Dots.',
   },
   "what-is-silly-euphoria": {
     label: "What is Silly? — Silly Euphoria",
     width: 1200,
     height: 800,
     maxImages: 1,
-    description: "Página \"What is Silly?\", sección Silly Euphoria.",
+    description: 'Página "What is Silly?", sección Silly Euphoria.',
   },
   "what-is-silly-bites": {
     label: "What is Silly? — Silly Bites",
     width: 1200,
     height: 800,
     maxImages: 1,
-    description: "Página \"What is Silly?\", sección Silly Bites Gummies.",
+    description: 'Página "What is Silly?", sección Silly Bites Gummies.',
+  },
+  "wholesale-hero": {
+    label: "Wholesale — Encabezado",
+    width: 1920,
+    height: 600,
+    maxImages: 1,
+    description:
+      "Imagen de fondo del encabezado de /wholesale. Sin ella se muestra un placeholder con la medida.",
   },
 };
 
