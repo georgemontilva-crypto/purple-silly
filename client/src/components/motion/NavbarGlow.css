@@ -72,3 +72,13 @@
   inset: 0;
   z-index: 1;
 }
+
+@media (max-width: 640px) {
+  .navbar-glow {
+    /* Tracks .navbar-wave's own mobile height, which drops to 34px at this
+       same breakpoint. Keyed to the wave's breakpoint rather than to
+       useIsMobile (768px) on purpose: this value has to match the wave, and
+       the particle count is a separate question answered in the component. */
+    --ng-wave-overlap: 34px;
+  }
+}
