@@ -8,29 +8,35 @@ const C = {
   pink: "oklch(0.72 0.22 320)",
 };
 
+/*
+ * Copy only. Order, icons and accents are unchanged — the cards read
+ * left to right in this array, and each one's accent is what tints both
+ * its icon and the icon's tile, so reordering or reassigning here would
+ * move colour around the row.
+ */
 const benefits = [
   {
     icon: Smile,
-    title: "Elevated Mood",
-    desc: "Functional mushrooms and mood-supporting nootropics work together to naturally lift your mood and bring genuine happiness.",
+    title: "Brighter Vibes",
+    desc: "A feel-good experience designed for laid-back moments, good energy, and enjoying the moment.",
     accent: C.vivid,
   },
   {
     icon: Users,
-    title: "Social Ease",
-    desc: "Feel more open, confident, and connected. Perfect for social settings, events, and meeting new people.",
+    title: "Easygoing Energy",
+    desc: "Made for good times and good company. A relaxed experience that fits naturally into social occasions.",
     accent: C.pink,
   },
   {
     icon: Brain,
-    title: "Sharp Focus",
-    desc: "Enhanced mental clarity and concentration without the jitters or crash of stimulants.",
+    title: "Clear & Present",
+    desc: "Stay in the moment with a balanced experience that feels clean, composed, and easygoing.",
     accent: "oklch(0.60 0.25 185)",
   },
   {
     icon: Sunset,
-    title: "Happy Landings",
-    desc: "A smooth, gentle comedown that leaves you feeling refreshed — not depleted. Wake up feeling great.",
+    title: "Smooth Finish",
+    desc: "A balanced experience from start to finish, designed to wind down smoothly without feeling overdone.",
     accent: "oklch(0.75 0.20 55)",
   },
 ];
