@@ -70,14 +70,14 @@ export default function PromoPopupCard({
         type="button"
         className="promo-close"
         onClick={onClose}
-        aria-label="Cerrar"
+        aria-label="Close"
         tabIndex={preview ? -1 : undefined}
       >
         <X size={20} aria-hidden="true" />
       </button>
 
       <div className="promo-dialog__content">
-        <span className="promo-eyebrow">Oferta exclusiva</span>
+        <span className="promo-eyebrow">Exclusive offer</span>
         <h2 className="promo-title" id="promo-popup-title">
           {title}
         </h2>
@@ -95,11 +95,11 @@ export default function PromoPopupCard({
                 tabIndex={preview ? -1 : undefined}
               >
                 {copied ? <Check size={14} /> : <Copy size={14} />}
-                {copied ? "Copiado" : "Copiar"}
+                {copied ? "Copied" : "Copy"}
               </button>
             </div>
             <p className="promo-fineprint">
-              Usa este código al pagar.{thanks ? " ¡Gracias por suscribirte!" : ""}
+              Use this code at checkout.{thanks ? " Thanks for signing up!" : ""}
             </p>
             {error && <p className="promo-error">{error}</p>}
           </>
@@ -110,7 +110,7 @@ export default function PromoPopupCard({
             noValidate
           >
             <label className="sr-only" htmlFor="promo-popup-email">
-              Correo electrónico
+              Email address
             </label>
             <input
               id="promo-popup-email"
@@ -118,7 +118,7 @@ export default function PromoPopupCard({
               type="email"
               inputMode="email"
               autoComplete="email"
-              placeholder="tu@correo.com"
+              placeholder="you@email.com"
               value={email}
               onChange={e => onEmailChange?.(e.target.value)}
               aria-invalid={error ? true : undefined}
@@ -132,10 +132,10 @@ export default function PromoPopupCard({
               disabled={submitting}
               tabIndex={preview ? -1 : undefined}
             >
-              {submitting ? "Enviando..." : buttonText}
+              {submitting ? "Sending..." : buttonText}
             </button>
             <p className="promo-fineprint">
-              Te enviaremos ofertas ocasionales. Puedes darte de baja cuando quieras.
+              We'll send you the occasional offer. Unsubscribe any time.
             </p>
           </form>
         )}

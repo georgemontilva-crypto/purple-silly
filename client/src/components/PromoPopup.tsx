@@ -149,7 +149,7 @@ export default function PromoPopup() {
     setError(null);
     const trimmed = email.trim();
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(trimmed)) {
-      setError("Escribe un correo válido.");
+      setError("Please enter a valid email address.");
       return;
     }
     try {
@@ -159,7 +159,7 @@ export default function PromoPopup() {
       setSubmitted(true);
       if (popup) markDismissed(popup.id);
     } catch {
-      setError("No pudimos guardar tu correo. Inténtalo de nuevo.");
+      setError("We couldn't save your email. Please try again.");
     }
   }
 
@@ -170,7 +170,7 @@ export default function PromoPopup() {
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2000);
     } catch {
-      setError("No se pudo copiar. Selecciona el código manualmente.");
+      setError("Couldn't copy. Please select the code manually.");
     }
   }
 
