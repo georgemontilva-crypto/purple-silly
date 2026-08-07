@@ -4,6 +4,7 @@ import { adminRouter } from "./routers/admin";
 import { adminCatalogRouter } from "./routers/adminCatalog";
 import { authRouter } from "./routers/auth";
 import { catalogRouter } from "./routers/catalog";
+import { homeReelsRouter } from "./routers/homeReels";
 import { leadsRouter } from "./routers/leads";
 import { promoPopupsRouter } from "./routers/promoPopups";
 
@@ -13,6 +14,7 @@ export const appRouter = router({
   adminCatalog: adminCatalogRouter,
   auth: authRouter,
   catalog: catalogRouter,
+  homeReels: homeReelsRouter,
   leads: leadsRouter,
   promoPopups: promoPopupsRouter,
 });

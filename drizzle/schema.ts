@@ -1,4 +1,13 @@
-import { boolean, int, json, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import {
+  boolean,
+  int,
+  json,
+  mysqlEnum,
+  mysqlTable,
+  text,
+  timestamp,
+  varchar,
+} from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow (email + password, sessions signed with
@@ -37,15 +46,19 @@ export const emailVerificationTokens = mysqlTable("email_verification_tokens", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
-export type EmailVerificationToken = typeof emailVerificationTokens.$inferSelect;
-export type InsertEmailVerificationToken = typeof emailVerificationTokens.$inferInsert;
+export type EmailVerificationToken =
+  typeof emailVerificationTokens.$inferSelect;
+export type InsertEmailVerificationToken =
+  typeof emailVerificationTokens.$inferInsert;
 
 // Marketing leads (e.g. the mobile menu's "request a coupon" field).
 export const leads = mysqlTable("leads", {
   id: int("id").autoincrement().primaryKey(),
   email: varchar("email", { length: 320 }).notNull(),
   source: varchar("source", { length: 64 }).notNull(),
-  status: mysqlEnum("status", ["new", "contacted", "converted", "unsubscribed"]).default("new").notNull(),
+  status: mysqlEnum("status", ["new", "contacted", "converted", "unsubscribed"])
+    .default("new")
+    .notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
@@ -87,10 +100,10 @@ export type InsertLabReport = typeof labReports.$inferInsert;
 // Site Assets (managed from Admin → Assets Manager, stored in Cloudflare R2)
 export const siteAssets = mysqlTable("site_assets", {
   id: int("id").autoincrement().primaryKey(),
-  section: varchar("section", { length: 128 }).notNull(),   // e.g. "hero", "choose-your-ride-dots"
-  label: varchar("label", { length: 256 }).notNull(),        // human-readable name
-  key: varchar("key", { length: 512 }).notNull().unique(),   // R2 object key
-  url: varchar("url", { length: 1024 }).notNull(),           // public URL
+  section: varchar("section", { length: 128 }).notNull(), // e.g. "hero", "choose-your-ride-dots"
+  label: varchar("label", { length: 256 }).notNull(), // human-readable name
+  key: varchar("key", { length: 512 }).notNull().unique(), // R2 object key
+  url: varchar("url", { length: 1024 }).notNull(), // public URL
   mimeType: varchar("mimeType", { length: 128 }),
   sizeBytes: int("sizeBytes"),
   width: int("width"),
@@ -133,7 +146,9 @@ export const products = mysqlTable("products", {
   title: varchar("title", { length: 256 }).notNull(),
   slug: varchar("slug", { length: 256 }).notNull().unique(),
   description: text("description"),
-  status: mysqlEnum("status", ["draft", "active", "archived"]).default("draft").notNull(),
+  status: mysqlEnum("status", ["draft", "active", "archived"])
+    .default("draft")
+    .notNull(),
   featured: boolean("featured").default(false).notNull(),
   categoryId: int("categoryId"),
   tags: json("tags").$type<string[]>().notNull(),
@@ -150,7 +165,8 @@ export const products = mysqlTable("products", {
   secretSubtitle: varchar("secretSubtitle", { length: 512 }),
   secretImageKey: varchar("secretImageKey", { length: 512 }),
   secretImageUrl: varchar("secretImageUrl", { length: 1024 }),
-  secretCards: json("secretCards").$type<{ title: string; description: string }[]>(),
+  secretCards:
+    json("secretCards").$type<{ title: string; description: string }[]>(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -241,3 +257,36 @@ export const promoPopups = mysqlTable("promo_popups", {
 
 export type PromoPopup = typeof promoPopups.$inferSelect;
 export type InsertPromoPopup = typeof promoPopups.$inferInsert;
+
+// ─── Home reels (Fase 6) ──────────────────────────────────────────────────
+//
+// Short vertical (9:16) videos shown in a row on the home page, in the slot
+// the old stat boxes used to occupy.
+//
+// The files live in R2 and are uploaded STRAIGHT from the browser with a
+// presigned PUT — unlike siteAssets and promo popup images, which are sent
+// through tRPC as base64. That works for a 5MB image; a video is an order
+// of magnitude bigger, and base64 inflates it by a further third only to
+// buffer the whole thing in the API process' memory. So the server here
+// only ever signs a URL and records the key it handed out.
+//
+// posterKey/posterUrl are optional: with no poster the player falls back to
+// the video's own first frame.
+export const homeReels = mysqlTable("home_reels", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 128 }),
+  videoKey: varchar("videoKey", { length: 512 }).notNull(),
+  videoUrl: varchar("videoUrl", { length: 1024 }).notNull(),
+  posterKey: varchar("posterKey", { length: 512 }),
+  posterUrl: varchar("posterUrl", { length: 1024 }),
+  // Display order, ascending. Not unique — the admin reorders by rewriting
+  // every row's position in one go, and a unique index would make any swap
+  // collide mid-update.
+  position: int("position").default(0).notNull(),
+  active: boolean("active").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type HomeReel = typeof homeReels.$inferSelect;
+export type InsertHomeReel = typeof homeReels.$inferInsert;

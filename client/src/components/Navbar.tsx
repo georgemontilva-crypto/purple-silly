@@ -7,6 +7,7 @@ import { useIsMobile } from "@/hooks/useMobile";
 import { AssetPlaceholder } from "@/components/AssetPlaceholder";
 import type { AssetSectionKey } from "@shared/assetSections";
 import MobileMenu from "@/components/MobileMenu";
+import AccountMenu from "@/components/AccountMenu";
 import { NavbarGlow } from "@/components/motion/NavbarGlow";
 
 const PRODUCTS: {
@@ -47,9 +48,16 @@ const PRODUCTS: {
   },
 ];
 
-function DropdownThumb({ assetKey, label }: { assetKey: AssetSectionKey; label: string }) {
+function DropdownThumb({
+  assetKey,
+  label,
+}: {
+  assetKey: AssetSectionKey;
+  label: string;
+}) {
   const { asset } = useSiteAsset(assetKey);
-  if (!asset) return <AssetPlaceholder width={400} height={400} variant="dark" />;
+  if (!asset)
+    return <AssetPlaceholder width={400} height={400} variant="dark" />;
   return (
     <img
       src={asset.url}
@@ -71,7 +79,10 @@ export default function Navbar() {
   // Close dropdown on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setShopOpen(false);
       }
     }
@@ -120,7 +131,12 @@ export default function Navbar() {
             <img
               src={logo.url}
               alt="Purple Organics"
-              style={{ height: 36, width: "auto", objectFit: "contain", cursor: "pointer" }}
+              style={{
+                height: 36,
+                width: "auto",
+                objectFit: "contain",
+                cursor: "pointer",
+              }}
             />
           ) : (
             <span
@@ -141,13 +157,11 @@ export default function Navbar() {
         {/* Desktop Nav — visibility controlled ONLY via Tailwind's `hidden md:flex`;
             no `display` in inline style here, or it would win over the class
             and the links would show at every breakpoint. */}
-        <div
-          className="hidden md:flex items-center justify-center flex-1 gap-1"
-        >
+        <div className="hidden md:flex items-center justify-center flex-1 gap-1">
           {/* SHOP dropdown */}
           <div ref={dropdownRef} style={{ position: "relative" }}>
             <button
-              onClick={() => setShopOpen((v) => !v)}
+              onClick={() => setShopOpen(v => !v)}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -164,8 +178,10 @@ export default function Navbar() {
                 borderRadius: "0.5rem",
                 transition: "background 0.15s",
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "oklch(0.18 0.07 295)")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
+              onMouseEnter={e =>
+                (e.currentTarget.style.background = "oklch(0.18 0.07 295)")
+              }
+              onMouseLeave={e => (e.currentTarget.style.background = "none")}
             >
               SHOP
               <ChevronDown
@@ -208,7 +224,13 @@ export default function Navbar() {
                   >
                     Get Groovy
                   </p>
-                  <p style={{ color: "oklch(0.65 0.12 295)", fontSize: "0.82rem", margin: "0.2rem 0 0" }}>
+                  <p
+                    style={{
+                      color: "oklch(0.65 0.12 295)",
+                      fontSize: "0.82rem",
+                      margin: "0.2rem 0 0",
+                    }}
+                  >
                     Premium mushroom supplements for every vibe
                   </p>
                   <Link
@@ -229,8 +251,14 @@ export default function Navbar() {
                 </div>
 
                 {/* Product cards */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.75rem" }}>
-                  {PRODUCTS.map((p) => (
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr 1fr",
+                    gap: "0.75rem",
+                  }}
+                >
+                  {PRODUCTS.map(p => (
                     <Link
                       key={p.key}
                       href={p.href}
@@ -245,13 +273,17 @@ export default function Navbar() {
                           cursor: "pointer",
                           transition: "background 0.15s, transform 0.15s",
                         }}
-                        onMouseEnter={(e) => {
-                          (e.currentTarget as HTMLDivElement).style.background = `${p.color}44`;
-                          (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)";
+                        onMouseEnter={e => {
+                          (e.currentTarget as HTMLDivElement).style.background =
+                            `${p.color}44`;
+                          (e.currentTarget as HTMLDivElement).style.transform =
+                            "translateY(-2px)";
                         }}
-                        onMouseLeave={(e) => {
-                          (e.currentTarget as HTMLDivElement).style.background = `${p.color}22`;
-                          (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
+                        onMouseLeave={e => {
+                          (e.currentTarget as HTMLDivElement).style.background =
+                            `${p.color}22`;
+                          (e.currentTarget as HTMLDivElement).style.transform =
+                            "translateY(0)";
                         }}
                       >
                         {/* Product image */}
@@ -265,7 +297,10 @@ export default function Navbar() {
                             background: "oklch(0.18 0.06 295)",
                           }}
                         >
-                          <DropdownThumb assetKey={p.assetKey} label={p.label} />
+                          <DropdownThumb
+                            assetKey={p.assetKey}
+                            label={p.label}
+                          />
                         </div>
                         <p
                           style={{
@@ -278,7 +313,14 @@ export default function Navbar() {
                         >
                           {p.label}
                         </p>
-                        <p style={{ color: "oklch(0.65 0.10 295)", fontSize: "0.72rem", margin: 0, lineHeight: 1.4 }}>
+                        <p
+                          style={{
+                            color: "oklch(0.65 0.10 295)",
+                            fontSize: "0.72rem",
+                            margin: 0,
+                            lineHeight: 1.4,
+                          }}
+                        >
                           {p.subtitle}
                         </p>
                       </div>
@@ -290,10 +332,10 @@ export default function Navbar() {
           </div>
 
           {[
-          { label: "WHAT IS SILLY?", href: "/what-is-silly" },
-          { label: "FAQ", href: "/pages/faq" },
-          { label: "LAB REPORTS", href: "/lab-reports" },
-        ].map((item) => (
+            { label: "WHAT IS SILLY?", href: "/what-is-silly" },
+            { label: "FAQ", href: "/pages/faq" },
+            { label: "LAB REPORTS", href: "/lab-reports" },
+          ].map(item => (
             <Link
               key={item.href}
               href={item.href}
@@ -308,22 +350,40 @@ export default function Navbar() {
                 borderRadius: "0.5rem",
                 transition: "background 0.15s",
               }}
-              onMouseEnter={(e) => ((e.target as HTMLElement).style.background = "oklch(0.18 0.07 295)")}
-              onMouseLeave={(e) => ((e.target as HTMLElement).style.background = "none")}
+              onMouseEnter={e =>
+                ((e.target as HTMLElement).style.background =
+                  "oklch(0.18 0.07 295)")
+              }
+              onMouseLeave={e =>
+                ((e.target as HTMLElement).style.background = "none")
+              }
             >
               {item.label}
             </Link>
           ))}
         </div>
 
-        {/* Right side: Cart. The glow/particle effect is rendered as its own
-            layer behind the whole bar (see NavbarGlow above), not here. */}
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-          <Link href="/cart" style={{
-            position: "relative", color: "white", textDecoration: "none",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            width: 44, height: 44,
-          }}>
+        {/* Right side: account + cart. The glow/particle effect is rendered
+            as its own layer behind the whole bar (see NavbarGlow above),
+            not here. */}
+        <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
+          {/* Same control at both sizes — an account icon that only exists
+              on desktop is exactly the one a phone user needs. */}
+          <AccountMenu compact={isMobile} />
+
+          <Link
+            href="/cart"
+            style={{
+              position: "relative",
+              color: "white",
+              textDecoration: "none",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 44,
+              height: 44,
+            }}
+          >
             <ShoppingCart size={22} />
             {totalQuantity > 0 && (
               <span
@@ -355,9 +415,13 @@ export default function Navbar() {
             onClick={() => setMobileOpen(true)}
             aria-label="Open menu"
             style={{
-              width: 44, height: 44, borderRadius: "999px",
-              background: "oklch(0.18 0.07 295)", border: "1px solid oklch(0.28 0.09 295)",
-              color: "white", cursor: "pointer",
+              width: 44,
+              height: 44,
+              borderRadius: "999px",
+              background: "oklch(0.18 0.07 295)",
+              border: "1px solid oklch(0.28 0.09 295)",
+              color: "white",
+              cursor: "pointer",
             }}
           >
             <Grid2x2 size={20} />

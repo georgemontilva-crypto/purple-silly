@@ -27,6 +27,7 @@ import {
   ArrowLeft,
   FlaskConical,
   FolderTree,
+  Film,
   Image as ImageIcon,
   LayoutDashboard,
   Loader2,
@@ -47,6 +48,7 @@ import AdminProducts from "./AdminProducts";
 import AdminProductCategories from "./AdminProductCategories";
 import AdminLeads from "./AdminLeads";
 import AdminPopups from "./AdminPopups";
+import AdminReels from "./AdminReels";
 
 type AdminTab =
   | "overview"
@@ -56,6 +58,7 @@ type AdminTab =
   | "lab-categories"
   | "assets"
   | "popups"
+  | "reels"
   | "leads"
   | "users";
 
@@ -67,6 +70,7 @@ const NAV_ITEMS: { id: AdminTab; label: string; icon: LucideIcon }[] = [
   { id: "lab-categories", label: "Lab Categories", icon: FolderTree },
   { id: "assets", label: "Assets", icon: ImageIcon },
   { id: "popups", label: "Popups", icon: MessageSquare },
+  { id: "reels", label: "Reels", icon: Film },
   { id: "leads", label: "Leads", icon: Mail },
   { id: "users", label: "Users", icon: Users },
 ];
@@ -92,9 +96,13 @@ function StatCard({
           {isLoading ? (
             <Skeleton className="h-7 w-12" />
           ) : (
-            <div className="font-condensed text-2xl leading-none font-black text-foreground">{value}</div>
+            <div className="font-condensed text-2xl leading-none font-black text-foreground">
+              {value}
+            </div>
           )}
-          <div className="mt-1.5 text-xs font-semibold tracking-wide text-muted-foreground uppercase">{label}</div>
+          <div className="mt-1.5 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+            {label}
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -103,22 +111,43 @@ function StatCard({
 
 function Overview() {
   const { data: stats, isLoading: statsLoading } = trpc.admin.stats.useQuery();
-  const { data: categories, isLoading: catsLoading } = trpc.admin.categories.list.useQuery();
-  const { data: reports, isLoading: reportsLoading } = trpc.admin.labReports.listAdmin.useQuery();
+  const { data: categories, isLoading: catsLoading } =
+    trpc.admin.categories.list.useQuery();
+  const { data: reports, isLoading: reportsLoading } =
+    trpc.admin.labReports.listAdmin.useQuery();
 
   return (
     <div className="space-y-6">
-      <h2 className="font-condensed text-2xl font-black text-foreground">Dashboard Overview</h2>
+      <h2 className="font-condensed text-2xl font-black text-foreground">
+        Dashboard Overview
+      </h2>
 
       <div className="flex flex-wrap gap-4">
-        <StatCard label="Total Users" value={stats?.users ?? 0} icon={Users} isLoading={statsLoading} />
-        <StatCard label="Lab Reports" value={stats?.labReports ?? 0} icon={FlaskConical} isLoading={statsLoading} />
-        <StatCard label="Categories" value={stats?.categories ?? 0} icon={FolderTree} isLoading={statsLoading} />
+        <StatCard
+          label="Total Users"
+          value={stats?.users ?? 0}
+          icon={Users}
+          isLoading={statsLoading}
+        />
+        <StatCard
+          label="Lab Reports"
+          value={stats?.labReports ?? 0}
+          icon={FlaskConical}
+          isLoading={statsLoading}
+        />
+        <StatCard
+          label="Categories"
+          value={stats?.categories ?? 0}
+          icon={FolderTree}
+          isLoading={statsLoading}
+        />
       </div>
 
       <Card>
         <CardContent className="px-5">
-          <h3 className="mb-4 font-condensed text-lg font-extrabold text-foreground">Recent Lab Reports</h3>
+          <h3 className="mb-4 font-condensed text-lg font-extrabold text-foreground">
+            Recent Lab Reports
+          </h3>
           {reportsLoading ? (
             <div className="space-y-2">
               {[1, 2, 3].map(i => (
@@ -128,7 +157,10 @@ function Overview() {
           ) : !reports || reports.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-8 text-center text-muted-foreground">
               <FlaskConical size={28} className="opacity-50" />
-              <p className="text-sm">No lab reports yet. Upload your first report in the Lab Reports tab.</p>
+              <p className="text-sm">
+                No lab reports yet. Upload your first report in the Lab Reports
+                tab.
+              </p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -138,14 +170,18 @@ function Overview() {
                   className="flex items-center justify-between gap-3 rounded-lg border border-border bg-primary/5 px-4 py-3"
                 >
                   <div className="min-w-0">
-                    <div className="truncate text-sm font-semibold text-foreground">{r.title}</div>
+                    <div className="truncate text-sm font-semibold text-foreground">
+                      {r.title}
+                    </div>
                     <div className="truncate text-xs text-muted-foreground">
                       {r.productName} · {r.testDate}
                     </div>
                   </div>
                   <span
                     className={`shrink-0 rounded-full px-2.5 py-0.5 text-[0.7rem] font-bold ${
-                      r.isPublished ? "bg-primary/20 text-primary" : "bg-accent/20 text-accent"
+                      r.isPublished
+                        ? "bg-primary/20 text-primary"
+                        : "bg-accent/20 text-accent"
                     }`}
                   >
                     {r.isPublished ? "Published" : "Draft"}
@@ -159,7 +195,9 @@ function Overview() {
 
       <Card>
         <CardContent className="px-5">
-          <h3 className="mb-4 font-condensed text-lg font-extrabold text-foreground">Report Categories</h3>
+          <h3 className="mb-4 font-condensed text-lg font-extrabold text-foreground">
+            Report Categories
+          </h3>
           {catsLoading ? (
             <div className="flex flex-wrap gap-2">
               {[1, 2, 3].map(i => (
@@ -169,7 +207,9 @@ function Overview() {
           ) : !categories || categories.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-8 text-center text-muted-foreground">
               <FolderTree size={28} className="opacity-50" />
-              <p className="text-sm">No categories yet. Create one in the Categories tab.</p>
+              <p className="text-sm">
+                No categories yet. Create one in the Categories tab.
+              </p>
             </div>
           ) : (
             <div className="flex flex-wrap gap-2">
@@ -194,7 +234,9 @@ function AdminDashboardLoading() {
     <div className="admin-shell flex min-h-screen items-center justify-center bg-background">
       <div className="flex items-center gap-3 text-primary">
         <Loader2 className="animate-spin" size={22} />
-        <span className="font-condensed text-lg font-extrabold">Loading...</span>
+        <span className="font-condensed text-lg font-extrabold">
+          Loading...
+        </span>
       </div>
     </div>
   );
@@ -204,9 +246,16 @@ function AccessDenied() {
   return (
     <div className="admin-shell flex min-h-screen flex-col items-center justify-center gap-3 bg-background px-4 text-center">
       <ShieldAlert size={48} className="text-accent" />
-      <h1 className="font-condensed text-3xl font-black text-foreground">Access Denied</h1>
-      <p className="text-muted-foreground">You need admin privileges to access this area.</p>
-      <Link href="/" className="mt-1 inline-flex items-center gap-1.5 font-bold text-primary hover:underline">
+      <h1 className="font-condensed text-3xl font-black text-foreground">
+        Access Denied
+      </h1>
+      <p className="text-muted-foreground">
+        You need admin privileges to access this area.
+      </p>
+      <Link
+        href="/"
+        className="mt-1 inline-flex items-center gap-1.5 font-bold text-primary hover:underline"
+      >
         <ArrowLeft size={15} /> Back to Store
       </Link>
     </div>
@@ -240,7 +289,9 @@ export default function AdminDashboard() {
             <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sm text-sidebar-primary-foreground">
               P
             </div>
-            <span className="truncate group-data-[collapsible=icon]:hidden">Purple Co Admin</span>
+            <span className="truncate group-data-[collapsible=icon]:hidden">
+              Purple Co Admin
+            </span>
           </div>
         </SidebarHeader>
 
@@ -248,7 +299,11 @@ export default function AdminDashboard() {
           <SidebarMenu className="px-2 py-2">
             {NAV_ITEMS.map(item => (
               <SidebarMenuItem key={item.id}>
-                <SidebarMenuButton isActive={tab === item.id} onClick={() => setTab(item.id)} tooltip={item.label}>
+                <SidebarMenuButton
+                  isActive={tab === item.id}
+                  onClick={() => setTab(item.id)}
+                  tooltip={item.label}
+                >
                   <item.icon />
                   <span>{item.label}</span>
                 </SidebarMenuButton>
@@ -267,8 +322,12 @@ export default function AdminDashboard() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
-                  <p className="truncate text-sm font-semibold text-sidebar-foreground">{user.name || user.email}</p>
-                  <p className="truncate text-xs text-sidebar-foreground/60">{user.email}</p>
+                  <p className="truncate text-sm font-semibold text-sidebar-foreground">
+                    {user.name || user.email}
+                  </p>
+                  <p className="truncate text-xs text-sidebar-foreground/60">
+                    {user.email}
+                  </p>
                 </div>
               </button>
             </DropdownMenuTrigger>
@@ -276,7 +335,10 @@ export default function AdminDashboard() {
               <DropdownMenuItem onClick={() => setLocation("/")}>
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back to Store
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={logout} className="text-destructive focus:text-destructive">
+              <DropdownMenuItem
+                onClick={logout}
+                className="text-destructive focus:text-destructive"
+              >
                 <LogOut className="mr-2 h-4 w-4" /> Sign out
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -288,13 +350,19 @@ export default function AdminDashboard() {
         <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border px-4">
           <SidebarTrigger />
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span className="text-xs font-semibold tracking-wide uppercase">Purple Co</span>
+            <span className="text-xs font-semibold tracking-wide uppercase">
+              Purple Co
+            </span>
             <span>/</span>
-            <span className="font-condensed text-base font-extrabold text-foreground">{activeItem.label}</span>
+            <span className="font-condensed text-base font-extrabold text-foreground">
+              {activeItem.label}
+            </span>
           </div>
           <div className="ml-auto hidden items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 sm:flex">
             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-            <span className="text-xs font-semibold text-foreground">{user.name || user.email}</span>
+            <span className="text-xs font-semibold text-foreground">
+              {user.name || user.email}
+            </span>
             <span className="rounded-full bg-accent/20 px-2 py-0.5 text-[0.65rem] font-extrabold tracking-wide text-accent uppercase">
               Admin
             </span>
@@ -308,6 +376,7 @@ export default function AdminDashboard() {
           {tab === "lab-categories" && <AdminCategories />}
           {tab === "assets" && <AdminAssets />}
           {tab === "popups" && <AdminPopups />}
+          {tab === "reels" && <AdminReels />}
           {tab === "leads" && <AdminLeads />}
           {tab === "users" && <AdminUsers />}
         </main>

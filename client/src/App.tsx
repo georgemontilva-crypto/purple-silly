@@ -24,6 +24,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import VerifyEmail from "./pages/VerifyEmail";
+import Account from "./pages/Account";
 
 // Storefront-only routes — rendered inside StorefrontLayout (Navbar + Footer).
 // /admin and /login have their own layout and are NOT part of this Switch.
@@ -80,15 +81,17 @@ function App() {
             <TooltipProvider>
               <Toaster position="top-right" richColors />
               {pointerFine && <CustomCursor />}
-              {/* /admin, /login, /signup and /verify-email get their own clean
-                  layout — no storefront Navbar/Footer. Everything else falls
-                  through to StorefrontLayout, which has its own inner Switch
-                  for the rest of the site. */}
+              {/* /admin and the account pages (/login, /signup, /verify-email,
+                  /account) get their own clean layout — no storefront
+                  Navbar/Footer. Everything else falls through to
+                  StorefrontLayout, which has its own inner Switch for the
+                  rest of the site. */}
               <Switch>
                 <Route path="/admin" component={AdminDashboard} />
                 <Route path="/login" component={Login} />
                 <Route path="/signup" component={Signup} />
                 <Route path="/verify-email" component={VerifyEmail} />
+                <Route path="/account" component={Account} />
                 <Route component={StorefrontLayout} />
               </Switch>
             </TooltipProvider>

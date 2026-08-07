@@ -1,0 +1,397 @@
+/*
+ * Signed-out pages: /login, /signup, /verify-email, plus /account.
+ *
+ * These render outside StorefrontLayout, so nothing else on the page
+ * establishes the brand — this file carries it: the deep purple field, the
+ * magenta bloom behind the card, Barlow Condensed for the headline.
+ */
+
+.auth-page {
+  position: relative;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  /* Generous on desktop, tight on a phone — the card should never be
+     pinched between two fat gutters on a 360px screen. */
+  padding: clamp(1rem, 4vw, 3rem) clamp(0.9rem, 4vw, 2rem);
+  overflow: hidden;
+  background:
+    radial-gradient(
+      120% 90% at 15% 0%,
+      oklch(0.22 0.13 300) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      100% 80% at 85% 100%,
+      oklch(0.2 0.14 330) 0%,
+      transparent 60%
+    ),
+    oklch(0.08 0.04 295);
+  color: #fff;
+}
+
+.auth-page__glows {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.auth-glow {
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+  /* The softness is the gradient's own falloff, not filter: blur() — a
+     blurred layer under a looping transform repaints every frame instead
+     of compositing (same reasoning as .orb in index.css). */
+  opacity: 0.55;
+}
+
+.auth-glow--one {
+  top: -12%;
+  left: -8%;
+  width: min(60vw, 620px);
+  height: min(60vw, 620px);
+  background: radial-gradient(
+    circle,
+    oklch(0.62 0.28 295 / 55%) 0%,
+    transparent 68%
+  );
+}
+
+.auth-glow--two {
+  right: -14%;
+  bottom: -18%;
+  width: min(55vw, 560px);
+  height: min(55vw, 560px);
+  background: radial-gradient(
+    circle,
+    oklch(0.72 0.22 320 / 45%) 0%,
+    transparent 68%
+  );
+}
+
+.auth-card {
+  position: relative;
+  z-index: 1;
+  width: min(440px, 100%);
+  padding: clamp(1.5rem, 5vw, 2.5rem);
+  border-radius: 24px;
+  border: 1px solid oklch(0.62 0.28 295 / 28%);
+  background: oklch(0.12 0.05 295 / 82%);
+  backdrop-filter: blur(18px);
+  box-shadow:
+    0 40px 90px -30px rgba(0, 0, 0, 0.8),
+    0 0 0 1px oklch(0.72 0.22 320 / 10%),
+    inset 0 1px 0 oklch(0.85 0.1 320 / 12%);
+}
+
+.auth-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 1.25rem;
+  color: oklch(0.7 0.1 300);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.auth-back:hover {
+  color: #fff;
+}
+
+.auth-wordmark {
+  display: block;
+  margin-bottom: 1.5rem;
+  font-family: "Barlow Condensed", ui-sans-serif, system-ui, sans-serif;
+  font-size: 1.35rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  color: #fff;
+  text-decoration: none;
+}
+
+.auth-wordmark span {
+  color: oklch(0.72 0.22 320);
+}
+
+.auth-head {
+  margin-bottom: 1.75rem;
+}
+
+.auth-eyebrow {
+  margin: 0 0 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: oklch(0.72 0.22 320);
+}
+
+.auth-title {
+  margin: 0;
+  font-family: "Barlow Condensed", ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(2.1rem, 7vw, 2.85rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: #fff;
+}
+
+.auth-subtitle {
+  margin: 0.6rem 0 0;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: oklch(0.72 0.06 295);
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.auth-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: oklch(0.75 0.08 300);
+}
+
+.auth-input {
+  width: 100%;
+  /* 16px minimum: anything smaller and iOS zooms the page on focus. */
+  min-height: 50px;
+  padding: 0.8rem 1rem;
+  border-radius: 12px;
+  border: 1px solid oklch(0.35 0.1 295);
+  background: oklch(0.16 0.05 295);
+  color: #fff;
+  font-size: 16px;
+  outline: none;
+  box-sizing: border-box;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.auth-input::placeholder {
+  color: oklch(0.55 0.06 295);
+}
+
+.auth-input:focus {
+  border-color: oklch(0.62 0.28 295);
+  box-shadow: 0 0 0 3px oklch(0.62 0.28 295 / 25%);
+}
+
+.auth-input--invalid {
+  border-color: oklch(0.6 0.22 25);
+}
+
+.auth-input--invalid:focus {
+  box-shadow: 0 0 0 3px oklch(0.6 0.22 25 / 25%);
+}
+
+.auth-hint,
+.auth-field-error {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.auth-hint {
+  color: oklch(0.6 0.05 295);
+}
+
+.auth-field-error {
+  color: oklch(0.72 0.19 25);
+  font-weight: 600;
+}
+
+.auth-submit {
+  width: 100%;
+  min-height: 52px;
+  margin-top: 0.35rem;
+  padding: 0.9rem 1.25rem;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(
+    135deg,
+    oklch(0.62 0.28 295),
+    oklch(0.72 0.22 320)
+  );
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition:
+    filter 0.15s,
+    transform 0.15s;
+}
+
+.auth-submit:hover:not(:disabled) {
+  filter: brightness(1.09);
+}
+
+.auth-submit:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.auth-submit:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.auth-submit:focus-visible {
+  outline: 2px solid oklch(0.85 0.12 320);
+  outline-offset: 2px;
+}
+
+.auth-error {
+  margin: 0;
+  padding: 0.7rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid oklch(0.6 0.22 25 / 45%);
+  background: oklch(0.35 0.14 25 / 35%);
+  color: oklch(0.9 0.08 25);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.auth-foot {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid oklch(0.3 0.08 295 / 60%);
+  text-align: center;
+  font-size: 0.87rem;
+  color: oklch(0.68 0.06 295);
+}
+
+.auth-foot a {
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 1px solid oklch(0.72 0.22 320);
+  padding-bottom: 1px;
+}
+
+.auth-foot a:hover {
+  color: oklch(0.85 0.14 320);
+}
+
+/* ── Post-signup "check your inbox" panel ── */
+
+.auth-sent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.85rem;
+}
+
+.auth-sent__icon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: oklch(0.62 0.28 295 / 20%);
+  border: 1px solid oklch(0.62 0.28 295 / 45%);
+  color: oklch(0.8 0.16 320);
+}
+
+.auth-sent__mail {
+  font-weight: 800;
+  color: #fff;
+  overflow-wrap: anywhere;
+}
+
+/* ── /account ── */
+
+.auth-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.auth-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid oklch(0.3 0.08 295 / 70%);
+  background: oklch(0.16 0.05 295 / 70%);
+}
+
+.auth-row__label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: oklch(0.68 0.08 300);
+  flex-shrink: 0;
+}
+
+.auth-row__value {
+  font-weight: 700;
+  color: #fff;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.auth-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.auth-badge--ok {
+  background: oklch(0.6 0.17 150 / 22%);
+  border: 1px solid oklch(0.6 0.17 150 / 50%);
+  color: oklch(0.85 0.15 150);
+}
+
+.auth-badge--pending {
+  background: oklch(0.75 0.16 75 / 20%);
+  border: 1px solid oklch(0.75 0.16 75 / 45%);
+  color: oklch(0.88 0.13 80);
+}
+
+.auth-secondary {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.8rem 1.25rem;
+  border-radius: 12px;
+  border: 1px solid oklch(0.4 0.1 295);
+  background: transparent;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.auth-secondary:hover {
+  background: oklch(0.24 0.08 295);
+  border-color: oklch(0.55 0.16 300);
+}
