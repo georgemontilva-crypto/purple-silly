@@ -49,6 +49,30 @@ const PRODUCTS: {
   },
 ];
 
+/**
+ * The nav links, in one place, used by BOTH the desktop bar and the mobile
+ * menu.
+ *
+ * They used to be two separate literals — one inline in the desktop JSX,
+ * one in the props passed to MobileMenu — which is how "Lab Reports"
+ * ended up pointing at /pages/lab-reports in one of them and landing on
+ * "Page not found". One array means the two cannot say different things.
+ *
+ * Stored in title case; the desktop bar uppercases them in CSS, so the
+ * label isn't written out twice in two casings either.
+ *
+ * Order is by audience: what the product is, who makes it, then the two
+ * reference pages, then wholesale — a different visitor entirely, which
+ * is why it sits at the end rather than among the consumer links.
+ */
+const NAV_LINKS: { label: string; href: string }[] = [
+  { label: "What is Silly?", href: "/what-is-silly" },
+  { label: "About Us", href: "/pages/about-us" },
+  { label: "Lab Reports", href: "/lab-reports" },
+  { label: "FAQ", href: "/pages/faq" },
+  { label: "Wholesale", href: "/wholesale" },
+];
+
 function DropdownThumb({
   assetKey,
   label,
@@ -334,21 +358,22 @@ export default function Navbar() {
             )}
           </div>
 
-          {[
-            { label: "WHAT IS SILLY?", href: "/what-is-silly" },
-            { label: "FAQ", href: "/pages/faq" },
-            { label: "LAB REPORTS", href: "/lab-reports" },
-          ].map(item => (
+          {NAV_LINKS.map(item => (
             <Link
               key={item.href}
               href={item.href}
               style={{
-                padding: "0.5rem 1rem",
+                // Slightly tighter than before: five links plus the SHOP
+                // dropdown have to share the bar with the logo and the
+                // icon group without wrapping at 1280.
+                padding: "0.5rem 0.7rem",
                 color: "white",
                 fontFamily: "'Barlow', sans-serif",
                 fontWeight: 700,
                 fontSize: "0.9rem",
-                letterSpacing: "0.08em",
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                whiteSpace: "nowrap",
                 textDecoration: "none",
                 borderRadius: "0.5rem",
                 transition: "background 0.15s",
@@ -451,12 +476,13 @@ export default function Navbar() {
       <MobileMenu
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
+        /* Shop All and the product lines stand in for the desktop SHOP
+           dropdown, which has no room to open on a phone; everything after
+           them is NAV_LINKS, so the two menus can't drift apart. */
         links={[
           { label: "Shop All", href: "/collections/all" },
           ...PRODUCTS.map(p => ({ label: p.label, href: p.href })),
-          { label: "What is Silly?", href: "/what-is-silly" },
-          { label: "FAQ", href: "/pages/faq" },
-          { label: "Lab Reports", href: "/lab-reports" },
+          ...NAV_LINKS,
         ]}
       />
 
