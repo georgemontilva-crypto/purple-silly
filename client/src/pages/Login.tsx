@@ -1,8 +1,11 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { trpc } from "@/lib/trpc";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
+import { trpc } from "@/lib/trpc";
+import AuthShell, {
+  AuthError,
+  AuthField,
+  AuthSubmit,
+} from "@/components/auth/AuthShell";
 
 export default function Login() {
   const [location, setLocation] = useLocation();
@@ -33,57 +36,48 @@ export default function Login() {
   };
 
   return (
-    <div className="admin-shell flex min-h-screen items-center justify-center bg-background px-4 text-foreground">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-6">
-        <div className="space-y-1 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
-          <p className="text-sm text-muted-foreground">Access your Purple Organics account.</p>
-        </div>
+    <AuthShell
+      eyebrow="Welcome back"
+      title="Sign in"
+      subtitle="Pick up where you left off — orders, offers and your account."
+      footer={
+        <>
+          New here? <Link href="/signup">Create an account</Link>
+        </>
+      }
+    >
+      <form className="auth-form" onSubmit={handleSubmit} noValidate>
+        <AuthField
+          id="login-email"
+          label="Email"
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          placeholder="you@email.com"
+          required
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+        />
+        <AuthField
+          id="login-password"
+          label="Password"
+          type="password"
+          autoComplete="current-password"
+          placeholder="••••••••"
+          required
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+        />
 
-        <div className="space-y-4">
-          <div className="space-y-1.5">
-            <label htmlFor="email" className="text-sm font-medium">
-              Email
-            </label>
-            <Input
-              id="email"
-              type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label htmlFor="password" className="text-sm font-medium">
-              Password
-            </label>
-            <Input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-            />
-          </div>
-        </div>
+        {/* One message for both "no such account" and "wrong password" —
+            the server answers the same way for the same reason: telling
+            them apart turns the form into an account-existence oracle. */}
+        {login.isError && <AuthError>Invalid email or password.</AuthError>}
 
-        {login.isError && (
-          <p className="text-sm text-destructive">Invalid email or password.</p>
-        )}
-
-        <Button type="submit" className="w-full" disabled={login.isPending}>
-          {login.isPending ? "Signing in..." : "Sign in"}
-        </Button>
-
-        <p className="text-center text-sm text-muted-foreground">
-          Don&apos;t have an account?{" "}
-          <Link href="/signup" className="font-medium text-foreground underline underline-offset-4">
-            Sign up
-          </Link>
-        </p>
+        <AuthSubmit disabled={login.isPending}>
+          {login.isPending ? "Signing in…" : "Sign in"}
+        </AuthSubmit>
       </form>
-    </div>
+    </AuthShell>
   );
 }

@@ -1,8 +1,14 @@
-import { Button } from "@/components/ui/button";
-import { trpc } from "@/lib/trpc";
 import { useEffect, useRef } from "react";
 import { Link } from "wouter";
+import { BadgeCheck, CircleAlert, Loader2 } from "lucide-react";
+import { trpc } from "@/lib/trpc";
+import AuthShell from "@/components/auth/AuthShell";
 
+/**
+ * Where the link in the verification email lands. Same frame as /login and
+ * /signup — this is the last step of that flow, and arriving from an email
+ * onto an unbranded page reads as a phishing page rather than the store.
+ */
 export default function VerifyEmail() {
   const params = new URLSearchParams(window.location.search);
   const token = params.get("token") ?? "";
@@ -17,30 +23,53 @@ export default function VerifyEmail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  let heading = "Verifying your email...";
+  let eyebrow = "Email verification";
+  let title = "Verifying…";
   let message = "One moment.";
+  let icon = <Loader2 size={28} aria-hidden="true" />;
+
   if (!token) {
-    heading = "Invalid link";
-    message = "This verification link is missing a token.";
+    title = "Invalid link";
+    message = "This verification link is missing its token.";
+    icon = <CircleAlert size={28} aria-hidden="true" />;
   } else if (verify.isSuccess) {
-    heading = "Email verified";
-    message = "Thanks — your email address has been confirmed.";
+    eyebrow = "All set";
+    title = "Email verified";
+    message = "Thanks — your address is confirmed.";
+    icon = <BadgeCheck size={28} aria-hidden="true" />;
   } else if (verify.isError) {
-    heading = "Verification failed";
+    title = "Verification failed";
     message = verify.error.message;
+    icon = <CircleAlert size={28} aria-hidden="true" />;
   }
 
   return (
-    <div className="admin-shell flex min-h-screen items-center justify-center bg-background px-4 text-foreground">
-      <div className="w-full max-w-sm space-y-6 text-center">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">{heading}</h1>
-          <p className="text-sm text-muted-foreground">{message}</p>
-        </div>
-        <Button asChild className="w-full">
-          <Link href="/">Return home</Link>
-        </Button>
+    <AuthShell
+      eyebrow={eyebrow}
+      title={title}
+      footer={
+        <>
+          Need a hand? <Link href="/pages/contact">Contact us</Link>
+        </>
+      }
+    >
+      <div className="auth-sent">
+        <span className="auth-sent__icon">{icon}</span>
+        <p className="auth-subtitle" style={{ margin: 0 }} role="status">
+          {message}
+        </p>
+        <Link
+          href="/"
+          className="auth-submit"
+          style={{
+            display: "grid",
+            placeItems: "center",
+            textDecoration: "none",
+          }}
+        >
+          Return to the store
+        </Link>
       </div>
-    </div>
+    </AuthShell>
   );
 }
