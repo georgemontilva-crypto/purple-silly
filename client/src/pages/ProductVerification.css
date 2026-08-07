@@ -1,0 +1,148 @@
+/* Product verification: our chrome around a third-party verifier. */
+
+.verify-page {
+  position: relative;
+  min-height: 70vh;
+  padding: clamp(2.5rem, 6vw, 4rem) 0 clamp(3rem, 7vw, 4.5rem);
+  background: oklch(0.09 0.04 295);
+}
+
+.verify-page__inner {
+  position: relative;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 clamp(1.1rem, 5vw, 2rem);
+}
+
+.verify-page__head {
+  margin-bottom: clamp(1.5rem, 4vw, 2.25rem);
+  text-align: center;
+}
+
+.verify-page__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: oklch(0.72 0.22 320);
+}
+
+.verify-page__title {
+  margin: 0;
+  font-family: "Barlow Condensed", ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(2.4rem, 7vw, 3.5rem);
+  font-weight: 900;
+  line-height: 1;
+  color: #fff;
+}
+
+.verify-page__lede {
+  max-width: 34rem;
+  margin: 0.85rem auto 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: oklch(0.72 0.06 295);
+}
+
+/* Always present, not just on failure: the embed can stop working at the
+   third party's discretion, and a visible way out costs nothing. */
+.verify-page__external {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  border-bottom: 1px solid oklch(0.72 0.22 320);
+  padding-bottom: 2px;
+}
+
+.verify-page__external:hover {
+  color: oklch(0.85 0.14 320);
+}
+
+.verify-frame {
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid oklch(0.52 0.28 295 / 30%);
+  background: #fff;
+  box-shadow: 0 24px 60px -24px rgba(0, 0, 0, 0.75);
+}
+
+.verify-frame__iframe {
+  display: block;
+  width: 100%;
+  /* Tall enough for the verifier's own form and result without an inner
+     scrollbar on a laptop; dvh so a phone's retracted URL bar doesn't
+     make it taller than the screen. */
+  height: min(78dvh, 760px);
+  border: 0;
+}
+
+@media (max-width: 640px) {
+  .verify-frame {
+    border-radius: 16px;
+  }
+  .verify-frame__iframe {
+    height: min(72dvh, 620px);
+  }
+}
+
+/* ── Fallback when the embed doesn't load ── */
+
+.verify-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.75rem;
+  padding: clamp(2rem, 6vw, 3.25rem) 1.5rem;
+  border-radius: 20px;
+  border: 1px solid oklch(0.52 0.28 295 / 30%);
+  background: oklch(0.13 0.05 295);
+  color: oklch(0.72 0.22 320);
+}
+
+.verify-fallback__title {
+  margin: 0.25rem 0 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.verify-fallback__body {
+  max-width: 30rem;
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: oklch(0.72 0.06 295);
+}
+
+.verify-fallback__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.75rem;
+  min-height: 48px;
+  padding: 0 1.4rem;
+  border-radius: 999px;
+  background: linear-gradient(
+    135deg,
+    oklch(0.62 0.28 295),
+    oklch(0.72 0.22 320)
+  );
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.verify-fallback__cta:hover {
+  filter: brightness(1.08);
+}
