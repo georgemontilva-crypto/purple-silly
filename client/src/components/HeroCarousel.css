@@ -9,87 +9,37 @@
  * drift out of sync with the JS.
  *
  * Performance notes are inline where they're load-bearing. The short
- * version: nothing here animates a property that forces layout, the card
- * blur is off entirely below 641px, and the one expensive effect (the
- * rotating conic glow) is paused whenever the hero is off-screen.
+ * version: nothing here animates a property that forces layout, and the
+ * card blur is off entirely below 641px.
  */
 
-/* ─────────────────────────── Panel + rainbow glow ────────────────────── */
+/* ──────────────────────────────── Panel ──────────────────────────────── */
 
 /*
- * Registering --hc-angle is what lets it INTERPOLATE. An unregistered
- * custom property animates discretely — it would flip 0deg -> 360deg at
- * the halfway mark, which renders identically at both ends, so the glow
- * simply sits still. That's the intended fallback for browsers without
- * @property support: a static rainbow ring, not a broken or missing one.
- * The var() call sites all carry a `, 0deg` fallback so the gradient
- * still parses if the property never gets registered at all.
+ * Full-bleed, not an inset panel.
+ *
+ * This was a 95%-wide rounded card ringed by a spinning rainbow edge
+ * light. It's now edge to edge: no side margin, no radius, no frame. The
+ * ring went with it — it only ever showed as spill past the panel's
+ * rounded corners, so against a full-bleed panel there is no edge for it
+ * to spill past and it would just be an animated conic gradient under a
+ * blur, repainting every frame, completely hidden behind opaque pixels.
+ *
+ * Everything INSIDE is untouched: the 3D carousel, the light beam and its
+ * pool, the particles, the logo row, the gradient background.
  */
-@property --hc-angle {
-  syntax: "<angle>";
-  inherits: false;
-  initial-value: 0deg;
-}
-
 .hero-section {
   position: relative;
   width: 100%;
-  padding: 1.25rem 0;
+  padding: 0;
 }
 
 .hero-shell {
   position: relative;
-  width: 95%;
-  margin: 0 auto;
-  --hc-panel-radius: 30px;
+  width: 100%;
+  margin: 0;
+  --hc-panel-radius: 0px;
   --hc-safe-gap: 1.5rem;
-}
-
-.hero-glow {
-  position: absolute;
-  z-index: 0;
-  pointer-events: none;
-  border-radius: calc(var(--hc-panel-radius) + 12px);
-  /* Apple-ish diffuse edge light: the panel above is opaque and covers
-     inset 0, so all that shows is what spills past its edges plus the
-     blur bleed — no mask needed to carve out a ring. */
-  background: conic-gradient(
-    from var(--hc-angle, 0deg),
-    #ff2d95, #ff7a2d, #ffe14d, #45ff9c, #2ad8ff, #7b5cff, #d94dff, #ff2d95
-  );
-  animation: hc-glow-spin 16s linear infinite;
-}
-
-.hero-glow--inner {
-  inset: -7px;
-  filter: blur(16px);
-  opacity: 0.5;
-}
-
-.hero-glow--outer {
-  inset: -28px;
-  filter: blur(52px);
-  opacity: 0.3;
-  /* Counter-rotating and slower, so the two layers never resolve into
-     one hard-edged band sweeping around together. */
-  animation-duration: 26s;
-  animation-direction: reverse;
-}
-
-@keyframes hc-glow-spin {
-  to {
-    --hc-angle: 360deg;
-  }
-}
-
-/*
- * Off-screen = paused. An animating conic gradient under a blur() can't
- * be composited: the browser re-rasterizes the whole blurred layer every
- * frame, and it would otherwise keep doing that for the entire life of
- * the page, including while the user is reading the bottom of it.
- */
-.hero-shell[data-hc-visible="false"] .hero-glow {
-  animation-play-state: paused;
 }
 
 .hero-panel {
@@ -104,9 +54,21 @@
   overflow: hidden;
   border-radius: var(--hc-panel-radius);
   background:
-    radial-gradient(120% 90% at 50% 6%, rgba(168, 85, 247, 0.2), rgba(168, 85, 247, 0) 55%),
-    radial-gradient(85% 65% at 84% 82%, rgba(217, 70, 239, 0.16), rgba(217, 70, 239, 0) 62%),
-    radial-gradient(70% 60% at 10% 78%, rgba(124, 58, 237, 0.16), rgba(124, 58, 237, 0) 60%),
+    radial-gradient(
+      120% 90% at 50% 6%,
+      rgba(168, 85, 247, 0.2),
+      rgba(168, 85, 247, 0) 55%
+    ),
+    radial-gradient(
+      85% 65% at 84% 82%,
+      rgba(217, 70, 239, 0.16),
+      rgba(217, 70, 239, 0) 62%
+    ),
+    radial-gradient(
+      70% 60% at 10% 78%,
+      rgba(124, 58, 237, 0.16),
+      rgba(124, 58, 237, 0) 60%
+    ),
     oklch(0.09 0.04 295);
   min-height: 720px;
   user-select: none;
@@ -309,7 +271,11 @@
   /* Fully opaque. Both stops used to carry alpha, so the panel's
      gradients and the light beam showed straight through every card and
      the whole ring read as translucent. */
-  background: linear-gradient(160deg, oklch(0.26 0.11 300), oklch(0.13 0.06 296));
+  background: linear-gradient(
+    160deg,
+    oklch(0.26 0.11 300),
+    oklch(0.13 0.06 296)
+  );
   border: 1px solid rgba(168, 85, 247, 0.3);
   box-shadow:
     0 30px 60px -20px rgba(0, 0, 0, 0.7),
@@ -443,9 +409,6 @@
 /* ──────────────────────────── Breakpoints ────────────────────────────── */
 
 @media (max-width: 1024px) {
-  .hero-shell {
-    --hc-panel-radius: 26px;
-  }
   .hero-panel {
     min-height: 640px;
   }
@@ -455,11 +418,7 @@
 }
 
 @media (max-width: 640px) {
-  .hero-section {
-    padding: 0.75rem 0;
-  }
   .hero-shell {
-    --hc-panel-radius: 22px;
     --hc-safe-gap: 1.1rem;
   }
   .hero-panel {
@@ -485,25 +444,6 @@
   .hero-card {
     border-radius: 18px;
   }
-
-  /*
-   * Static glow on mobile. Spinning it means re-rasterizing two large
-   * blurred layers every frame on the weakest hardware, at the very top
-   * of the page — exactly the shape of the scroll jank this site has
-   * already had to undo once. The gradient still reads as a rainbow edge
-   * light; it just doesn't turn.
-   */
-  .hero-glow {
-    animation: none;
-  }
-  .hero-glow--inner {
-    inset: -5px;
-    filter: blur(12px);
-  }
-  .hero-glow--outer {
-    inset: -18px;
-    filter: blur(30px);
-  }
 }
 
 @media (max-width: 380px) {
@@ -527,7 +467,6 @@
    * component drops autoplay, inertia and parallax and jumps straight to
    * each card, so prev/next and the arrow keys still work.
    */
-  .hero-glow,
   .hero-beam {
     animation: none !important;
   }
