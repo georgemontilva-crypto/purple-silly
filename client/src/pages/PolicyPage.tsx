@@ -1,4 +1,3 @@
-import AnnouncementBar from "@/components/AnnouncementBar";
 import { useParams } from "wouter";
 
 const policies: Record<string, { title: string; content: string }> = {
@@ -100,15 +99,15 @@ export default function PolicyPage() {
   const slug = params.slug ?? "";
   const policy = policies[slug];
 
-  if (!policy) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <p className="text-muted-foreground">Page not found.</p>
-    </div>
-  );
+  if (!policy)
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-muted-foreground">Page not found.</p>
+      </div>
+    );
 
   return (
     <div className="min-h-screen flex flex-col">
-      <AnnouncementBar />
       <main className="flex-1 py-16">
         <div className="max-w-[860px] mx-auto px-4 sm:px-6">
           <h1 className="font-condensed font-black text-5xl md:text-6xl text-white tracking-tight mb-10">
@@ -122,4 +121,3 @@ export default function PolicyPage() {
     </div>
   );
 }
-

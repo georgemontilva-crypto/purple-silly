@@ -8,9 +8,13 @@ import HeroCarousel, { type HeroSlide } from "./HeroCarousel";
 import "./HeroCarousel.css";
 
 /**
- * The hero: a 3D filmstrip carousel inside an inset panel ringed by a
- * slow rainbow edge light, with a shaft of light falling through the
- * middle of it.
+ * The hero: a full-bleed 3D filmstrip carousel with a shaft of light
+ * falling through the middle of it.
+ *
+ * Edge to edge — no inset, no rounded corners, no frame. It used to be a
+ * 95%-wide panel ringed by a spinning rainbow edge light; that ring is
+ * gone with the panel, since it only ever showed as spill past the
+ * rounded corners.
  *
  * The panel is a three-row grid — logo above, cards in the middle,
  * controls below — rather than a stack of overlays. That's what keeps the
@@ -43,12 +47,6 @@ export default function HeroSection() {
   return (
     <section className="hero-section">
       <div ref={shellRef} className="hero-shell" data-hc-visible={inView}>
-        {/* Two counter-rotating conic layers behind the panel. Both sit
-            outside it so only their blurred spill past the rounded edge
-            shows — the panel itself is opaque. */}
-        <div className="hero-glow hero-glow--outer" aria-hidden="true" />
-        <div className="hero-glow hero-glow--inner" aria-hidden="true" />
-
         <div className="hero-panel">
           {background && (
             <div
@@ -67,7 +65,9 @@ export default function HeroSection() {
           />
 
           <header className="hero-panel__top">
-            <span className="hero-badge">✦ Premium Mushroom Supplements · 21+</span>
+            <span className="hero-badge">
+              ✦ Premium Mushroom Supplements · 21+
+            </span>
             {/* One h1 either way: the uploaded logo goes inside it rather
                 than replacing it, so the page never loses its heading. */}
             <h1 className="hero-wordmark">

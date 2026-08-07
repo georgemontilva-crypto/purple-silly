@@ -6,19 +6,28 @@ const ITEMS = [
   "FUNCTIONAL MUSHROOMS + NOOTROPICS",
 ];
 
-const marqueeText = ITEMS.map((t) => `✦  ${t}  `).join("          ");
+const marqueeText = ITEMS.map(t => `✦  ${t}  `).join("          ");
 
 export default function AnnouncementBar() {
   return (
     <div
       className="overflow-hidden select-none"
-      style={{ background: "oklch(0.52 0.28 295)", color: "white", padding: "0.55rem 0" }}
+      style={{
+        background: "oklch(0.52 0.28 295)",
+        color: "white",
+        padding: "0.55rem 0",
+      }}
     >
       <div
         style={{
           display: "flex",
           whiteSpace: "nowrap",
-          animation: "announcementMarquee 35s linear infinite",
+          /* 18s, down from 35s — roughly double the old pace. The cycle
+             covers one of the three identical copies, so this is the time
+             for the strip to advance its own content width once. Kept above
+             ~15s deliberately: faster than that and the text stops being
+             comfortably readable as it passes. */
+          animation: "announcementMarquee 18s linear infinite",
           fontFamily: "'Barlow', sans-serif",
           fontWeight: 700,
           // clamp() keeps this small enough on narrow screens that a single

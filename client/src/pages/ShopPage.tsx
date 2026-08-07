@@ -3,7 +3,6 @@ import { Link, useParams } from "wouter";
 import { Loader2, Package, ShoppingCart, Star } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useCart } from "@/contexts/CartContext";
-import AnnouncementBar from "@/components/AnnouncementBar";
 import NewsletterSection from "@/components/NewsletterSection";
 import { Reveal, RevealItem, RevealStagger } from "@/components/motion/Reveal";
 
@@ -31,8 +30,11 @@ function ProductCard({ product }: { product: CatalogProduct }) {
       <Link href={`/products/${product.slug}`}>
         <div className="aspect-square bg-gray-100 overflow-hidden relative">
           {product.imageUrl ? (
-            <img src={product.imageUrl} alt={product.imageAlt}
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+            <img
+              src={product.imageUrl}
+              alt={product.imageAlt}
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 gap-2">
               <Package size={32} strokeWidth={1.5} />
@@ -46,28 +48,53 @@ function ProductCard({ product }: { product: CatalogProduct }) {
         </div>
         <div className="p-4 flex-1">
           <div className="flex gap-0.5 mb-2">
-            {[1, 2, 3, 4, 5].map(i => <Star key={i} size={12} className="fill-[oklch(0.92_0.18_95)] text-[oklch(0.92_0.18_95)]" />)}
+            {[1, 2, 3, 4, 5].map(i => (
+              <Star
+                key={i}
+                size={12}
+                className="fill-[oklch(0.92_0.18_95)] text-[oklch(0.92_0.18_95)]"
+              />
+            ))}
           </div>
-          <h3 className="font-bold text-sm text-[oklch(0.22_0.08_265)] mb-1 line-clamp-2">{product.title}</h3>
+          <h3 className="font-bold text-sm text-[oklch(0.22_0.08_265)] mb-1 line-clamp-2">
+            {product.title}
+          </h3>
           <div className="flex items-baseline gap-1.5">
             <span className="text-xs text-gray-400">From</span>
-            <p className="font-extrabold text-base text-[oklch(0.22_0.08_265)]">{formatPrice(product.priceCents)}</p>
-            {product.compareAtCents && product.priceCents && product.compareAtCents > product.priceCents ? (
-              <span className="text-xs text-gray-400 line-through">{formatPrice(product.compareAtCents)}</span>
+            <p className="font-extrabold text-base text-[oklch(0.22_0.08_265)]">
+              {formatPrice(product.priceCents)}
+            </p>
+            {product.compareAtCents &&
+            product.priceCents &&
+            product.compareAtCents > product.priceCents ? (
+              <span className="text-xs text-gray-400 line-through">
+                {formatPrice(product.compareAtCents)}
+              </span>
             ) : null}
           </div>
         </div>
       </Link>
       <div className="px-4 pb-4">
         <button
-          onClick={() => product.inStock && addItem(String(product.id), 1, {
-            title: product.title,
-            variantTitle: "Default",
-            price: { amount: product.priceCents ? (product.priceCents / 100).toFixed(2) : "0", currencyCode: "USD" },
-            image: product.imageUrl ? { url: product.imageUrl, altText: product.imageAlt } : null,
-          })}
+          onClick={() =>
+            product.inStock &&
+            addItem(String(product.id), 1, {
+              title: product.title,
+              variantTitle: "Default",
+              price: {
+                amount: product.priceCents
+                  ? (product.priceCents / 100).toFixed(2)
+                  : "0",
+                currencyCode: "USD",
+              },
+              image: product.imageUrl
+                ? { url: product.imageUrl, altText: product.imageAlt }
+                : null,
+            })
+          }
           disabled={isLoading || !product.inStock}
-          className="w-full bg-[oklch(0.22_0.08_265)] text-white font-bold text-sm py-3 rounded-xl hover:bg-[oklch(0.62_0.25_340)] transition-colors active:scale-[0.97] disabled:opacity-50 flex items-center justify-center gap-2">
+          className="w-full bg-[oklch(0.22_0.08_265)] text-white font-bold text-sm py-3 rounded-xl hover:bg-[oklch(0.62_0.25_340)] transition-colors active:scale-[0.97] disabled:opacity-50 flex items-center justify-center gap-2"
+        >
           <ShoppingCart size={14} /> {product.inStock ? "Shop Now" : "Sold Out"}
         </button>
       </div>
@@ -77,7 +104,10 @@ function ProductCard({ product }: { product: CatalogProduct }) {
 
 export default function ShopPage() {
   const params = useParams<{ categorySlug?: string }>();
-  const routeCategory = params.categorySlug && params.categorySlug !== "all" ? params.categorySlug : "";
+  const routeCategory =
+    params.categorySlug && params.categorySlug !== "all"
+      ? params.categorySlug
+      : "";
   const [categorySlug, setCategorySlug] = useState(routeCategory);
 
   // Keep local filter state in sync when navigating here via a category link
@@ -92,20 +122,26 @@ export default function ShopPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <AnnouncementBar />
       <main className="flex-1 py-12">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6">
           <Reveal className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-            <h1 className="font-condensed font-black text-4xl md:text-5xl text-white tracking-tight">Shop All</h1>
+            <h1 className="font-condensed font-black text-4xl md:text-5xl text-white tracking-tight">
+              Shop All
+            </h1>
             {categories && categories.length > 0 && (
               <div className="flex bg-white rounded-2xl p-1 gap-1 shadow-sm border border-gray-100 self-start flex-wrap">
-                <button onClick={() => setCategorySlug("")}
-                  className={`px-4 py-2 rounded-xl font-bold text-sm transition-all ${categorySlug === "" ? "bg-[oklch(0.22_0.08_265)] text-white" : "text-gray-500 hover:text-[oklch(0.22_0.08_265)]"}`}>
+                <button
+                  onClick={() => setCategorySlug("")}
+                  className={`px-4 py-2 rounded-xl font-bold text-sm transition-all ${categorySlug === "" ? "bg-[oklch(0.22_0.08_265)] text-white" : "text-gray-500 hover:text-[oklch(0.22_0.08_265)]"}`}
+                >
                   All Products
                 </button>
                 {categories.map(cat => (
-                  <button key={cat.id} onClick={() => setCategorySlug(cat.slug)}
-                    className={`px-4 py-2 rounded-xl font-bold text-sm transition-all ${categorySlug === cat.slug ? "bg-[oklch(0.22_0.08_265)] text-white" : "text-gray-500 hover:text-[oklch(0.22_0.08_265)]"}`}>
+                  <button
+                    key={cat.id}
+                    onClick={() => setCategorySlug(cat.slug)}
+                    className={`px-4 py-2 rounded-xl font-bold text-sm transition-all ${categorySlug === cat.slug ? "bg-[oklch(0.22_0.08_265)] text-white" : "text-gray-500 hover:text-[oklch(0.22_0.08_265)]"}`}
+                  >
                     {cat.name}
                   </button>
                 ))}
@@ -120,16 +156,24 @@ export default function ShopPage() {
           ) : !products || products.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-24 text-center text-gray-400">
               <Package size={40} strokeWidth={1.5} />
-              <p className="text-base">No products here yet — check back soon.</p>
+              <p className="text-base">
+                No products here yet — check back soon.
+              </p>
             </div>
           ) : (
             <RevealStagger className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-              {products.map(p => <RevealItem key={p.id}><ProductCard product={p} /></RevealItem>)}
+              {products.map(p => (
+                <RevealItem key={p.id}>
+                  <ProductCard product={p} />
+                </RevealItem>
+              ))}
             </RevealStagger>
           )}
         </div>
       </main>
-      <Reveal><NewsletterSection /></Reveal>
+      <Reveal>
+        <NewsletterSection />
+      </Reveal>
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { CartProvider } from "./contexts/CartContext";
+import AnnouncementBar from "./components/AnnouncementBar";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import PromoPopup from "./components/PromoPopup";
@@ -50,6 +51,11 @@ function StorefrontRouter() {
 function StorefrontLayout() {
   return (
     <div className="flex flex-col min-h-screen">
+      {/* The marquee is the page's first strip, above the navbar. Mounted
+          once here rather than per-page — every storefront page used to
+          render its own copy below the Navbar, which is both duplication
+          and the wrong order. */}
+      <AnnouncementBar />
       <Navbar />
       <div className="flex-1">
         <StorefrontRouter />

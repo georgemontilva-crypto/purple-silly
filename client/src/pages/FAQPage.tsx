@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
-import AnnouncementBar from "@/components/AnnouncementBar";
 import NewsletterSection from "@/components/NewsletterSection";
 
 /*
@@ -91,7 +90,6 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 export default function FAQPage() {
   return (
     <div className="min-h-screen flex flex-col">
-      <AnnouncementBar />
       <main className="flex-1 py-16">
         <div className="max-w-[860px] mx-auto px-4 sm:px-6">
           <h1 className="font-condensed font-black text-5xl md:text-6xl text-white tracking-tight mb-3">
