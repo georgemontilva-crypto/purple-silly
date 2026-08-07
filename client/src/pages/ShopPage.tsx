@@ -24,7 +24,7 @@ type CatalogProduct = {
 };
 
 function ProductCard({ product }: { product: CatalogProduct }) {
-  const { addItem, isLoading } = useCart();
+  const { addItem } = useCart();
   return (
     <div className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-200 flex flex-col">
       <Link href={`/products/${product.slug}`}>
@@ -78,21 +78,16 @@ function ProductCard({ product }: { product: CatalogProduct }) {
         <button
           onClick={() =>
             product.inStock &&
-            addItem(String(product.id), 1, {
+            addItem({
+              productId: product.id,
               title: product.title,
-              variantTitle: "Default",
-              price: {
-                amount: product.priceCents
-                  ? (product.priceCents / 100).toFixed(2)
-                  : "0",
-                currencyCode: "USD",
-              },
-              image: product.imageUrl
-                ? { url: product.imageUrl, altText: product.imageAlt }
-                : null,
+              unitPriceCents: product.priceCents ?? 0,
+              slug: product.slug,
+              imageUrl: product.imageUrl,
+              quantity: 1,
             })
           }
-          disabled={isLoading || !product.inStock}
+          disabled={!product.inStock}
           className="w-full bg-[oklch(0.22_0.08_265)] text-white font-bold text-sm py-3 rounded-xl hover:bg-[oklch(0.62_0.25_340)] transition-colors active:scale-[0.97] disabled:opacity-50 flex items-center justify-center gap-2"
         >
           <ShoppingCart size={14} /> {product.inStock ? "Shop Now" : "Sold Out"}
