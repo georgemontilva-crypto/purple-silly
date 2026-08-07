@@ -17,6 +17,7 @@ import FAQPage from "./pages/FAQPage";
 import ContactPage from "./pages/ContactPage";
 import PolicyPage from "./pages/PolicyPage";
 import CustomCursor from "./components/CustomCursor";
+import { usePointerFine } from "./hooks/usePointerFine";
 import WhatIsSilly from "./pages/WhatIsSilly";
 import LabReportsPage from "./pages/LabReportsPage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -61,6 +62,13 @@ function StorefrontLayout() {
 }
 
 function App() {
+  // The custom cursor is mounted only where there IS a cursor. On a touch
+  // device it has nothing to follow, and its effect hides the native cursor
+  // document-wide — which on a hybrid device would strand a user who then
+  // reaches for the trackpad. Gated here so the component never mounts at
+  // all on touch, rather than mounting and rendering nothing.
+  const pointerFine = usePointerFine();
+
   return (
     <ErrorBoundary>
       {/* reducedMotion="user" makes every framer-motion animation site-wide
@@ -71,7 +79,7 @@ function App() {
           <CartProvider>
             <TooltipProvider>
               <Toaster position="top-right" richColors />
-              <CustomCursor />
+              {pointerFine && <CustomCursor />}
               {/* /admin, /login, /signup and /verify-email get their own clean
                   layout — no storefront Navbar/Footer. Everything else falls
                   through to StorefrontLayout, which has its own inner Switch
