@@ -13,34 +13,34 @@
   --color-popover-foreground: oklch(0.97 0.01 295);
 
   /* Purple Organics Brand Colors */
-  --color-po-deep:   oklch(0.09 0.04 295);
-  --color-po-dark:   oklch(0.13 0.05 295);
-  --color-po-mid:    oklch(0.20 0.08 295);
-  --color-po-vivid:  oklch(0.52 0.28 295);
+  --color-po-deep: oklch(0.09 0.04 295);
+  --color-po-dark: oklch(0.13 0.05 295);
+  --color-po-mid: oklch(0.2 0.08 295);
+  --color-po-vivid: oklch(0.52 0.28 295);
   --color-po-bright: oklch(0.62 0.28 295);
-  --color-po-light:  oklch(0.75 0.18 295);
-  --color-po-pink:   oklch(0.72 0.22 320);
-  --color-po-yellow: oklch(0.88 0.20 95);
+  --color-po-light: oklch(0.75 0.18 295);
+  --color-po-pink: oklch(0.72 0.22 320);
+  --color-po-yellow: oklch(0.88 0.2 95);
 
   --color-primary: oklch(0.62 0.28 295);
   --color-primary-foreground: oklch(0.99 0 0);
-  --color-secondary: oklch(0.20 0.08 295);
+  --color-secondary: oklch(0.2 0.08 295);
   --color-secondary-foreground: oklch(0.97 0.01 295);
   --color-muted: oklch(0.18 0.06 295);
-  --color-muted-foreground: oklch(0.60 0.08 295);
+  --color-muted-foreground: oklch(0.6 0.08 295);
   --color-accent: oklch(0.72 0.22 320);
   --color-accent-foreground: oklch(0.99 0 0);
   --color-destructive: oklch(0.577 0.245 27.325);
   --color-border: oklch(0.22 0.08 295);
-  --color-input: oklch(0.20 0.08 295);
+  --color-input: oklch(0.2 0.08 295);
   --color-ring: oklch(0.62 0.28 295);
 
   /* Sidebar (used by /admin) */
-  --color-sidebar: oklch(0.10 0.05 295);
+  --color-sidebar: oklch(0.1 0.05 295);
   --color-sidebar-foreground: oklch(0.92 0.02 295);
   --color-sidebar-primary: oklch(0.52 0.28 295);
   --color-sidebar-primary-foreground: oklch(0.99 0 0);
-  --color-sidebar-accent: oklch(0.20 0.08 295);
+  --color-sidebar-accent: oklch(0.2 0.08 295);
   --color-sidebar-accent-foreground: oklch(0.62 0.28 295);
   --color-sidebar-border: oklch(0.18 0.06 295);
   --color-sidebar-ring: oklch(0.62 0.28 295);
@@ -122,7 +122,12 @@
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
   }
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-sans);
     font-weight: 800;
   }
@@ -140,6 +145,25 @@
     min-width: 0;
     min-height: 0;
   }
+
+  /*
+   * Hides the scrollbar on a track the user drags or swipes directly.
+   * Shared by the mobile card rows (comparison table, reviews) — the row
+   * itself is the control, and a bar under it reads as a rendering bug on
+   * a phone.
+   *
+   * All three declarations are needed: `scrollbar-width` is the standard
+   * one Firefox honours, `-ms-overflow-style` covers legacy Edge, and
+   * Chromium/WebKit only respond to the pseudo-element. Scrolling is
+   * unaffected — this hides the indicator, not the overflow.
+   */
+  .hide-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* Product card hover */
@@ -156,7 +180,8 @@ html {
 }
 
 /* Button active scale */
-button:active, a:active {
+button:active,
+a:active {
   transform: scale(0.97);
   transition: transform 160ms var(--ease-out);
 }
@@ -216,78 +241,95 @@ button:active, a:active {
 .orb-1 {
   width: 1150px;
   height: 1150px;
-  background: radial-gradient(circle closest-side,
-    rgba(139,92,246,0.27) 0%,
-    rgba(139,92,246,0.190) 15%,
-    rgba(139,92,246,0.130) 30%,
-    rgba(139,92,246,0.085) 45%,
-    rgba(139,92,246,0.055) 58%,
-    rgba(139,92,246,0.032) 68%,
-    rgba(139,92,246,0.018) 77%,
-    rgba(139,92,246,0.0089) 85%,
-    rgba(139,92,246,0.0041) 92%,
-    rgba(139,92,246,0.0015) 97%,
-    rgba(139,92,246,0) 100%);
+  background: radial-gradient(
+    circle closest-side,
+    rgba(139, 92, 246, 0.27) 0%,
+    rgba(139, 92, 246, 0.19) 15%,
+    rgba(139, 92, 246, 0.13) 30%,
+    rgba(139, 92, 246, 0.085) 45%,
+    rgba(139, 92, 246, 0.055) 58%,
+    rgba(139, 92, 246, 0.032) 68%,
+    rgba(139, 92, 246, 0.018) 77%,
+    rgba(139, 92, 246, 0.0089) 85%,
+    rgba(139, 92, 246, 0.0041) 92%,
+    rgba(139, 92, 246, 0.0015) 97%,
+    rgba(139, 92, 246, 0) 100%
+  );
   animation-duration: 22s;
   animation-delay: 0s;
 }
 .orb-2 {
   width: 970px;
   height: 970px;
-  background: radial-gradient(circle closest-side,
-    rgba(236,72,153,0.24) 0%,
-    rgba(236,72,153,0.169) 15%,
-    rgba(236,72,153,0.115) 30%,
-    rgba(236,72,153,0.0756) 45%,
-    rgba(236,72,153,0.049) 58%,
-    rgba(236,72,153,0.0286) 68%,
-    rgba(236,72,153,0.0161) 77%,
-    rgba(236,72,153,0.0079) 85%,
-    rgba(236,72,153,0.0036) 92%,
-    rgba(236,72,153,0.0013) 97%,
-    rgba(236,72,153,0) 100%);
+  background: radial-gradient(
+    circle closest-side,
+    rgba(236, 72, 153, 0.24) 0%,
+    rgba(236, 72, 153, 0.169) 15%,
+    rgba(236, 72, 153, 0.115) 30%,
+    rgba(236, 72, 153, 0.0756) 45%,
+    rgba(236, 72, 153, 0.049) 58%,
+    rgba(236, 72, 153, 0.0286) 68%,
+    rgba(236, 72, 153, 0.0161) 77%,
+    rgba(236, 72, 153, 0.0079) 85%,
+    rgba(236, 72, 153, 0.0036) 92%,
+    rgba(236, 72, 153, 0.0013) 97%,
+    rgba(236, 72, 153, 0) 100%
+  );
   animation-duration: 28s;
   animation-delay: -8s;
 }
 .orb-3 {
   width: 850px;
   height: 850px;
-  background: radial-gradient(circle closest-side,
-    rgba(192,132,252,0.20) 0%,
-    rgba(192,132,252,0.141) 15%,
-    rgba(192,132,252,0.0962) 30%,
-    rgba(192,132,252,0.063) 45%,
-    rgba(192,132,252,0.0408) 58%,
-    rgba(192,132,252,0.0238) 68%,
-    rgba(192,132,252,0.0134) 77%,
-    rgba(192,132,252,0.0066) 85%,
-    rgba(192,132,252,0.003) 92%,
-    rgba(192,132,252,0.0011) 97%,
-    rgba(192,132,252,0) 100%);
+  background: radial-gradient(
+    circle closest-side,
+    rgba(192, 132, 252, 0.2) 0%,
+    rgba(192, 132, 252, 0.141) 15%,
+    rgba(192, 132, 252, 0.0962) 30%,
+    rgba(192, 132, 252, 0.063) 45%,
+    rgba(192, 132, 252, 0.0408) 58%,
+    rgba(192, 132, 252, 0.0238) 68%,
+    rgba(192, 132, 252, 0.0134) 77%,
+    rgba(192, 132, 252, 0.0066) 85%,
+    rgba(192, 132, 252, 0.003) 92%,
+    rgba(192, 132, 252, 0.0011) 97%,
+    rgba(192, 132, 252, 0) 100%
+  );
   animation-duration: 18s;
   animation-delay: -14s;
 }
 .orb-4 {
   width: 770px;
   height: 770px;
-  background: radial-gradient(circle closest-side,
-    rgba(168,85,247,0.22) 0%,
-    rgba(168,85,247,0.155) 15%,
-    rgba(168,85,247,0.1058) 30%,
-    rgba(168,85,247,0.0693) 45%,
-    rgba(168,85,247,0.0449) 58%,
-    rgba(168,85,247,0.0262) 68%,
-    rgba(168,85,247,0.0147) 77%,
-    rgba(168,85,247,0.0073) 85%,
-    rgba(168,85,247,0.0033) 92%,
-    rgba(168,85,247,0.0012) 97%,
-    rgba(168,85,247,0) 100%);
+  background: radial-gradient(
+    circle closest-side,
+    rgba(168, 85, 247, 0.22) 0%,
+    rgba(168, 85, 247, 0.155) 15%,
+    rgba(168, 85, 247, 0.1058) 30%,
+    rgba(168, 85, 247, 0.0693) 45%,
+    rgba(168, 85, 247, 0.0449) 58%,
+    rgba(168, 85, 247, 0.0262) 68%,
+    rgba(168, 85, 247, 0.0147) 77%,
+    rgba(168, 85, 247, 0.0073) 85%,
+    rgba(168, 85, 247, 0.0033) 92%,
+    rgba(168, 85, 247, 0.0012) 97%,
+    rgba(168, 85, 247, 0) 100%
+  );
   animation-duration: 32s;
   animation-delay: -5s;
 }
 
 @keyframes orbFloat {
-  0%   { opacity: 0.85; transform: translate(var(--ox0), var(--oy0)) scale(1);     }
-  50%  { opacity: 1;    transform: translate(var(--ox1), var(--oy1)) scale(1.18);  }
-  100% { opacity: 0.85; transform: translate(var(--ox0), var(--oy0)) scale(1);     }
+  0% {
+    opacity: 0.85;
+    transform: translate(var(--ox0), var(--oy0)) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(var(--ox1), var(--oy1)) scale(1.18);
+  }
+  100% {
+    opacity: 0.85;
+    transform: translate(var(--ox0), var(--oy0)) scale(1);
+  }
 }

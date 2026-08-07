@@ -40,26 +40,44 @@ export default function ReviewsSection() {
             Real Riders
           </h2>
           <p className="text-gray-500 text-base">
-            Don't take our word for it; hear from real people who ride the Wheel.
+            Don't take our word for it; hear from real people who ride the
+            Wheel.
           </p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {/* Below sm this is a horizontal swipe track that snaps review to
+            review with the scrollbar hidden; from sm up it goes back to the
+            grid. One review per screen beats a single column the reader has
+            to scroll four card-heights through. */}
+        <div className="flex gap-5 overflow-x-auto snap-x snap-mandatory hide-scrollbar pb-2 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:overflow-x-visible sm:pb-0">
           {reviews.map(({ name, age, verified, rating, text }) => (
-            <div key={name}
-              className="bg-white rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col gap-3">
+            <div
+              key={name}
+              className="snap-start shrink-0 w-[80%] max-w-[300px] sm:w-auto sm:max-w-none bg-white rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col gap-3"
+            >
               <div className="flex gap-0.5">
-                {[1,2,3,4,5].map(i => (
-                  <Star key={i} size={14}
-                    className={i <= rating ? "fill-[oklch(0.92_0.18_95)] text-[oklch(0.92_0.18_95)]" : "fill-gray-200 text-gray-200"} />
+                {[1, 2, 3, 4, 5].map(i => (
+                  <Star
+                    key={i}
+                    size={14}
+                    className={
+                      i <= rating
+                        ? "fill-[oklch(0.92_0.18_95)] text-[oklch(0.92_0.18_95)]"
+                        : "fill-gray-200 text-gray-200"
+                    }
+                  />
                 ))}
               </div>
-              <p className="text-sm text-gray-600 leading-relaxed flex-1">"{text}"</p>
+              <p className="text-sm text-gray-600 leading-relaxed flex-1">
+                "{text}"
+              </p>
               <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
                 <div className="w-8 h-8 rounded-full bg-[oklch(0.22_0.08_265)] flex items-center justify-center text-white text-xs font-bold">
                   {name[0]}
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-[oklch(0.22_0.08_265)]">{name}</p>
+                  <p className="text-sm font-bold text-[oklch(0.22_0.08_265)]">
+                    {name}
+                  </p>
                   <p className="text-xs text-gray-400">
                     {age} · {verified && "✓ Verified Buyer"}
                   </p>
@@ -72,4 +90,3 @@ export default function ReviewsSection() {
     </section>
   );
 }
-
