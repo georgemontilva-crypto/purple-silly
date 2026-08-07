@@ -18,9 +18,9 @@ const C = {
 const SECTIONS = [
   {
     id: "intro",
-    tag: "THE SILLY UNIVERSE",
-    title: "What is Silly?",
-    body: `Silly is Purple Co's flagship line of functional mushroom products — designed for people who want to feel good, think clearly, and live fully. Every Silly product is crafted with premium botanical ingredients: no psilocybin, no synthetic stimulants, just nature's most powerful mushrooms and nootropics working together.\n\nThe Silly universe spans three distinct product lines, each engineered for a different kind of experience — from focused energy to social ease to daily balance.`,
+    tag: "What Are Silly Dots?",
+    title: "A Different Kind of Supplement Experience",
+    body: `Silly Dots are Purple Organics' signature line of bold, easy-to-enjoy functional mushroom products created for adults 21+. With colorful flavors, multiple strength options, and unmistakable packaging, Silly Dots are designed for people looking for something a little different from the ordinary supplement routine.`,
     cta: { label: "Shop All Silly →", href: "/collections/all" },
     accent: C.vivid,
     imgSide: "left",
@@ -30,9 +30,9 @@ const SECTIONS = [
   },
   {
     id: "silly-dots",
-    tag: "SILLY DOTS",
-    title: "Functional Mushroom Tabs",
-    body: `Silly Dots are premium mushroom + nootropic tablets packed with Lion's Mane, Reishi, Chaga, Cordyceps, L-Theanine, Bacopa, and Rhodiola. Available in three potency levels:\n\n• Mega Dose (1200mg) — Perfect entry point for daily wellness and gentle focus enhancement.\n• Hero Dose (1800mg) — The balanced sweet spot: elevated mood, sharper clarity, and social ease.\n• Super Dose (2400mg) — Maximum potency for those seeking a deeper, more immersive experience.\n\nAvailable in Natural, Blue Razz, and Cherry Berry. Vegan · Gluten-Free · Lab Tested.`,
+    tag: "Find Your Silly",
+    title: "Different Options. Different Experiences.",
+    body: `Not everyone is looking for the same thing, which is why Silly Dots come in multiple varieties. Explore Mega, Hero, and Super Dose options and choose the product that best fits the experience you're looking for. Each variety is clearly labeled so you can easily compare products before making your selection.`,
     cta: { label: "Shop Silly Dots →", href: "/collections/silly-dots" },
     accent: C.vivid,
     imgSide: "right",
@@ -42,9 +42,9 @@ const SECTIONS = [
   },
   {
     id: "silly-euphoria",
-    tag: "SILLY EUPHORIA",
-    title: "Premium Enhanced Gummies",
-    body: `Silly Euphoria gummies are crafted for elevated vibes, social ease, and pure good energy. Each pouch is formulated with Purple Co's proprietary mushroom-enhanced blend — delivering a smooth, mood-lifting experience that's perfect for any occasion.\n\nAvailable in multiple flavors including Blue Razz, Pineapple, Raspberry, Strawberry, Watermelon, and White Gummy. Discreet, portable, and easy to dose.\n\nVegan · Gluten-Free · No Psilocybin · Lab Tested.`,
+    tag: "Big Flavor. Serious Personality.",
+    title: "Made to Stand Out",
+    body: `Silly Dots aren't meant to look—or taste—like traditional supplements. The collection features bold flavors such as Cherry Berry, Strawberry Lemonade, and Watermelon Lime, paired with playful packaging and a personality that's unmistakably Silly. From the first look to the last bite, every detail is designed to make the experience more fun.`,
     cta: {
       label: "Shop Silly Euphoria →",
       href: "/collections/silly-euphoria",
@@ -57,9 +57,9 @@ const SECTIONS = [
   },
   {
     id: "silly-bites",
-    tag: "SILLY BITES GUMMIES",
-    title: "Cannadelic Microdose",
-    body: `Silly Bites are cannadelic microdose gummies designed for daily wellness and balanced mood. Each 10-count pouch delivers consistent, gentle support — making them ideal for those who want a subtle, manageable experience they can incorporate into their everyday routine.\n\nAvailable in Blue Razz, Pineapple, Raspberry, Strawberry, Watermelon, and White Gummy. Each gummy is precisely dosed for predictable, reliable results.\n\nVegan · Gluten-Free · Microdosed · Lab Tested.`,
+    tag: "Know What You're Getting",
+    title: "Quality You Can Verify",
+    body: `What's inside matters. Silly Dots products are backed by laboratory testing, with product lab reports available directly through Purple Organics. We believe customers should be able to easily access information about the products they purchase and make informed decisions about what's right for them. Explore the collection, compare your options, and find your kind of Silly.`,
     cta: { label: "Shop Silly Bites →", href: "/collections/silly-bites" },
     accent: C.green,
     imgSide: "right",
