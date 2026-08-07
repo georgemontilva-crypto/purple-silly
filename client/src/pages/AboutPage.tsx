@@ -141,7 +141,7 @@ export default function AboutPage() {
               fontFamily: "'Barlow', sans-serif",
             }}
           >
-            Our Mission
+            OUR MISSION
           </span>
           <h2
             style={{
@@ -153,7 +153,7 @@ export default function AboutPage() {
               margin: "0 0 1.5rem",
             }}
           >
-            Illuminate the Power of Mushrooms
+            Make Feeling Good Simple
           </h2>
           <p
             style={{
@@ -162,23 +162,11 @@ export default function AboutPage() {
               fontSize: "1rem",
             }}
           >
-            Purple strives to illuminate the profound benefits of mushrooms,
-            transforming traditional perceptions and demonstrating that potent
-            effects can be achieved sustainably and safely, even without
-            psilocybin. Our mission is to deliver high-quality, vegan, and
-            gluten-free mushroom products that enhance wellness and provide
-            recreational delight.
-          </p>
-          <p
-            style={{
-              color: "oklch(0.72 0.07 295)",
-              lineHeight: 1.75,
-              fontSize: "1rem",
-              marginTop: "1rem",
-            }}
-          >
-            Through our thoughtfully formulated products, we aim to elevate
-            everyday well-being and open new paths to personal discovery.
+            Purple Organics created Silly Dots to bring bold, approachable
+            functional mushroom products to adults 21+. Our mission is to
+            deliver high-quality, thoughtfully formulated products that are easy
+            to enjoy and easy to trust — with colorful flavors, clear labeling,
+            and lab-tested quality in every batch.
           </p>
         </div>
         {/* Vision */}
@@ -201,7 +189,7 @@ export default function AboutPage() {
               fontFamily: "'Barlow', sans-serif",
             }}
           >
-            Our Vision
+            OUR VISION
           </span>
           <h2
             style={{
@@ -213,7 +201,7 @@ export default function AboutPage() {
               margin: "0 0 1.5rem",
             }}
           >
-            Lead the Mushroom Revolution
+            Redefine the Everyday Supplement
           </h2>
           <p
             style={{
@@ -222,22 +210,10 @@ export default function AboutPage() {
               fontSize: "1rem",
             }}
           >
-            Our vision is to be at the forefront of the mushroom revolution,
-            leading with innovation and integrity. We envision a world where the
-            natural power of mushrooms is widely recognized and harnessed for
-            its maximum potential in both wellness and recreational contexts.
-          </p>
-          <p
-            style={{
-              color: "oklch(0.72 0.07 295)",
-              lineHeight: 1.75,
-              fontSize: "1rem",
-              marginTop: "1rem",
-            }}
-          >
-            We aspire to create a global community where everyone can access the
-            transformative benefits of mushrooms, reshaping the future of
-            natural health and enjoyment.
+            We envision a world where functional mushrooms feel fun, not
+            clinical. Through Silly Dots, we're building a brand that stands out
+            — one that pairs serious quality with real personality, and invites
+            everyone to find their own kind of Silly.
           </p>
         </div>
       </div>
