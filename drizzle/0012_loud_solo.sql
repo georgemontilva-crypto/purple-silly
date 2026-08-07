@@ -1,0 +1,23 @@
+CREATE TABLE `wholesale_applications` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`businessName` varchar(256) NOT NULL,
+	`dba` varchar(256) NOT NULL,
+	`firstName` varchar(128) NOT NULL,
+	`lastName` varchar(128) NOT NULL,
+	`phone` varchar(64) NOT NULL,
+	`email` varchar(320) NOT NULL,
+	`address` varchar(512) NOT NULL,
+	`city` varchar(128) NOT NULL,
+	`state` varchar(128) NOT NULL,
+	`postalCode` varchar(32) NOT NULL,
+	`country` varchar(128) NOT NULL DEFAULT 'United States',
+	`distributorType` enum('1 Store','2-5 Store','5+ Store','Distributor') NOT NULL,
+	`notes` text,
+	`fileKey` varchar(512),
+	`fileUrl` varchar(1024),
+	`fileName` varchar(255),
+	`status` enum('new','contacted','approved','rejected') NOT NULL DEFAULT 'new',
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `wholesale_applications_id` PRIMARY KEY(`id`)
+);

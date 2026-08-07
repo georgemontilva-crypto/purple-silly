@@ -326,3 +326,56 @@ export const reviews = mysqlTable("reviews", {
 
 export type Review = typeof reviews.$inferSelect;
 export type InsertReview = typeof reviews.$inferInsert;
+
+// ─── Wholesale applications (Fase 9) ──────────────────────────────────────
+//
+// Submissions from the public /wholesale form. Read and worked in
+// /admin → Wholesale.
+//
+// Every address part is its own column rather than one free-text blob: the
+// admin exports these to CSV for a sales team, and a single "address"
+// string can't be sorted by state or filtered by country.
+//
+// fileKey/fileUrl are optional and hold an attachment (a licence, a resale
+// certificate, a line sheet). It goes to R2 by presigned PUT rather than
+// base64 through the API, because a PDF scan is routinely several MB and
+// base64 would buffer the whole thing in the API process — the same
+// reasoning as home_reels, see CLAUDE.md.
+export const wholesaleApplications = mysqlTable("wholesale_applications", {
+  id: int("id").autoincrement().primaryKey(),
+  businessName: varchar("businessName", { length: 256 }).notNull(),
+  dba: varchar("dba", { length: 256 }).notNull(),
+  firstName: varchar("firstName", { length: 128 }).notNull(),
+  lastName: varchar("lastName", { length: 128 }).notNull(),
+  phone: varchar("phone", { length: 64 }).notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  address: varchar("address", { length: 512 }).notNull(),
+  city: varchar("city", { length: 128 }).notNull(),
+  // "State/Province": free text, not an enum. The country list is global and
+  // subdivision names differ wildly; an enum would reject valid addresses.
+  state: varchar("state", { length: 128 }).notNull(),
+  postalCode: varchar("postalCode", { length: 32 }).notNull(),
+  country: varchar("country", { length: 128 })
+    .default("United States")
+    .notNull(),
+  distributorType: mysqlEnum("distributorType", [
+    "1 Store",
+    "2-5 Store",
+    "5+ Store",
+    "Distributor",
+  ]).notNull(),
+  notes: text("notes"),
+  fileKey: varchar("fileKey", { length: 512 }),
+  fileUrl: varchar("fileUrl", { length: 1024 }),
+  fileName: varchar("fileName", { length: 255 }),
+  // Where the application is in the sales pipeline.
+  status: mysqlEnum("status", ["new", "contacted", "approved", "rejected"])
+    .default("new")
+    .notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type WholesaleApplication = typeof wholesaleApplications.$inferSelect;
+export type InsertWholesaleApplication =
+  typeof wholesaleApplications.$inferInsert;

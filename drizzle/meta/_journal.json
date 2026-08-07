@@ -85,6 +85,13 @@
       "when": 1786068429434,
       "tag": "0011_daily_queen_noir",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "5",
+      "when": 1786074843054,
+      "tag": "0012_loud_solo",
+      "breakpoints": true
     }
   ]
 }
