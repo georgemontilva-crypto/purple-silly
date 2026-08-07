@@ -71,6 +71,13 @@
       "when": 1786056263313,
       "tag": "0009_worthless_galactus",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1786063758340,
+      "tag": "0010_tricky_captain_universe",
+      "breakpoints": true
     }
   ]
 }
