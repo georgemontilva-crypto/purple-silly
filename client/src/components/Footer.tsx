@@ -1,4 +1,5 @@
 import { Link } from "wouter";
+import { Facebook, Instagram } from "lucide-react";
 import { useSiteAsset } from "@/hooks/useSiteAssets";
 import { Reveal } from "@/components/motion/Reveal";
 
@@ -14,10 +15,12 @@ const COLS = [
     title: "Customer Care",
     links: [
       { label: "FAQ", href: "/pages/faq" },
-      { label: "Shipping Information", href: "/pages/shipping-information" },
-      { label: "Refund & Return Policy", href: "/pages/refund-return-policy" },
+      { label: "Shipping Information", href: "/policies/shipping-policy" },
+      { label: "Refund & Return Policy", href: "/policies/refund-policy" },
+      { label: "Product Verification", href: "/product-verification" },
       { label: "Contact Us", href: "/pages/contact" },
-      { label: "Lab Reports", href: "/pages/lab-reports" },
+      // /pages/lab-reports was never a route — the page lives at the root.
+      { label: "Lab Reports", href: "/lab-reports" },
     ],
   },
   {
@@ -37,9 +40,27 @@ const COLS = [
     links: [
       { label: "support@purple-co.com", href: "mailto:support@purple-co.com" },
       { label: "www.purple-co.com", href: "https://www.purple-co.com" },
-      { label: "Privacy Policy", href: "/pages/privacy-policy" },
-      { label: "Terms & Conditions", href: "/pages/terms-and-conditions" },
+      { label: "Privacy Policy", href: "/policies/privacy-policy" },
+      { label: "Terms & Conditions", href: "/policies/terms-of-service" },
     ],
+  },
+];
+
+/**
+ * target="_blank" always paired with rel="noopener noreferrer": without
+ * noopener the opened tab gets a handle on this window via window.opener
+ * and can navigate it somewhere else.
+ */
+const SOCIALS = [
+  {
+    label: "Instagram",
+    href: "https://www.instagram.com/groovypurple/",
+    Icon: Instagram,
+  },
+  {
+    label: "Facebook",
+    href: "https://www.facebook.com/getgroovypurple",
+    Icon: Facebook,
   },
 ];
 
@@ -106,6 +127,40 @@ export default function Footer() {
             </div>
           ))}
         </div>
+        <div
+          className="flex flex-wrap items-center gap-3 pb-8"
+          aria-label="Social media"
+        >
+          {SOCIALS.map(({ label, href, Icon }) => (
+            <a
+              key={label}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`${label} (opens in a new tab)`}
+              className="flex items-center justify-center rounded-full transition-colors"
+              style={{
+                // 44px: the minimum comfortable touch target.
+                width: 44,
+                height: 44,
+                background: C.dark,
+                border: `1px solid ${C.mid}`,
+                color: "oklch(0.78 0.06 295)",
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.color = "#fff";
+                e.currentTarget.style.borderColor = C.pink;
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.color = "oklch(0.78 0.06 295)";
+                e.currentTarget.style.borderColor = C.mid;
+              }}
+            >
+              <Icon size={19} aria-hidden="true" />
+            </a>
+          ))}
+        </div>
+
         <div className="pt-8 border-t space-y-3" style={{ borderColor: C.mid }}>
           <p
             className="text-xs leading-relaxed max-w-3xl"
