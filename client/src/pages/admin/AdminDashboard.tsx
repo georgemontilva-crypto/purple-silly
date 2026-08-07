@@ -35,6 +35,7 @@ import {
   type LucideIcon,
   Mail,
   MessageSquare,
+  MessageSquareQuote,
   Package,
   ShieldAlert,
   Tags,
@@ -49,6 +50,7 @@ import AdminProductCategories from "./AdminProductCategories";
 import AdminLeads from "./AdminLeads";
 import AdminPopups from "./AdminPopups";
 import AdminReels from "./AdminReels";
+import AdminReviews from "./AdminReviews";
 
 type AdminTab =
   | "overview"
@@ -59,6 +61,7 @@ type AdminTab =
   | "assets"
   | "popups"
   | "reels"
+  | "reviews"
   | "leads"
   | "users";
 
@@ -71,6 +74,7 @@ const NAV_ITEMS: { id: AdminTab; label: string; icon: LucideIcon }[] = [
   { id: "assets", label: "Assets", icon: ImageIcon },
   { id: "popups", label: "Popups", icon: MessageSquare },
   { id: "reels", label: "Reels", icon: Film },
+  { id: "reviews", label: "Reviews", icon: MessageSquareQuote },
   { id: "leads", label: "Leads", icon: Mail },
   { id: "users", label: "Users", icon: Users },
 ];
@@ -377,6 +381,7 @@ export default function AdminDashboard() {
           {tab === "assets" && <AdminAssets />}
           {tab === "popups" && <AdminPopups />}
           {tab === "reels" && <AdminReels />}
+          {tab === "reviews" && <AdminReviews />}
           {tab === "leads" && <AdminLeads />}
           {tab === "users" && <AdminUsers />}
         </main>

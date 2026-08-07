@@ -290,3 +290,39 @@ export const homeReels = mysqlTable("home_reels", {
 
 export type HomeReel = typeof homeReels.$inferSelect;
 export type InsertHomeReel = typeof homeReels.$inferInsert;
+
+// ─── Customer reviews (Fase 7) ────────────────────────────────────────────
+//
+// Real reviews from the store owner's customers, published with their
+// authorization, managed from /admin. Deliberately NOT a Judge.me
+// integration — that comes later in production via the official widget, and
+// these rows are the interim source of truth.
+//
+// imageKey/imageUrl are optional: a review with no photo has to render just
+// as well as one with, so the storefront card can never depend on it.
+export const reviews = mysqlTable("reviews", {
+  id: int("id").autoincrement().primaryKey(),
+  authorName: varchar("authorName", { length: 128 }).notNull(),
+  // 1-5. Bounded in the router rather than by a CHECK constraint, to match
+  // how every other bounded column in this schema is handled.
+  rating: int("rating").default(5).notNull(),
+  title: varchar("title", { length: 256 }).notNull(),
+  body: text("body").notNull(),
+  // Which product the review is about. Free text, not a foreign key: these
+  // came from an external review platform and name products by their retail
+  // label ("Silly Dots Mega Dose 1200mg"), which doesn't necessarily match
+  // a row in `products`. A FK would reject the real data.
+  productName: varchar("productName", { length: 256 }),
+  verified: boolean("verified").default(false).notNull(),
+  imageKey: varchar("imageKey", { length: 512 }),
+  imageUrl: varchar("imageUrl", { length: 1024 }),
+  // Display order, ascending. Not unique — reordering rewrites every row's
+  // position in one pass and a unique index would collide mid-update.
+  position: int("position").default(0).notNull(),
+  active: boolean("active").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Review = typeof reviews.$inferSelect;
+export type InsertReview = typeof reviews.$inferInsert;

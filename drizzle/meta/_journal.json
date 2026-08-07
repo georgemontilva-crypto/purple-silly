@@ -78,6 +78,13 @@
       "when": 1786063758340,
       "tag": "0010_tricky_captain_universe",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "5",
+      "when": 1786068429434,
+      "tag": "0011_daily_queen_noir",
+      "breakpoints": true
     }
   ]
 }
