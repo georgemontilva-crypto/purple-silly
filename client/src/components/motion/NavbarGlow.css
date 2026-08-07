@@ -1,0 +1,74 @@
+/*
+ * The navbar's glow zones — one at each end, mirrored, with the shared
+ * light motes falling through them.
+ *
+ * Two things this file has to get right, both of them about NOT leaving a
+ * visible seam:
+ *
+ * 1. Reaching past the bar. The <header> ends where the nav row ends, and
+ *    the wave hangs BELOW it. A zone at inset-y-0 therefore stops dead
+ *    at the top of the wave, which is the cut this replaces. These extend
+ *    down by the wave's own height so the light carries through it.
+ *
+ * 2. Painting above the wave, below the nav. The wave is z-index 0 inside
+ *    the header; these sit at z-index 1, and so does <nav>. Since the
+ *    glow comes first in the DOM, the nav still wins over it while both
+ *    win over the wave — so the light lies ON the wave, reading as one
+ *    piece, instead of hiding behind its opaque fill.
+ */
+
+.navbar-glow {
+  /*
+   * Mirrors the desktop height of .navbar-wave in NavbarWave.css. The
+   * value is duplicated rather than shared because the two are siblings
+   * with no common element to hang a custom property on — the runtime
+   * check for this is that the glow's bottom edge and the wave's bottom
+   * edge land on the same pixel.
+   */
+  --ng-wave-overlap: 48px;
+
+  position: absolute;
+  top: 0;
+  bottom: calc(-1 * var(--ng-wave-overlap));
+  width: 42%;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/*
+ * Radial from the outer top corner, not a linear ramp.
+ *
+ * A linear gradient only fades sideways, so extending the zone downward
+ * would have given it a hard horizontal edge where the box ends — trading
+ * the old seam for a new one. A radial anchored in the corner falls off in
+ * every direction at once, so the box's own bottom and inner edges are
+ * already fully transparent before they arrive.
+ */
+.navbar-glow--right {
+  right: 0;
+  background: radial-gradient(
+    125% 135% at 100% 0%,
+    oklch(0.32 0.18 295 / 65%) 0%,
+    oklch(0.24 0.15 295 / 38%) 30%,
+    oklch(0.16 0.09 295 / 14%) 58%,
+    oklch(0.16 0.09 295 / 0%) 84%
+  );
+}
+
+.navbar-glow--left {
+  left: 0;
+  background: radial-gradient(
+    125% 135% at 0% 0%,
+    oklch(0.32 0.18 295 / 65%) 0%,
+    oklch(0.24 0.15 295 / 38%) 30%,
+    oklch(0.16 0.09 295 / 14%) 58%,
+    oklch(0.16 0.09 295 / 0%) 84%
+  );
+}
+
+/* The motes fill the whole zone, wave band included. */
+.navbar-particles {
+  inset: 0;
+  z-index: 1;
+}

@@ -2,14 +2,15 @@
  * Falling light motes — the shared particle effect.
  *
  * Used by the hero (descending through the light beam behind the
- * carousel) and by the navbar (descending on the right, where the glow
- * sits). Both render the SAME markup, colour, sizes and direction so the
- * two read as one continuous flow: light born at the navbar's right edge
- * and carrying on down into the hero.
+ * carousel) and by the navbar (descending through the glow zone at each
+ * end). Both render the SAME markup, colour, sizes and direction so the
+ * two read as one continuous flow: light born at the navbar's edges and
+ * carrying on down into the hero.
  *
  * This file owns appearance and motion only. Where the field sits and how
  * big it is belongs to the consumer, via its own class — see
- * .hero-particles in HeroCarousel.css and .navbar-particles below it.
+ * .hero-particles in HeroCarousel.css and .navbar-particles in
+ * NavbarGlow.css.
  */
 
 .light-particles {
@@ -45,16 +46,6 @@
     transform: translateY(var(--lp-fall-distance, 440px)) scale(0.4);
     opacity: 0;
   }
-}
-
-/*
- * Navbar placement: the full height of the bar, hugging the right side
- * where the glow gradient is strongest, so the motes look like they're
- * being thrown off that light source.
- */
-.navbar-particles {
-  inset: 0;
-  z-index: 1;
 }
 
 /* The component renders no particles at all under reduced motion; this is

@@ -20,6 +20,13 @@ export interface LightParticlesProps {
   fallDistance: number;
   /** Consumer class that positions and sizes the field. */
   className?: string;
+  /**
+   * Shifts the deterministic layout without making it random. Two fields
+   * with the same count would otherwise be identical twins — which is
+   * exactly what the navbar's two sides would look like. Same inputs still
+   * give the same output every render.
+   */
+  seed?: number;
 }
 
 /**
@@ -29,12 +36,18 @@ export interface LightParticlesProps {
  * Deterministic rather than random — re-rendering must not reshuffle the
  * field, and the same inputs give the same layout every time.
  */
-export function LightParticles({ count, fallDistance, className }: LightParticlesProps) {
+export function LightParticles({
+  count,
+  fallDistance,
+  className,
+  seed = 0,
+}: LightParticlesProps) {
   const reduceMotion = useReducedMotion() ?? false;
 
   const particles = useMemo(() => {
     if (reduceMotion) return [];
-    return Array.from({ length: count }, (_, i) => {
+    return Array.from({ length: count }, (_, index) => {
+      const i = index + seed;
       // 0.7–1.5, so motes don't descend in lockstep.
       const speedJitter = 0.7 + ((i * 0.23) % 0.8);
       const duration = fallDistance / (BASE_SPEED_PX_PER_S * speedJitter);
@@ -47,12 +60,14 @@ export function LightParticles({ count, fallDistance, className }: LightParticle
         delay: -((i * 0.63) % duration),
       };
     });
-  }, [count, fallDistance, reduceMotion]);
+  }, [count, fallDistance, reduceMotion, seed]);
 
   return (
     <div
       className={`light-particles${className ? ` ${className}` : ""}`}
-      style={{ "--lp-fall-distance": `${fallDistance}px` } as React.CSSProperties}
+      style={
+        { "--lp-fall-distance": `${fallDistance}px` } as React.CSSProperties
+      }
       aria-hidden="true"
     >
       {particles.map((p, i) => (
