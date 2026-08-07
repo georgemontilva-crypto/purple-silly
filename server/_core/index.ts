@@ -7,6 +7,7 @@ import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+import { runMigrations } from "./migrate";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -28,6 +29,12 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 }
 
 async function startServer() {
+  // Before anything is served: the schema has to match the code that's
+  // about to answer requests against it. Awaited deliberately — starting to
+  // listen first would open a window where routers query columns that the
+  // pending migration hasn't created yet.
+  await runMigrations();
+
   const app = express();
   // Railway sits behind a reverse proxy — trust its X-Forwarded-* headers so
   // req.ip/req.protocol reflect the real client instead of the proxy.
