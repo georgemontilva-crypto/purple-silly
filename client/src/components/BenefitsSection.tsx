@@ -1,5 +1,6 @@
 import { Smile, Users, Brain, Sunset } from "lucide-react";
 import { oklchAlpha } from "@/lib/color";
+import { AmbientGlow } from "@/components/motion/AmbientGlow";
 const C = {
   deep: "oklch(0.09 0.04 295)",
   dark: "oklch(0.13 0.05 295)",
@@ -43,7 +44,11 @@ const benefits = [
 
 export default function BenefitsSection() {
   return (
-    <section className="py-24 px-4" style={{ background: C.dark }}>
+    <section
+      className="ambient-glow-host py-24 px-4"
+      style={{ background: C.dark }}
+    >
+      <AmbientGlow variant="a" />
       <div className="max-w-[1280px] mx-auto">
         <div className="text-center mb-16">
           <p
