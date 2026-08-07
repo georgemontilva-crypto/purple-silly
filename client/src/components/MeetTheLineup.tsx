@@ -5,12 +5,12 @@ import { useCart } from "@/contexts/CartContext";
 import { trpc } from "@/lib/trpc";
 
 const C = {
-  deep:   "oklch(0.09 0.04 295)",
-  dark:   "oklch(0.13 0.05 295)",
-  mid:    "oklch(0.20 0.08 295)",
-  vivid:  "oklch(0.52 0.28 295)",
+  deep: "oklch(0.09 0.04 295)",
+  dark: "oklch(0.13 0.05 295)",
+  mid: "oklch(0.20 0.08 295)",
+  vivid: "oklch(0.52 0.28 295)",
   bright: "oklch(0.62 0.28 295)",
-  pink:   "oklch(0.72 0.22 320)",
+  pink: "oklch(0.72 0.22 320)",
   yellow: "oklch(0.88 0.20 95)",
 };
 
@@ -53,14 +53,23 @@ function SmokeCanvas() {
     };
     window.addEventListener("resize", resize);
 
-    type Blob = { x: number; y: number; vx: number; vy: number; r: number; opacity: number; hue: number; phase: number };
+    type Blob = {
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      r: number;
+      opacity: number;
+      hue: number;
+      phase: number;
+    };
     const blobs: Blob[] = Array.from({ length: 18 }, () => ({
       x: Math.random() * w,
       y: Math.random() * h,
       vx: (Math.random() - 0.5) * 0.4,
       vy: (Math.random() - 0.5) * 0.3,
       r: 80 + Math.random() * 200,
-      opacity: 0.04 + Math.random() * 0.10,
+      opacity: 0.04 + Math.random() * 0.1,
       hue: 270 + Math.random() * 60,
       phase: Math.random() * Math.PI * 2,
     }));
@@ -79,9 +88,19 @@ function SmokeCanvas() {
         if (b.y > h + b.r) b.y = -b.r;
 
         const pulse = 1 + 0.15 * Math.sin(t * 1.5 + b.phase);
-        const grad = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r * pulse);
+        const grad = ctx.createRadialGradient(
+          b.x,
+          b.y,
+          0,
+          b.x,
+          b.y,
+          b.r * pulse
+        );
         grad.addColorStop(0, `hsla(${b.hue}, 80%, 55%, ${b.opacity * 1.4})`);
-        grad.addColorStop(0.5, `hsla(${b.hue + 20}, 70%, 45%, ${b.opacity * 0.6})`);
+        grad.addColorStop(
+          0.5,
+          `hsla(${b.hue + 20}, 70%, 45%, ${b.opacity * 0.6})`
+        );
         grad.addColorStop(1, `hsla(${b.hue}, 60%, 30%, 0)`);
         ctx.fillStyle = grad;
         ctx.beginPath();
@@ -122,16 +141,19 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
     e.preventDefault();
     if (!product.inStock) return;
     setAdding(true);
-    addItem(
-      String(product.id),
-      1,
-      {
-        title: product.title,
-        variantTitle: "Default",
-        price: { amount: product.priceCents ? (product.priceCents / 100).toFixed(2) : "0", currencyCode: "USD" },
-        image: product.imageUrl ? { url: product.imageUrl, altText: product.imageAlt } : null,
-      }
-    );
+    addItem(String(product.id), 1, {
+      title: product.title,
+      variantTitle: "Default",
+      price: {
+        amount: product.priceCents
+          ? (product.priceCents / 100).toFixed(2)
+          : "0",
+        currencyCode: "USD",
+      },
+      image: product.imageUrl
+        ? { url: product.imageUrl, altText: product.imageAlt }
+        : null,
+    });
     setTimeout(() => setAdding(false), 900);
   };
 
@@ -144,23 +166,41 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
         // on where the card happened to land on the page.
         background: C.mid,
         border: "1px solid rgba(168,85,247,0.25)",
-        boxShadow: "0 8px 32px rgba(124,58,237,0.15), inset 0 1px 0 rgba(255,255,255,0.06)",
+        boxShadow:
+          "0 8px 32px rgba(124,58,237,0.15), inset 0 1px 0 rgba(255,255,255,0.06)",
       }}
     >
       <Link href={`/products/${product.slug}`}>
+        {/*
+          The image fills this box edge to edge — no padding, no centering.
+          It used to sit inside p-6 with object-contain, which left every
+          product floating in a padded well at a different apparent size
+          depending on its own aspect ratio, so no two cards in the row
+          matched. aspect-square + object-cover gives every card the same
+          image area and the same crop behaviour.
+
+          overflow-hidden is what keeps the cover crop (and the hover zoom)
+          inside the card's rounded top corners.
+        */}
         <div
-          className="aspect-square overflow-hidden flex items-center justify-center p-6 cursor-pointer"
+          className="aspect-square overflow-hidden cursor-pointer"
           style={{ background: "rgba(124,58,237,0.08)" }}
         >
           {product.imageUrl ? (
             <img
               src={product.imageUrl}
               alt={product.imageAlt}
-              className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
-              style={{ filter: "drop-shadow(0 12px 32px rgba(124,58,237,0.5))" }}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
             />
           ) : (
-            <Package size={48} strokeWidth={1.5} style={{ color: "oklch(0.55 0.10 295)" }} />
+            // Only the placeholder is centred; it's an icon, not a fill.
+            <div className="w-full h-full flex items-center justify-center">
+              <Package
+                size={48}
+                strokeWidth={1.5}
+                style={{ color: "oklch(0.55 0.10 295)" }}
+              />
+            </div>
           )}
         </div>
       </Link>
@@ -178,7 +218,11 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
             onClick={handleAdd}
             disabled={adding || !product.inStock}
             className="flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm text-white transition-all active:scale-95 disabled:opacity-70"
-            style={{ background: adding ? C.vivid : `linear-gradient(135deg, ${C.bright}, ${C.pink})` }}
+            style={{
+              background: adding
+                ? C.vivid
+                : `linear-gradient(135deg, ${C.bright}, ${C.pink})`,
+            }}
           >
             <ShoppingCart size={13} />
             {adding ? "Added!" : "Shop Now"}
@@ -191,7 +235,10 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
 
 /* ─── Main section ─── */
 export default function MeetTheLineup() {
-  const { data: products } = trpc.catalog.list.useQuery({ featured: true, limit: 9 });
+  const { data: products } = trpc.catalog.list.useQuery({
+    featured: true,
+    limit: 9,
+  });
 
   // No featured products published yet -> render nothing, not a broken empty section.
   if (!products || products.length === 0) return null;
@@ -208,7 +255,8 @@ export default function MeetTheLineup() {
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: "linear-gradient(180deg, rgba(9,4,30,0.55) 0%, rgba(9,4,30,0.40) 50%, rgba(9,4,30,0.65) 100%)",
+          background:
+            "linear-gradient(180deg, rgba(9,4,30,0.55) 0%, rgba(9,4,30,0.40) 50%, rgba(9,4,30,0.65) 100%)",
           zIndex: 1,
         }}
       />
@@ -216,16 +264,29 @@ export default function MeetTheLineup() {
       <div className="max-w-[1280px] mx-auto relative" style={{ zIndex: 2 }}>
         {/* Header */}
         <div className="text-center mb-12">
-          <p className="text-sm font-bold uppercase tracking-widest mb-3" style={{ color: C.pink }}>The Collection</p>
-          <h2 className="text-5xl sm:text-6xl font-extrabold font-condensed text-white">Meet the Lineup</h2>
-          <p className="mt-4 text-lg max-w-lg mx-auto" style={{ color: "oklch(0.68 0.07 295)" }}>
-            Every product crafted with premium functional mushrooms and nootropics for real, feel-good results.
+          <p
+            className="text-sm font-bold uppercase tracking-widest mb-3"
+            style={{ color: C.pink }}
+          >
+            The Collection
+          </p>
+          <h2 className="text-5xl sm:text-6xl font-extrabold font-condensed text-white">
+            Meet the Lineup
+          </h2>
+          <p
+            className="mt-4 text-lg max-w-lg mx-auto"
+            style={{ color: "oklch(0.68 0.07 295)" }}
+          >
+            Every product crafted with premium functional mushrooms and
+            nootropics for real, feel-good results.
           </p>
         </div>
 
         {/* Products grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.map(p => <ProductCard key={p.id} product={p} />)}
+          {products.map(p => (
+            <ProductCard key={p.id} product={p} />
+          ))}
         </div>
 
         <div className="text-center mt-12">
