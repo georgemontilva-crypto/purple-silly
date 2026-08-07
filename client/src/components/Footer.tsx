@@ -30,6 +30,7 @@ const COLS = [
       // href fixed alongside the label: /pages/what-is-kanna was never a
       // route, so this link has been landing on "Page not found".
       { label: "What is Silly?", href: "/what-is-silly" },
+      { label: "Wholesale", href: "/wholesale" },
       { label: "Blog", href: "/blogs/news" },
       { label: "Loyalty Program", href: "/pages/loyalty" },
       { label: "Do Not Sell My Info", href: "/pages/do-not-sell" },
