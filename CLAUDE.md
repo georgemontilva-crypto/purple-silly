@@ -113,8 +113,14 @@ and only after it passes a strict pattern — see `reelKey` in
 ## Conventions
 
 - `pnpm check` (tsc) and `pnpm test` (vitest) must both pass before a commit.
-- `pnpm format` runs Prettier; match the surrounding file rather than
-  reformatting code you didn't touch.
+- **Run Prettier only on the files the task actually changed — never on a
+  folder or a glob.** `npx prettier --write path/to/One.tsx path/to/Two.css`,
+  not `client/src/pages/*.tsx` and not `pnpm format` across the repo. Much of
+  this codebase predates the current config, so a glob silently reformats
+  files the task never touched: it happened once and pulled six unrelated
+  pages into a header change, ~1500 lines of pure reflow with zero real
+  edits. That churn is unreviewable and it buries the actual diff. Match the
+  surrounding file rather than reformatting code you didn't write.
 - Storefront copy is **English**. The `/admin` UI is **Spanish**.
 - The storefront palette is purple/magenta in `oklch`; `/admin` has its own
   higher-contrast black/purple palette in `client/src/lib/adminTheme.ts`.
