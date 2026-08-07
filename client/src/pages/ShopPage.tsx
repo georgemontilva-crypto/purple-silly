@@ -1,7 +1,16 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "wouter";
+import { keepPreviousData } from "@tanstack/react-query";
 import { Loader2, Package, ShoppingCart, Star } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import {
+  ALL_PRODUCTS,
+  categoryFromRoute,
+  clearFilters,
+  selectCategory,
+  shopView,
+  toListInput,
+} from "@/lib/shopFilters";
 import { useCart } from "@/contexts/CartContext";
 import NewsletterSection from "@/components/NewsletterSection";
 import { Reveal, RevealItem, RevealStagger } from "@/components/motion/Reveal";
@@ -99,10 +108,7 @@ function ProductCard({ product }: { product: CatalogProduct }) {
 
 export default function ShopPage() {
   const params = useParams<{ categorySlug?: string }>();
-  const routeCategory =
-    params.categorySlug && params.categorySlug !== "all"
-      ? params.categorySlug
-      : "";
+  const routeCategory = categoryFromRoute(params.categorySlug);
   const [categorySlug, setCategorySlug] = useState(routeCategory);
 
   // Keep local filter state in sync when navigating here via a category link
@@ -110,9 +116,25 @@ export default function ShopPage() {
   useEffect(() => setCategorySlug(routeCategory), [routeCategory]);
 
   const { data: categories } = trpc.catalog.categories.useQuery();
-  const { data: products, isLoading } = trpc.catalog.list.useQuery({
-    categorySlug: categorySlug || undefined,
-    limit: 100,
+  const {
+    data: products,
+    isLoading,
+    isError,
+    isPlaceholderData,
+  } = trpc.catalog.list.useQuery(toListInput(categorySlug), {
+    // Hold the previous list on screen while the new one loads. Without this
+    // every filter change unmounts the grid for a spinner and remounts it,
+    // which is both a flicker and a re-entry into the reveal animation for a
+    // grid the user is already looking at.
+    placeholderData: keepPreviousData,
+  });
+
+  const view = shopView({
+    products,
+    isLoading,
+    isError,
+    active: categorySlug,
+    categories,
   });
 
   return (
@@ -126,15 +148,17 @@ export default function ShopPage() {
             {categories && categories.length > 0 && (
               <div className="flex bg-white rounded-2xl p-1 gap-1 shadow-sm border border-gray-100 self-start flex-wrap">
                 <button
-                  onClick={() => setCategorySlug("")}
-                  className={`px-4 py-2 rounded-xl font-bold text-sm transition-all ${categorySlug === "" ? "bg-[oklch(0.22_0.08_265)] text-white" : "text-gray-500 hover:text-[oklch(0.22_0.08_265)]"}`}
+                  onClick={() => setCategorySlug(clearFilters())}
+                  className={`px-4 py-2 rounded-xl font-bold text-sm transition-all ${categorySlug === ALL_PRODUCTS ? "bg-[oklch(0.22_0.08_265)] text-white" : "text-gray-500 hover:text-[oklch(0.22_0.08_265)]"}`}
                 >
                   All Products
                 </button>
                 {categories.map(cat => (
                   <button
                     key={cat.id}
-                    onClick={() => setCategorySlug(cat.slug)}
+                    onClick={() =>
+                      setCategorySlug(c => selectCategory(c, cat.slug))
+                    }
                     className={`px-4 py-2 rounded-xl font-bold text-sm transition-all ${categorySlug === cat.slug ? "bg-[oklch(0.22_0.08_265)] text-white" : "text-gray-500 hover:text-[oklch(0.22_0.08_265)]"}`}
                   >
                     {cat.name}
@@ -144,20 +168,45 @@ export default function ShopPage() {
             )}
           </Reveal>
 
-          {isLoading ? (
+          {view.kind === "loading" ? (
             <div className="flex items-center justify-center gap-2 text-gray-400 py-24">
               <Loader2 size={20} className="animate-spin" /> Loading products...
             </div>
-          ) : !products || products.length === 0 ? (
+          ) : view.kind === "error" ? (
+            <div className="flex flex-col items-center gap-3 py-24 text-center text-gray-400">
+              <Package size={40} strokeWidth={1.5} />
+              <p className="text-base">
+                We couldn't load the catalog. Please try again.
+              </p>
+            </div>
+          ) : view.kind === "empty-catalog" ? (
             <div className="flex flex-col items-center gap-3 py-24 text-center text-gray-400">
               <Package size={40} strokeWidth={1.5} />
               <p className="text-base">
                 No products here yet — check back soon.
               </p>
             </div>
+          ) : view.kind === "no-match" ? (
+            <div className="flex flex-col items-center gap-3 py-24 text-center text-gray-400">
+              <Package size={40} strokeWidth={1.5} />
+              <p className="text-base">
+                No products match "{view.categoryName}".
+              </p>
+              {/* The pills above already offer this, but an empty page is
+                  exactly where the way out should be under the user's eyes
+                  rather than back up at the top of the layout. */}
+              <button
+                onClick={() => setCategorySlug(clearFilters())}
+                className="mt-1 px-5 py-2.5 rounded-xl font-bold text-sm bg-white text-[oklch(0.22_0.08_265)] hover:bg-[oklch(0.62_0.25_340)] hover:text-white transition-colors"
+              >
+                Show all products
+              </button>
+            </div>
           ) : (
-            <RevealStagger className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-              {products.map(p => (
+            <RevealStagger
+              className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 transition-opacity ${isPlaceholderData ? "opacity-60" : "opacity-100"}`}
+            >
+              {view.products.map(p => (
                 <RevealItem key={p.id}>
                   <ProductCard product={p} />
                 </RevealItem>
