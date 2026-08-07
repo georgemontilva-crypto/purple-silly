@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { ShoppingCart, ChevronDown, Grid2x2 } from "lucide-react";
+import { toast } from "sonner";
 import { useCart } from "@/contexts/CartContext";
 import { useSiteAsset } from "@/hooks/useSiteAssets";
 import { useIsMobile } from "@/hooks/useMobile";
@@ -374,12 +375,30 @@ export default function Navbar() {
               on desktop is exactly the one a phone user needs. */}
           <AccountMenu compact={isMobile} />
 
-          <Link
-            href="/cart"
+          {/*
+            A button, not a link. /cart was never a route, so this icon has
+            been sending every click to "Page not found" — the worst
+            possible answer, because it reads as the site being broken
+            rather than the feature being unfinished. It now says so
+            plainly. The real cart arrives with checkout and payments; this
+            becomes a Link again then.
+          */}
+          <button
+            type="button"
+            onClick={() =>
+              toast("Cart coming soon", {
+                description:
+                  "Checkout is on the way. Browse the shop meanwhile.",
+              })
+            }
+            aria-label="Cart — coming soon"
+            title="Cart coming soon"
             style={{
               position: "relative",
               color: "white",
-              textDecoration: "none",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -409,7 +428,7 @@ export default function Navbar() {
                 {totalQuantity}
               </span>
             )}
-          </Link>
+          </button>
 
           {/* Mobile menu trigger — circular grid icon. Visibility via
               `flex md:hidden` only; no `display` in inline style. */}
