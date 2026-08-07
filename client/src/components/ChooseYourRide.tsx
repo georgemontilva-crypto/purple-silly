@@ -9,7 +9,14 @@ const C = {
 
 // Cycled by card position — categories themselves are dynamic (Part 4),
 // so there's no fixed name -> color mapping.
-const ACCENTS = ["#7C3AED", "#ec4899", "#10b981", "#f59e0b", "#0ea5e9", "#ef4444"];
+const ACCENTS = [
+  "#7C3AED",
+  "#ec4899",
+  "#10b981",
+  "#f59e0b",
+  "#0ea5e9",
+  "#ef4444",
+];
 
 export default function ChooseYourRide() {
   const { data: categories } = trpc.catalog.categories.useQuery();
@@ -42,28 +49,46 @@ export default function ChooseYourRide() {
   const scrollToCard = (i: number) => {
     const el = scrollRef.current;
     const child = el?.children[i] as HTMLElement | undefined;
-    child?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    child?.scrollIntoView({
+      behavior: "smooth",
+      inline: "center",
+      block: "nearest",
+    });
   };
 
   if (cards.length === 0) return null;
 
   return (
-    <section className="py-24 px-4" style={{ background: C.deep }}>
+    <section className="section-y px-4" style={{ background: C.deep }}>
       <div className="max-w-[1280px] mx-auto">
         <div className="text-center mb-10">
-          <p className="text-sm font-bold uppercase tracking-widest mb-3" style={{ color: C.pink }}>Our Products</p>
+          <p
+            className="text-sm font-bold uppercase tracking-widest mb-3"
+            style={{ color: C.pink }}
+          >
+            Our Products
+          </p>
           <h2 className="text-5xl sm:text-6xl font-extrabold font-condensed text-white leading-tight">
             Choose Your Ride
           </h2>
-          <p className="mt-4 text-lg max-w-xl mx-auto" style={{ color: "oklch(0.68 0.07 295)" }}>
-            Whether you're looking for a higher-energy, more immersive experience or a balanced, feel-good boost — Purple Organics has a ride for you.
+          <p
+            className="mt-4 text-lg max-w-xl mx-auto"
+            style={{ color: "oklch(0.68 0.07 295)" }}
+          >
+            Whether you're looking for a higher-energy, more immersive
+            experience or a balanced, feel-good boost — Purple Organics has a
+            ride for you.
           </p>
         </div>
 
         {/* Desktop: grid, no cap at 3 — extra cards just wrap to another row */}
         <div className="hidden md:grid md:grid-cols-3 gap-6">
           {cards.map((cat, i) => (
-            <RideCard key={cat.id} category={cat} accent={ACCENTS[i % ACCENTS.length]} />
+            <RideCard
+              key={cat.id}
+              category={cat}
+              accent={ACCENTS[i % ACCENTS.length]}
+            />
           ))}
         </div>
 
@@ -91,7 +116,8 @@ export default function ChooseYourRide() {
                   className="h-2 rounded-full transition-all duration-300"
                   style={{
                     width: i === activeDot ? 24 : 8,
-                    background: i === activeDot ? "white" : "rgba(255,255,255,0.3)",
+                    background:
+                      i === activeDot ? "white" : "rgba(255,255,255,0.3)",
                   }}
                 />
               ))}
@@ -107,7 +133,12 @@ function RideCard({
   category,
   accent,
 }: {
-  category: { id: number; name: string; slug: string; cardImageUrl: string | null };
+  category: {
+    id: number;
+    name: string;
+    slug: string;
+    cardImageUrl: string | null;
+  };
   accent: string;
 }) {
   return (
@@ -122,8 +153,13 @@ function RideCard({
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
       <div className="absolute bottom-0 left-0 right-0 p-6">
-        <h3 className="text-2xl font-extrabold font-condensed text-white mb-1">{category.name}</h3>
-        <span className="font-bold text-sm transition-all group-hover:gap-3 inline-flex items-center gap-2" style={{ color: accent }}>
+        <h3 className="text-2xl font-extrabold font-condensed text-white mb-1">
+          {category.name}
+        </h3>
+        <span
+          className="font-bold text-sm transition-all group-hover:gap-3 inline-flex items-center gap-2"
+          style={{ color: accent }}
+        >
           Shop Now →
         </span>
       </div>

@@ -245,7 +245,7 @@ export default function MeetTheLineup() {
 
   return (
     <section
-      className="py-24 px-4 relative overflow-hidden"
+      className="section-y px-4 relative overflow-hidden"
       style={{ background: "oklch(0.08 0.05 295)" }}
     >
       {/* Animated smoke background */}
