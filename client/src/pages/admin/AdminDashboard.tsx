@@ -25,6 +25,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   ArrowLeft,
+  Briefcase,
   FlaskConical,
   FolderTree,
   Film,
@@ -51,6 +52,7 @@ import AdminLeads from "./AdminLeads";
 import AdminPopups from "./AdminPopups";
 import AdminReels from "./AdminReels";
 import AdminReviews from "./AdminReviews";
+import AdminWholesale from "./AdminWholesale";
 
 type AdminTab =
   | "overview"
@@ -62,6 +64,7 @@ type AdminTab =
   | "popups"
   | "reels"
   | "reviews"
+  | "wholesale"
   | "leads"
   | "users";
 
@@ -75,6 +78,7 @@ const NAV_ITEMS: { id: AdminTab; label: string; icon: LucideIcon }[] = [
   { id: "popups", label: "Popups", icon: MessageSquare },
   { id: "reels", label: "Reels", icon: Film },
   { id: "reviews", label: "Reviews", icon: MessageSquareQuote },
+  { id: "wholesale", label: "Wholesale", icon: Briefcase },
   { id: "leads", label: "Leads", icon: Mail },
   { id: "users", label: "Users", icon: Users },
 ];
@@ -382,6 +386,7 @@ export default function AdminDashboard() {
           {tab === "popups" && <AdminPopups />}
           {tab === "reels" && <AdminReels />}
           {tab === "reviews" && <AdminReviews />}
+          {tab === "wholesale" && <AdminWholesale />}
           {tab === "leads" && <AdminLeads />}
           {tab === "users" && <AdminUsers />}
         </main>
