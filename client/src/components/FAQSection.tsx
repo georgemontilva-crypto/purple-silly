@@ -3,6 +3,7 @@ import { ChevronDown } from "lucide-react";
 import { Link } from "wouter";
 import { oklchAlpha } from "@/lib/color";
 import NewsletterSection from "@/components/NewsletterSection";
+import { AmbientGlow } from "@/components/motion/AmbientGlow";
 
 const C = {
   deep: "oklch(0.09 0.04 295)",
@@ -62,8 +63,15 @@ const faqs = [
 export default function FAQSection() {
   const [open, setOpen] = useState<number | null>(null);
   return (
-    <section className="py-24 px-4" style={{ background: C.deep }}>
-      <div className="max-w-[1280px] mx-auto grid gap-10 lg:gap-12 lg:grid-cols-[1.4fr_1fr] lg:items-start">
+    <section
+      className="ambient-glow-host py-24 px-4"
+      style={{ background: C.deep }}
+    >
+      <AmbientGlow variant="c" />
+      {/* No items-start: the default `stretch` is what makes the signup
+          panel run the full height of the questions column, so the two
+          columns end level instead of the lilac block stopping short. */}
+      <div className="max-w-[1280px] mx-auto grid gap-10 lg:gap-12 lg:grid-cols-[1.4fr_1fr]">
         <div>
           <div className="mb-10">
             <p
