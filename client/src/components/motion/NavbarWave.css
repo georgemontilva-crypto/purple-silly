@@ -6,6 +6,10 @@
  * <header>, which means it inherits the header's stacking context and
  * paints over the page content scrolling underneath — and it takes no
  * pointer events, so nothing under it becomes unclickable.
+ *
+ * Nothing in here paints a background. The layer is transparent apart from
+ * the wave shapes themselves, which is what lets the hero below show
+ * through continuously instead of meeting a squared-off band.
  */
 .navbar-wave {
   position: absolute;
@@ -13,10 +17,15 @@
   left: 0;
   width: 100%;
   /* Fixed height, on purpose. The SVG stretches horizontally (see
-     preserveAspectRatio below) but never vertically, so the wave keeps the
-     same crest depth on a 360px phone as on a 2560px monitor instead of
-     being squashed flat or stretched into a hill. */
-  height: 34px;
+     preserveAspectRatio on the element) but never vertically, so the wave
+     keeps the same crest depth on a 360px phone as on a 2560px monitor
+     instead of being squashed flat or stretched into a hill.
+
+     The paths reach at most y=96 of a 120-unit viewBox, so the deepest
+     trough lands around 38px of these 48px — the shape never touches the
+     container's bottom edge, and there is nothing to clip into a hard
+     line. */
+  height: 48px;
   overflow: hidden;
   pointer-events: none;
   /* Above the page content that scrolls under the sticky header, below the
@@ -25,31 +34,36 @@
 }
 
 .navbar-wave__svg {
+  position: absolute;
+  inset: 0;
   display: block;
-  /* Twice the container width, holding two identical halves. Translating
-     by exactly -50% therefore lands the second half precisely where the
-     first began — the loop has no seam and no jump. */
-  width: 200%;
+  /*
+   * The viewBox holds two identical tiles, and the loop shifts by exactly
+   * one of them — that's what makes it seamless. These two values are a
+   * pair and must stay in step: at 200% width one tile is 50% of the
+   * element, so the shift is -50%.
+   *
+   * Widening the element is also how the crests get longer without
+   * touching the path: at 200% one tile spans one container width, so the
+   * period is (container width / 5).
+   */
+  --nw-width: 200%;
+  --nw-shift: -50%;
+
+  width: var(--nw-width);
   height: 100%;
-  /* The element carries preserveAspectRatio="none" as an ATTRIBUTE (it is
-     not a CSS property), which lets the path stretch to whatever width the
-     viewport is instead of tiling into visible repeats on a wide screen or
-     being clipped on a narrow one. */
-  animation: navbar-wave-drift 9s linear infinite;
+  animation: navbar-wave-drift 11s linear infinite;
   /* transform only — the compositor can run this without repainting the
      path each frame. No blur, no filter, nothing that forces raster. */
   will-change: transform;
 }
 
-/* Second, slower layer at lower opacity. Two waves crossing at different
-   speeds is what reads as motion in water; one alone reads as a sliding
-   image. */
+/* Slower and reversed, so the two never resolve into one shape sliding
+   along together. */
 .navbar-wave__svg--back {
-  position: absolute;
-  inset: 0;
-  animation-duration: 14s;
+  animation-duration: 17s;
   animation-direction: reverse;
-  opacity: 0.8;
+  opacity: 0.75;
 }
 
 @keyframes navbar-wave-drift {
@@ -57,15 +71,28 @@
     transform: translateX(0);
   }
   to {
-    transform: translateX(-50%);
+    transform: translateX(var(--nw-shift));
   }
 }
 
 @media (max-width: 640px) {
   .navbar-wave {
-    /* Shallower on a phone: 34px of wave under a compact bar is a lot of
-       the first screenful. */
-    height: 22px;
+    /* Shallower on a phone: 48px of wave under a compact bar is a lot of
+       the first screenful. The viewBox is unchanged, so the crests scale
+       down with it rather than being redrawn. */
+    height: 34px;
+  }
+
+  /*
+   * Twice as wide, shifting half as far — still exactly one tile per
+   * cycle, so the loop stays seamless. This stretches the period from
+   * ~78px to ~156px: measured at 390px wide, five crests across a phone
+   * screen read as choppy zig-zag rather than as waves, and two and a
+   * half read as water.
+   */
+  .navbar-wave__svg {
+    --nw-width: 400%;
+    --nw-shift: -25%;
   }
 }
 
