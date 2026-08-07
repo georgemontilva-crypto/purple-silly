@@ -291,10 +291,24 @@
     oklch(0.26 0.11 300),
     oklch(0.13 0.06 296)
   );
-  border: 1px solid rgba(168, 85, 247, 0.3);
-  box-shadow:
-    0 30px 60px -20px rgba(0, 0, 0, 0.7),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  /*
+   * No border.
+   *
+   * There was a 1px purple rule here and it read as a picture frame drawn
+   * around each photo rather than as an edge of the card. The only thing
+   * it was really doing was separating the card from the panel behind it,
+   * and the drop shadow below already does that — by lifting the card off
+   * the background instead of outlining it.
+   *
+   * The faint inset white highlight goes with it: at 3% on a rounded
+   * corner it was another hairline ring, just a quieter one, and it
+   * pulled the same picture-frame trick at the top edge.
+   *
+   * The 22px radius stays; so does the contain mat on .hero-card__img,
+   * which is what fills the corners cleanly now that nothing outlines
+   * them.
+   */
+  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.7);
   backface-visibility: hidden;
   /* transform/opacity/filter are written per frame from JS; nothing here
      triggers layout. */
