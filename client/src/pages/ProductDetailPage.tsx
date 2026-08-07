@@ -5,14 +5,14 @@ import {
   ChevronDown,
   ChevronUp,
   FlaskConical,
-  Leaf,
   Loader2,
+  Lock,
   Minus,
   MapPin,
   Package,
   Plus,
-  RotateCcw,
   ShoppingCart,
+  Truck,
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useCart } from "@/contexts/CartContext";
@@ -29,10 +29,10 @@ function formatCents(cents: number): string {
 }
 
 const TRUST_BADGES = [
-  { icon: Leaf, label: "100% Natural" },
-  { icon: FlaskConical, label: "Lab Tested" },
+  { icon: FlaskConical, label: "Third-Party Tested" },
   { icon: MapPin, label: "Made in USA" },
-  { icon: RotateCcw, label: "60-Day Returns" },
+  { icon: Lock, label: "Secure Checkout" },
+  { icon: Truck, label: "Fast Shipping" },
 ];
 
 function Accordion({
