@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAnimationFrame, useReducedMotion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useHeroLayout } from "@/hooks/useHeroLayout";
+import { useSlideAspect } from "@/hooks/useSlideAspect";
 import {
   MIN_RING_SLOTS,
   PHYSICS,
@@ -25,11 +26,14 @@ export interface HeroSlide {
 const MAX_VELOCITY = 0.6;
 
 /** Stand-ins with their target size labelled, until images are uploaded. */
-const PLACEHOLDER_SLIDES: HeroSlide[] = Array.from({ length: MIN_RING_SLOTS }, (_, i) => ({
-  id: `placeholder-${i}`,
-  url: "",
-  label: `Image ${i + 1}`,
-}));
+const PLACEHOLDER_SLIDES: HeroSlide[] = Array.from(
+  { length: MIN_RING_SLOTS },
+  (_, i) => ({
+    id: `placeholder-${i}`,
+    url: "",
+    label: `Image ${i + 1}`,
+  })
+);
 
 /**
  * The 3D filmstrip itself: a ring of cards in perspective, the centered
@@ -56,6 +60,9 @@ export default function HeroCarousel({
   active: boolean;
 }) {
   const layout = useHeroLayout();
+  // Cards take the shape of the real artwork, measured from it. Width is
+  // unchanged, so the ring's angular geometry is untouched.
+  const slideAspect = useSlideAspect(slides.map(s => s.url));
   const reduceMotion = useReducedMotion() ?? false;
 
   const source = slides.length > 0 ? slides : PLACEHOLDER_SLIDES;
@@ -134,7 +141,8 @@ export default function HeroCarousel({
       el.style.opacity = v.opacity.toFixed(3);
       // Cleared rather than left stale, so shrinking past the mobile
       // breakpoint actually drops the filter instead of freezing it.
-      el.style.filter = layout.maxBlurPx > 0 ? `blur(${v.blurPx.toFixed(1)}px)` : "";
+      el.style.filter =
+        layout.maxBlurPx > 0 ? `blur(${v.blurPx.toFixed(1)}px)` : "";
       el.style.zIndex = String(v.zIndex);
 
       const scrim = scrimRefs.current[i];
@@ -203,7 +211,10 @@ export default function HeroCarousel({
     if (delta === 0) return;
     velocityRef.current = Math.max(
       -MAX_VELOCITY,
-      Math.min(MAX_VELOCITY, velocityRef.current + Math.sign(delta) * PHYSICS.wheelImpulse)
+      Math.min(
+        MAX_VELOCITY,
+        velocityRef.current + Math.sign(delta) * PHYSICS.wheelImpulse
+      )
     );
   }
 
@@ -224,7 +235,7 @@ export default function HeroCarousel({
 
   const stageStyle = {
     "--hc-card-w": `${layout.cardW}px`,
-    "--hc-card-h": `${cardHeight(layout.cardW)}px`,
+    "--hc-card-h": `${cardHeight(layout.cardW, slideAspect)}px`,
     "--hc-perspective": `${layout.perspective}px`,
   } as React.CSSProperties;
 
@@ -252,7 +263,11 @@ export default function HeroCarousel({
         onWheel={handleWheel}
         onKeyDown={handleKeyDown}
       >
-        <div ref={trackRef} className="hero-track" data-hc-active={active && !reduceMotion}>
+        <div
+          ref={trackRef}
+          className="hero-track"
+          data-hc-active={active && !reduceMotion}
+        >
           {ringSlots.map((slot, i) => (
             <div
               key={`${slot.image.id}-${i}`}
@@ -264,12 +279,18 @@ export default function HeroCarousel({
             >
               {isPlaceholder ? (
                 <>
-                  <svg className="hero-card__icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <svg
+                    className="hero-card__icon"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
                     <rect x="3" y="3" width="18" height="18" rx="2" />
                     <circle cx="8.5" cy="8.5" r="1.5" />
                     <path d="M21 15l-5-5L5 21" />
                   </svg>
-                  <div className="hero-card__num">{padIndex(slot.imageIndex)}</div>
+                  <div className="hero-card__num">
+                    {padIndex(slot.imageIndex)}
+                  </div>
                   <div className="hero-card__label">{slot.image.label}</div>
                   <div className="hero-card__dim">1080 × 1440 px</div>
                 </>
@@ -284,8 +305,12 @@ export default function HeroCarousel({
                      the fold — lazy-loading it would leave a visible
                      blank card. Everything else waits. */
                   loading={i === 0 ? "eager" : "lazy"}
-                  width={1080}
-                  height={1440}
+                  /* Intrinsic size hint in the MEASURED ratio. Hard-coding
+                     1080×1440 here told the browser to reserve a 3:4 box
+                     for artwork that isn't 3:4, which is its own source of
+                     a mismatched frame before decode. */
+                  width={1000}
+                  height={Math.round(1000 * slideAspect)}
                 />
               )}
               {/* Depth shading. A solid scrim on top of an opaque card,

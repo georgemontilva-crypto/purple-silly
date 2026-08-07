@@ -14,10 +14,14 @@ import {
   blurRamp,
   buildRingSlots,
   cardHeight,
+  MAX_SLIDE_ASPECT,
+  MIN_SLIDE_ASPECT,
   padIndex,
   pickLayout,
+  pickSlideAspect,
   ringAngleStep,
   ringOffset,
+  SLIDE_ASPECT,
   slotVisual,
   stepFocus,
 } from "./heroCarousel";
@@ -53,12 +57,76 @@ describe("pickLayout", () => {
 });
 
 describe("cardHeight", () => {
-  it("keeps every card 3:4, matching the 1080x1440 asset spec", () => {
+  it("falls back to 3:4 when no aspect is supplied", () => {
     expect(cardHeight(300)).toBe(400);
     expect(cardHeight(1080)).toBe(1440);
     for (const layout of HERO_LAYOUTS) {
       expect(cardHeight(layout.cardW) / layout.cardW).toBeCloseTo(4 / 3, 2);
     }
+  });
+
+  it("takes the shape it's given, at every breakpoint", () => {
+    expect(cardHeight(300, 1)).toBe(300);
+    expect(cardHeight(300, 9 / 16)).toBe(169);
+    for (const layout of HERO_LAYOUTS) {
+      expect(cardHeight(layout.cardW, 1.2) / layout.cardW).toBeCloseTo(1.2, 2);
+    }
+  });
+
+  /**
+   * The property that makes this change safe: the ring's angular spacing
+   * is a function of card WIDTH and radius only, so a different aspect
+   * cannot make neighbours overlap or open a gap in the arc.
+   */
+  it("does not disturb the ring's angular geometry", () => {
+    for (const layout of HERO_LAYOUTS) {
+      const base = ringAngleStep(layout.cardW, layout.radius);
+      for (const aspect of [0.6, 1, 4 / 3, 1.9]) {
+        cardHeight(layout.cardW, aspect);
+        expect(ringAngleStep(layout.cardW, layout.radius)).toBe(base);
+      }
+    }
+  });
+});
+
+describe("pickSlideAspect", () => {
+  it("uses the images' own ratio when they agree", () => {
+    expect(pickSlideAspect([1.25, 1.25, 1.25])).toBeCloseTo(1.25, 5);
+  });
+
+  it("falls back to 3:4 with nothing to measure", () => {
+    expect(pickSlideAspect([])).toBe(SLIDE_ASPECT);
+  });
+
+  /**
+   * The median is the point of this: one asset exported at the wrong size
+   * must not drag every card off the shape the rest of the set shares.
+   */
+  it("ignores a single wrongly exported asset", () => {
+    const mostly = [1.25, 1.25, 1.25, 1.25, 0.55];
+    expect(pickSlideAspect(mostly)).toBeCloseTo(1.25, 5);
+    // An average would have been visibly pulled off.
+    const mean = mostly.reduce((a, b) => a + b, 0) / mostly.length;
+    expect(Math.abs(mean - 1.25)).toBeGreaterThan(0.1);
+  });
+
+  it("discards ratios that would deform the ring", () => {
+    // A 20:1 strip and a 1:20 tower are broken assets, not slides.
+    expect(pickSlideAspect([1.25, 20, 0.01])).toBeCloseTo(1.25, 5);
+    expect(pickSlideAspect([20, 0.01])).toBe(SLIDE_ASPECT);
+    expect(pickSlideAspect([MIN_SLIDE_ASPECT, MAX_SLIDE_ASPECT])).toBeCloseTo(
+      (MIN_SLIDE_ASPECT + MAX_SLIDE_ASPECT) / 2,
+      5
+    );
+  });
+
+  it("survives NaN and Infinity from a zero-width image", () => {
+    expect(pickSlideAspect([NaN, Infinity, 1.4])).toBeCloseTo(1.4, 5);
+    expect(pickSlideAspect([NaN])).toBe(SLIDE_ASPECT);
+  });
+
+  it("averages the middle pair when the count is even", () => {
+    expect(pickSlideAspect([1.0, 1.2, 1.4, 1.6])).toBeCloseTo(1.3, 5);
   });
 });
 
@@ -82,7 +150,16 @@ describe("buildRingSlots", () => {
   it("uses the images as-is once there are enough to fill the ring", () => {
     const slots = buildRingSlots(["a", "b", "c", "d", "e", "f", "g", "h"]);
     expect(slots).toHaveLength(8);
-    expect(slots.map(s => s.image)).toEqual(["a", "b", "c", "d", "e", "f", "g", "h"]);
+    expect(slots.map(s => s.image)).toEqual([
+      "a",
+      "b",
+      "c",
+      "d",
+      "e",
+      "f",
+      "g",
+      "h",
+    ]);
   });
 
   it("repeats whole passes so the total is always a multiple of the image count", () => {
@@ -149,7 +226,9 @@ describe("ringOffset", () => {
     for (const total of [8, 9, 12]) {
       for (let focus = 0; focus < total; focus += 0.5) {
         const nearest = Math.min(
-          ...Array.from({ length: total }, (_, s) => Math.abs(ringOffset(s, focus, total)))
+          ...Array.from({ length: total }, (_, s) =>
+            Math.abs(ringOffset(s, focus, total))
+          )
         );
         expect(nearest).toBeLessThanOrEqual(0.5 + 1e-9);
       }
@@ -208,7 +287,10 @@ describe("slotVisual", () => {
       // Everything square-enough to the viewer to read as a solid card.
       for (let angle = 0; angle <= FADE_START_DEG; angle += 5) {
         const offset = angle / DESKTOP.angleStep;
-        expect(slotVisual(offset, total, DESKTOP).opacity, `total ${total} ${angle}deg`).toBe(1);
+        expect(
+          slotVisual(offset, total, DESKTOP).opacity,
+          `total ${total} ${angle}deg`
+        ).toBe(1);
       }
     }
   });
@@ -264,7 +346,9 @@ describe("slotVisual", () => {
 
   it("never exceeds the layout's blur ceiling", () => {
     for (let offset = 0; offset <= 8; offset += 0.5) {
-      expect(slotVisual(offset, 16, DESKTOP).blurPx).toBeLessThanOrEqual(DESKTOP.maxBlurPx);
+      expect(slotVisual(offset, 16, DESKTOP).blurPx).toBeLessThanOrEqual(
+        DESKTOP.maxBlurPx
+      );
     }
   });
 });
@@ -353,7 +437,8 @@ describe("blurRamp", () => {
    */
   it("blurs the outermost VISIBLE card and nothing nearer", () => {
     const measuredRotations = [0, 14, 39, 68];
-    const [center, nearCenter, intermediate, outermost] = measuredRotations.map(blurRamp);
+    const [center, nearCenter, intermediate, outermost] =
+      measuredRotations.map(blurRamp);
     expect(center).toBe(0);
     expect(nearCenter).toBe(0);
     expect(intermediate).toBe(0);
@@ -370,7 +455,9 @@ describe("blurRamp", () => {
       expect(blurRamp(0), `${layout.maxWidth}px pos 0`).toBe(0);
       expect(blurRamp(step), `${layout.maxWidth}px pos 1`).toBe(0);
       // ...and the position beyond that is the one carrying it.
-      expect(blurRamp(2 * step), `${layout.maxWidth}px pos 2`).toBeGreaterThan(0);
+      expect(blurRamp(2 * step), `${layout.maxWidth}px pos 2`).toBeGreaterThan(
+        0
+      );
     }
   });
 
@@ -399,7 +486,13 @@ describe("activeSlot / activeImageIndex", () => {
   });
 
   it("stays in range for every focus value", () => {
-    for (const [total, images] of [[8, 1], [9, 3], [10, 5], [12, 6], [14, 7]]) {
+    for (const [total, images] of [
+      [8, 1],
+      [9, 3],
+      [10, 5],
+      [12, 6],
+      [14, 7],
+    ]) {
       for (let focus = -30; focus <= 30; focus += 0.5) {
         const index = activeImageIndex(focus, total, images);
         expect(index).toBeGreaterThanOrEqual(0);
@@ -429,7 +522,10 @@ describe("stepFocus", () => {
   });
 
   it("coasts on friction after a throw", () => {
-    const next = stepFocus({ focus: 0, velocity: 0.5 }, { dragging: false, autoplay: false });
+    const next = stepFocus(
+      { focus: 0, velocity: 0.5 },
+      { dragging: false, autoplay: false }
+    );
     expect(next.focus).toBeCloseTo(0.5);
     expect(next.velocity).toBeCloseTo(0.5 * PHYSICS.friction);
   });
@@ -437,7 +533,10 @@ describe("stepFocus", () => {
   it("brings a throw to rest in a finite number of frames", () => {
     let state = { focus: 0, velocity: 1 };
     let frames = 0;
-    while (Math.abs(state.velocity) > PHYSICS.velocityEpsilon && frames < 1000) {
+    while (
+      Math.abs(state.velocity) > PHYSICS.velocityEpsilon &&
+      frames < 1000
+    ) {
       state = stepFocus(state, { dragging: false, autoplay: false });
       frames++;
     }
@@ -446,25 +545,31 @@ describe("stepFocus", () => {
 
   it("magnets to the nearest card once the throw dies out", () => {
     let state = { focus: 3.4, velocity: 0 };
-    for (let i = 0; i < 200; i++) state = stepFocus(state, { dragging: false, autoplay: false });
+    for (let i = 0; i < 200; i++)
+      state = stepFocus(state, { dragging: false, autoplay: false });
     expect(state.focus).toBeCloseTo(3, 3);
   });
 
   it("magnets to the nearer neighbour, not always down", () => {
     let state = { focus: 3.7, velocity: 0 };
-    for (let i = 0; i < 200; i++) state = stepFocus(state, { dragging: false, autoplay: false });
+    for (let i = 0; i < 200; i++)
+      state = stepFocus(state, { dragging: false, autoplay: false });
     expect(state.focus).toBeCloseTo(4, 3);
   });
 
   it("drifts forward under autoplay instead of snapping", () => {
-    const next = stepFocus({ focus: 3, velocity: 0 }, { dragging: false, autoplay: true });
+    const next = stepFocus(
+      { focus: 3, velocity: 0 },
+      { dragging: false, autoplay: true }
+    );
     expect(next.focus).toBeGreaterThan(3);
     expect(next.focus - 3).toBeLessThan(0.01);
   });
 
   it("advances less than one card per second of autoplay at 60fps", () => {
     let state = { focus: 0, velocity: 0 };
-    for (let i = 0; i < 60; i++) state = stepFocus(state, { dragging: false, autoplay: true });
+    for (let i = 0; i < 60; i++)
+      state = stepFocus(state, { dragging: false, autoplay: true });
     expect(state.focus).toBeLessThan(1);
   });
 });
