@@ -15,6 +15,7 @@ import {
   ShoppingCart,
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { useCart } from "@/contexts/CartContext";
 import NewsletterSection from "@/components/NewsletterSection";
 import { Reveal, RevealItem, RevealStagger } from "@/components/motion/Reveal";
 
@@ -76,6 +77,7 @@ function Accordion({
 }
 
 export default function ProductDetailPage() {
+  const { addItem } = useCart();
   const { slug } = useParams<{ slug: string }>();
   const { data: product, isLoading } = trpc.catalog.product.useQuery(
     { slug: slug ?? "" },
@@ -383,17 +385,50 @@ export default function ProductDetailPage() {
                   </button>
                 </div>
                 <button
-                  disabled
-                  title="Checkout is coming soon"
-                  className="flex-1 font-extrabold text-base py-3 rounded-xl cursor-not-allowed flex items-center justify-center gap-2 border"
-                  style={{
-                    background: "oklch(0.18 0.07 295)",
-                    borderColor: "oklch(0.26 0.10 295)",
-                    color: "rgba(255,255,255,0.45)",
-                  }}
+                  onClick={() =>
+                    addItem({
+                      productId: product.id,
+                      // Only send the ids the product actually offers, so a
+                      // product without variants doesn't get a phantom
+                      // variantId baked into its cart line's identity.
+                      variantId: product.variants.length
+                        ? selectedVariant?.id
+                        : null,
+                      bundleId: hasBundles ? selectedBundle?.id : null,
+                      title: product.title,
+                      variantTitle: product.variants.length
+                        ? (selectedVariant?.title ?? null)
+                        : null,
+                      bundleLabel: hasBundles
+                        ? (selectedBundle?.label ?? null)
+                        : null,
+                      // priceCents already resolves bundle-vs-variant above,
+                      // so the cart stores what the page is showing.
+                      unitPriceCents: priceCents,
+                      slug: product.slug,
+                      imageUrl: activeImage?.url ?? null,
+                      quantity: qty,
+                    })
+                  }
+                  disabled={!inStock}
+                  className="flex-1 font-extrabold text-base py-3 rounded-xl flex items-center justify-center gap-2 border transition-all disabled:cursor-not-allowed"
+                  style={
+                    inStock
+                      ? {
+                          background:
+                            "linear-gradient(135deg, oklch(0.62 0.28 295), oklch(0.72 0.22 320))",
+                          borderColor: "transparent",
+                          color: "#fff",
+                        }
+                      : {
+                          background: "oklch(0.18 0.07 295)",
+                          borderColor: "oklch(0.26 0.10 295)",
+                          color: "rgba(255,255,255,0.45)",
+                        }
+                  }
                 >
                   <ShoppingCart size={18} />
-                  Coming soon
+                  {inStock ? "Add to Cart" : "Sold out"}
                 </button>
               </div>
               {!inStock && !hasBundles && (
