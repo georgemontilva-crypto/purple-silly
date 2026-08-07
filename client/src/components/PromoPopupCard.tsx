@@ -8,8 +8,6 @@ export interface PromoPopupCardProps {
   bodyText?: string | null;
   discountCode: string;
   buttonText: string;
-  /** Corner-ribbon caption. Blank or absent renders no ribbon. */
-  ribbonText?: string | null;
   imageUrl?: string | null;
   /** "form" asks for an email; "code" reveals the discount code. */
   mode: PromoPopupMode;
@@ -50,7 +48,6 @@ export default function PromoPopupCard({
   bodyText,
   discountCode,
   buttonText,
-  ribbonText,
   imageUrl,
   mode,
   onClose,
@@ -99,7 +96,8 @@ export default function PromoPopupCard({
               </button>
             </div>
             <p className="promo-fineprint">
-              Use this code at checkout.{thanks ? " Thanks for signing up!" : ""}
+              Use this code at checkout.
+              {thanks ? " Thanks for signing up!" : ""}
             </p>
             {error && <p className="promo-error">{error}</p>}
           </>
@@ -146,12 +144,6 @@ export default function PromoPopupCard({
           <img src={imageUrl} alt="" aria-hidden="true" />
         </div>
       )}
-
-      {/* Corner ribbon. Last in the DOM so it paints over the content
-          column, and skipped entirely when there's no caption — the
-          padding that keeps the copy clear of it is tied to the same
-          condition via .promo-dialog--ribbon. */}
-      {ribbonText?.trim() && <div className="promo-ribbon">{ribbonText.trim()}</div>}
     </>
   );
 }

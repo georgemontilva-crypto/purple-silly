@@ -73,7 +73,7 @@
 .promo-dialog__media {
   position: relative;
   min-height: 0;
-  background: oklch(0.20 0.08 295);
+  background: oklch(0.2 0.08 295);
 }
 
 .promo-dialog__media img {
@@ -111,17 +111,20 @@
   outline-offset: 2px;
 }
 
-/* ── Corner ribbon (bottom left) ── */
+/* ── Corner ribbon (fixed to the viewport, bottom left) ── */
 
 /*
- * A 45-degree band crossing the popup's bottom-left corner.
+ * A 45-degree band crossing the bottom-left corner of the WINDOW, not of
+ * the popup. It's the popup's permanent handle: it stays visible after the
+ * dialog is closed, and clicking it opens the dialog again.
  *
- * There is no clipping wrapper: the band is positioned directly against
- * .promo-dialog and deliberately overshoots the corner, so the DIALOG's
- * own `overflow: hidden` + border-radius do the cutting. A wrapper square
- * would have clipped the band's ends against its own interior edges,
- * leaving two cut marks floating inside the popup instead of clean ends
- * flush with the rounded border.
+ * Two elements — a square wrapper clipped to the corner, and the band
+ * inside it. The band deliberately overshoots the corner at both ends so
+ * that the wrapper's own edges do the cutting; those edges sit exactly on
+ * the viewport's edges, so the cuts land off-screen and the band reads as
+ * running clean off both sides. The wrapper is what makes the overshoot
+ * safe: an unclipped fixed band hanging past the bottom of the window adds
+ * a scrollbar to the page.
  *
  * --pr-inset is how far out along the diagonal the band's centre sits.
  * Positioning is expressed against the element's OWN size (the 50% terms)
@@ -131,38 +134,78 @@
  */
 .promo-ribbon {
   --pr-inset: 46px;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  /* Comfortably past the 2 x --pr-inset the band needs to cross the
+     corner, so nothing visible is trimmed by the wrapper itself. */
+  width: 170px;
+  height: 170px;
+  overflow: hidden;
+  /* Above the navbar (100) and its mega-menu (200). Deliberately BELOW
+     MobileMenu (300), a full-screen takeover the ribbon has no business
+     crossing, and below the overlay (400) — which is what guarantees the
+     ribbon can never sit over an open dialog or its close button. */
+  z-index: 250;
+  /* Most of this square is empty triangle either side of the band; only
+     the band takes clicks, so the corner stays usable. */
+  pointer-events: none;
+}
+
+.promo-ribbon__band {
   position: absolute;
   left: 0;
   bottom: 0;
-  z-index: 3;
+  display: block;
   /* Wide enough that both ends always run past the corner and get
      clipped, rather than stopping short inside it. */
   width: 320px;
-  padding: 0.42rem 0;
-  background: linear-gradient(135deg, oklch(0.62 0.28 295), oklch(0.52 0.28 295));
+  /* Padding, not a height: it's what sets the band's thickness, and that
+     thickness IS the tap target across the diagonal — the wrapper's empty
+     triangles either side deliberately take no clicks. */
+  padding: 0.52rem 0;
+  border: none;
+  background: linear-gradient(
+    135deg,
+    oklch(0.62 0.28 295),
+    oklch(0.52 0.28 295)
+  );
   box-shadow: 0 2px 10px oklch(0.2 0.1 295 / 45%);
   color: #fff;
+  font-family: inherit;
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   text-align: center;
   white-space: nowrap;
-  pointer-events: none;
+  cursor: pointer;
+  pointer-events: auto;
   transform: translate(calc(var(--pr-inset) - 50%), calc(50% - var(--pr-inset)))
     rotate(45deg);
+  transition: filter 0.15s;
 }
 
-/*
- * Keeps the copy out from under the band. Tied to the same condition
- * that renders it, so a popup without a ribbon doesn't carry a hole of
- * dead space at the bottom.
- *
- * The band crosses the left edge at roughly 2x --pr-inset above the
- * corner, which is what this clears.
- */
-.promo-dialog--ribbon .promo-dialog__content {
-  padding-bottom: 7rem;
+.promo-ribbon__band:hover {
+  filter: brightness(1.12);
+}
+
+/* Inset, not offset: an outline outside the band would be cut off by the
+   wrapper on the two sides that matter. */
+.promo-ribbon__band:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -5px;
+}
+
+/* Admin preview: anchored to the preview frame instead of the window, and
+   inert — it opens nothing there. */
+.promo-ribbon--preview {
+  position: absolute;
+}
+
+.promo-ribbon--preview .promo-ribbon__band {
+  cursor: default;
+  pointer-events: none;
 }
 
 .promo-eyebrow {
@@ -232,13 +275,19 @@
   padding: 0.85rem 1.25rem;
   border: none;
   border-radius: 12px;
-  background: linear-gradient(135deg, oklch(0.62 0.28 295), oklch(0.72 0.22 320));
+  background: linear-gradient(
+    135deg,
+    oklch(0.62 0.28 295),
+    oklch(0.72 0.22 320)
+  );
   color: #fff;
   font-size: 0.95rem;
   font-weight: 800;
   letter-spacing: 0.02em;
   cursor: pointer;
-  transition: filter 0.15s, transform 0.15s;
+  transition:
+    filter 0.15s,
+    transform 0.15s;
 }
 
 .promo-button:hover:not(:disabled) {
@@ -354,18 +403,21 @@
     background: rgba(12, 4, 26, 0.65);
   }
 
-  /* Tighter to the corner on a narrow dialog, so the band doesn't march
-     across half the width of the copy. */
+  /* Tighter to the corner and smaller, so the band keeps out of the way of
+     whatever the page itself puts near the bottom of a phone screen. */
   .promo-ribbon {
-    --pr-inset: 38px;
-    width: 260px;
-    padding: 0.35rem 0;
-    font-size: 0.64rem;
-    letter-spacing: 0.1em;
+    --pr-inset: 34px;
+    width: 130px;
+    height: 130px;
   }
 
-  .promo-dialog--ribbon .promo-dialog__content {
-    padding-bottom: 5.75rem;
+  /* Smaller caption, but NOT a proportionally thinner band — the thickness
+     is the tap target, so it only comes down a little. */
+  .promo-ribbon__band {
+    width: 240px;
+    padding: 0.5rem 0;
+    font-size: 0.62rem;
+    letter-spacing: 0.09em;
   }
 }
 
@@ -374,15 +426,15 @@
     padding: 1.25rem 1.1rem 1.5rem;
   }
   .promo-ribbon {
-    --pr-inset: 24px;
-    width: 190px;
-    padding: 0.3rem 0;
-    font-size: 0.58rem;
-    letter-spacing: 0.06em;
+    --pr-inset: 27px;
+    width: 105px;
+    height: 105px;
   }
-
-  .promo-dialog--ribbon .promo-dialog__content {
-    padding-bottom: 4.5rem;
+  .promo-ribbon__band {
+    width: 190px;
+    padding: 0.46rem 0;
+    font-size: 0.56rem;
+    letter-spacing: 0.06em;
   }
   .promo-code {
     /* Below ~360px the code and the copy button can't share a row without
@@ -398,30 +450,10 @@
 }
 
 /*
- * Narrow AND short: no ribbon.
- *
- * At this size the copy is taller than the dialog, so the content column
- * scrolls — and a corner element pinned to the dialog cannot be held
- * clear of scrolling text by padding, because the last line's position is
- * set by the flow above it and the padding below sits off-screen.
- *
- * Measured, only ~20px separate the last line of small print from the
- * dialog's edge, so no band small enough to fit beneath it would still
- * read as a ribbon. Shrinking it didn't clear the text, and indenting the
- * small print made it worse: the narrower column wraps to more lines and
- * pushes the last one deeper into the corner.
- *
- * Height is in the query, not just width — at 320x620 there IS room and
- * the ribbon renders fine. Only when the viewport is also short does the
- * copy crowd the corner. Dropping the ribbon there keeps the promise that
- * it never covers content; the popup loses a decoration on the smallest
- * screens, which is the right thing to lose.
+ * The old "narrow AND short: hide the ribbon" rule is gone on purpose.
+ * It existed because the band was pinned INSIDE the dialog, where a short
+ * viewport made the copy scroll under it. Pinned to the window instead,
+ * the band never crosses the dialog at all — it sits below the overlay —
+ * so there is nothing left for it to cover, and hiding it on small screens
+ * would only take away the one way back into a dismissed popup.
  */
-@media (max-width: 380px) and (max-height: 600px) {
-  .promo-ribbon {
-    display: none;
-  }
-  .promo-dialog--ribbon .promo-dialog__content {
-    padding-bottom: 1.5rem;
-  }
-}

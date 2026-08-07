@@ -3,6 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import PromoPopupCard from "./PromoPopupCard";
+import PromoRibbon from "./PromoRibbon";
 import "./PromoPopup.css";
 
 /**
@@ -41,6 +42,11 @@ function markDismissed(id: number): void {
  *                 the code
  * - signed in  -> no email asked (we already have theirs); the code is
  *                 shown straight away
+ *
+ * Alongside it, and independent of whether the dialog is open, the corner
+ * ribbon: a fixed tab that reopens the popup. Dismissing the popup only
+ * suppresses the automatic opening (for the session) — the ribbon stays,
+ * so the offer is never unreachable.
  */
 export default function PromoPopup() {
   const { data: popup } = trpc.promoPopups.active.useQuery(undefined, {
@@ -76,7 +82,13 @@ export default function PromoPopup() {
     if (!popup || authLoading) return;
     if (wasDismissed(popup.id)) return;
     const timer = window.setTimeout(
-      () => setOpen(true),
+      // Re-checked when the timer fires, not only when it's armed: the
+      // ribbon can open the popup before the delay is up, and closing it
+      // marks the popup dismissed. Without this the pending timer would
+      // pop the dialog open again on its own a moment later.
+      () => {
+        if (!wasDismissed(popup.id)) setOpen(true);
+      },
       Math.max(0, popup.showDelaySeconds) * 1000
     );
     return () => window.clearTimeout(timer);
@@ -175,61 +187,65 @@ export default function PromoPopup() {
   }
 
   return (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          className="promo-overlay"
-          initial={reduceMotion ? false : { opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
-          transition={{ duration: reduceMotion ? 0 : 0.22, ease: "easeOut" }}
-          // Click outside closes. Checking the target IS the overlay (not
-          // a descendant) means a click that started inside the dialog
-          // and drifted out doesn't count.
-          onMouseDown={e => {
-            if (e.target === e.currentTarget) close();
-          }}
-        >
+    <>
+      <PromoRibbon text={popup.ribbonText} onClick={() => setOpen(true)} />
+
+      <AnimatePresence>
+        {open && (
           <motion.div
-            ref={dialogRef}
-            className={
-              "promo-dialog" +
-              (popup.imageUrl ? "" : " promo-dialog--no-image") +
-              (popup.ribbonText?.trim() ? " promo-dialog--ribbon" : "")
-            }
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="promo-popup-title"
-            tabIndex={-1}
-            initial={reduceMotion ? false : { opacity: 0, scale: 0.94 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={reduceMotion ? { opacity: 1 } : { opacity: 0, scale: 0.96 }}
-            transition={
-              reduceMotion ? { duration: 0 } : { duration: 0.26, ease: [0.23, 1, 0.32, 1] }
-            }
+            className="promo-overlay"
+            initial={reduceMotion ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+            transition={{ duration: reduceMotion ? 0 : 0.22, ease: "easeOut" }}
+            // Click outside closes. Checking the target IS the overlay (not
+            // a descendant) means a click that started inside the dialog
+            // and drifted out doesn't count.
+            onMouseDown={e => {
+              if (e.target === e.currentTarget) close();
+            }}
           >
-            <PromoPopupCard
-              title={popup.title}
-              subtitle={popup.subtitle}
-              bodyText={popup.bodyText}
-              discountCode={popup.discountCode}
-              buttonText={popup.buttonText}
-              ribbonText={popup.ribbonText}
-              imageUrl={popup.imageUrl}
-              mode={showCode ? "code" : "form"}
-              onClose={close}
-              email={email}
-              onEmailChange={setEmail}
-              onSubmit={handleSubmit}
-              submitting={createLead.isPending}
-              onCopy={handleCopy}
-              copied={copied}
-              thanks={submitted}
-              error={error}
-            />
+            <motion.div
+              ref={dialogRef}
+              className={
+                "promo-dialog" +
+                (popup.imageUrl ? "" : " promo-dialog--no-image")
+              }
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="promo-popup-title"
+              tabIndex={-1}
+              initial={reduceMotion ? false : { opacity: 0, scale: 0.94 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={reduceMotion ? { opacity: 1 } : { opacity: 0, scale: 0.96 }}
+              transition={
+                reduceMotion
+                  ? { duration: 0 }
+                  : { duration: 0.26, ease: [0.23, 1, 0.32, 1] }
+              }
+            >
+              <PromoPopupCard
+                title={popup.title}
+                subtitle={popup.subtitle}
+                bodyText={popup.bodyText}
+                discountCode={popup.discountCode}
+                buttonText={popup.buttonText}
+                imageUrl={popup.imageUrl}
+                mode={showCode ? "code" : "form"}
+                onClose={close}
+                email={email}
+                onEmailChange={setEmail}
+                onSubmit={handleSubmit}
+                submitting={createLead.isPending}
+                onCopy={handleCopy}
+                copied={copied}
+                thanks={submitted}
+                error={error}
+              />
+            </motion.div>
           </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
