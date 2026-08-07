@@ -7,7 +7,6 @@ import HomeReels from "@/components/HomeReels";
 import ComparisonSection from "@/components/ComparisonSection";
 import ReviewsSection from "@/components/ReviewsSection";
 import FAQSection from "@/components/FAQSection";
-import NewsletterSection from "@/components/NewsletterSection";
 import { Reveal } from "@/components/motion/Reveal";
 
 export default function Home() {
@@ -36,11 +35,10 @@ export default function Home() {
       <Reveal>
         <ReviewsSection />
       </Reveal>
+      {/* FAQSection carries the newsletter signup in its second column now,
+          so there is no separate newsletter band on the home page. */}
       <Reveal>
         <FAQSection />
-      </Reveal>
-      <Reveal>
-        <NewsletterSection />
       </Reveal>
     </div>
   );
