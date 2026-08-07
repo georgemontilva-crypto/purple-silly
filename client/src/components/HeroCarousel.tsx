@@ -28,7 +28,7 @@ const MAX_VELOCITY = 0.6;
 const PLACEHOLDER_SLIDES: HeroSlide[] = Array.from({ length: MIN_RING_SLOTS }, (_, i) => ({
   id: `placeholder-${i}`,
   url: "",
-  label: `Imagen ${i + 1}`,
+  label: `Image ${i + 1}`,
 }));
 
 /**
@@ -235,8 +235,8 @@ export default function HeroCarousel({
         className="hero-stage"
         style={stageStyle}
         role="region"
-        aria-roledescription="carrusel"
-        aria-label="Galería de productos Silly Dots"
+        aria-roledescription="carousel"
+        aria-label="Silly Dots product gallery"
         tabIndex={0}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -309,7 +309,7 @@ export default function HeroCarousel({
           type="button"
           className="hero-controls__btn"
           onClick={() => step(-1)}
-          aria-label="Imagen anterior"
+          aria-label="Previous image"
         >
           <ChevronLeft size={20} aria-hidden="true" />
         </button>
@@ -320,7 +320,7 @@ export default function HeroCarousel({
           type="button"
           className="hero-controls__btn"
           onClick={() => step(1)}
-          aria-label="Imagen siguiente"
+          aria-label="Next image"
         >
           <ChevronRight size={20} aria-hidden="true" />
         </button>
