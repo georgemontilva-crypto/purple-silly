@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { MotionConfig } from "framer-motion";
-import { Route, Switch } from "wouter";
+import { Redirect, Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { CartProvider } from "./contexts/CartContext";
@@ -17,8 +17,11 @@ import AboutPage from "./pages/AboutPage";
 import FAQPage from "./pages/FAQPage";
 import ContactPage from "./pages/ContactPage";
 import PolicyPage from "./pages/PolicyPage";
+import LegalPage from "./pages/LegalPage";
+import ProductVerification from "./pages/ProductVerification";
 import CustomCursor from "./components/CustomCursor";
 import { usePointerFine } from "./hooks/usePointerFine";
+import { useScrollToTop } from "./hooks/useScrollToTop";
 import WhatIsSilly from "./pages/WhatIsSilly";
 import LabReportsPage from "./pages/LabReportsPage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -41,6 +44,31 @@ function StorefrontRouter() {
       <Route path="/pages/about-us" component={AboutPage} />
       <Route path="/pages/faq" component={FAQPage} />
       <Route path="/pages/contact" component={ContactPage} />
+
+      {/* The real policies, copied verbatim from the client's live site. */}
+      <Route path="/policies/:slug" component={LegalPage} />
+      <Route path="/product-verification" component={ProductVerification} />
+
+      {/*
+        Legacy paths. PolicyPage used to serve WRITTEN-FROM-SCRATCH legal
+        text at these URLs — placeholder copy that says different things
+        from the policies the business actually publishes. They redirect to
+        the real ones rather than 404ing, so existing links and any indexed
+        URLs still land somewhere correct.
+      */}
+      <Route path="/pages/privacy-policy">
+        <Redirect to="/policies/privacy-policy" replace />
+      </Route>
+      <Route path="/pages/terms-and-conditions">
+        <Redirect to="/policies/terms-of-service" replace />
+      </Route>
+      <Route path="/pages/shipping-information">
+        <Redirect to="/policies/shipping-policy" replace />
+      </Route>
+      <Route path="/pages/refund-return-policy">
+        <Redirect to="/policies/refund-policy" replace />
+      </Route>
+
       <Route path="/pages/:slug" component={PolicyPage} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
@@ -69,6 +97,11 @@ function StorefrontLayout() {
 }
 
 function App() {
+  // Every route change starts at the top. Mounted at the App root rather
+  // than per-layout so it covers the storefront, /admin and the account
+  // pages alike — any internal navigation, not just footer links.
+  useScrollToTop();
+
   // The custom cursor is mounted only where there IS a cursor. On a touch
   // device it has nothing to follow, and its effect hides the native cursor
   // document-wide — which on a hybrid device would strand a user who then

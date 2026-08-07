@@ -1,0 +1,97 @@
+/*
+ * Legal pages: /policies/*.
+ *
+ * These are long, dense, unillustrated documents that people read only
+ * when they need an answer. Everything here serves finding a clause and
+ * reading it — measure, spacing, and headings you can scan — rather than
+ * decorating it.
+ */
+
+.legal-page {
+  position: relative;
+  min-height: 70vh;
+  padding: clamp(2.5rem, 6vw, 4.5rem) 0 clamp(3rem, 7vw, 5rem);
+  background: oklch(0.09 0.04 295);
+}
+
+.legal-page__inner {
+  position: relative;
+  /*
+   * ~68 characters at this size. Prose set much wider than that costs the
+   * reader the start of the next line on every return, which is precisely
+   * the failure mode of a policy printed edge to edge across a monitor.
+   */
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 0 clamp(1.1rem, 5vw, 2rem);
+}
+
+.legal-page__head {
+  margin-bottom: clamp(2rem, 5vw, 3rem);
+  padding-bottom: clamp(1.25rem, 3vw, 1.75rem);
+  border-bottom: 1px solid oklch(0.3 0.08 295 / 60%);
+}
+
+.legal-page__eyebrow {
+  margin: 0 0 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: oklch(0.72 0.22 320);
+}
+
+.legal-page__title {
+  margin: 0;
+  font-family: "Barlow Condensed", ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(2.4rem, 7vw, 3.5rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: #fff;
+}
+
+.legal-heading {
+  margin: clamp(2rem, 4vw, 2.75rem) 0 0.85rem;
+  font-family: "Barlow Condensed", ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(1.4rem, 3.5vw, 1.75rem);
+  font-weight: 800;
+  line-height: 1.15;
+  color: #fff;
+}
+
+/* No top margin on the first block, whatever kind it is — the header rule
+   above already provides that separation. */
+.legal-page__body > *:first-child {
+  margin-top: 0;
+}
+
+.legal-paragraph {
+  margin: 0 0 1.15rem;
+  /* 16px floor: these are read, not skimmed, and on a phone anything
+     smaller is a pinch-to-zoom. 1.75 leading for the same reason. */
+  font-size: 1rem;
+  line-height: 1.75;
+  color: oklch(0.78 0.04 295);
+  /* Long legal strings — URLs, addresses, statute references — must wrap
+     rather than push the page sideways. */
+  overflow-wrap: anywhere;
+}
+
+.legal-list {
+  margin: 0 0 1.15rem;
+  padding-left: 1.35rem;
+  list-style: disc;
+}
+
+.legal-list li {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  line-height: 1.75;
+  color: oklch(0.78 0.04 295);
+  overflow-wrap: anywhere;
+}
+
+.legal-list li::marker {
+  color: oklch(0.62 0.28 295);
+}
