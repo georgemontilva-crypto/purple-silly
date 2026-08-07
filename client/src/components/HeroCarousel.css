@@ -183,7 +183,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.9rem;
+  /* The badge sat almost on top of the logo at 0.9rem. This is the gap
+     between three stacked elements of very different weight — a small
+     pill, a large wordmark, a line of tagline — and the pill needs real
+     air under it or it reads as part of the logo lockup. */
+  gap: clamp(1.4rem, 2.6vw, 2rem);
   padding: 2.5rem 1rem var(--hc-safe-gap);
   text-align: center;
   pointer-events: none;
@@ -220,6 +224,17 @@
 }
 
 .hero-wordmark span {
+  color: #c084fc;
+}
+
+/* The brand line, shown under an uploaded logo. */
+.hero-tagline {
+  margin: 0;
+  font-family: "Barlow Condensed", ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(1.05rem, 2.6vw, 1.5rem);
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: #c084fc;
 }
 
@@ -298,6 +313,22 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /*
+   * Anchored to the top, not centred.
+   *
+   * The card is 3:4 and the artwork is 1080x1440, which is also 3:4 — so
+   * in theory cover crops nothing. In practice an uploaded image is often
+   * a few pixels off that ratio, and centred cover then trims BOTH edges
+   * equally. The flavour name lives in the top corner of these images, so
+   * losing even a sliver from the top costs the one piece of information
+   * the card exists to show; losing it from the bottom costs background.
+   * Top-anchoring makes that trade deliberate instead of accidental.
+   *
+   * cover rather than contain on purpose: contain would letterbox every
+   * off-ratio image against the card, which is far more visible than a
+   * few pixels trimmed off the bottom.
+   */
+  object-position: top center;
   display: block;
   pointer-events: none;
   -webkit-user-drag: none;
