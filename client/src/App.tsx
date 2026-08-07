@@ -20,6 +20,7 @@ import PolicyPage from "./pages/PolicyPage";
 import LegalPage from "./pages/LegalPage";
 import CustomCursor from "./components/CustomCursor";
 import { usePointerFine } from "./hooks/usePointerFine";
+import { useScrollToTop } from "./hooks/useScrollToTop";
 import WhatIsSilly from "./pages/WhatIsSilly";
 import LabReportsPage from "./pages/LabReportsPage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -94,6 +95,11 @@ function StorefrontLayout() {
 }
 
 function App() {
+  // Every route change starts at the top. Mounted at the App root rather
+  // than per-layout so it covers the storefront, /admin and the account
+  // pages alike — any internal navigation, not just footer links.
+  useScrollToTop();
+
   // The custom cursor is mounted only where there IS a cursor. On a touch
   // device it has nothing to follow, and its effect hides the native cursor
   // document-wide — which on a hybrid device would strand a user who then
