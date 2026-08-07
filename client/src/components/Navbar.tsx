@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { ShoppingCart, ChevronDown, Grid2x2 } from "lucide-react";
-import { toast } from "sonner";
 import { useCart } from "@/contexts/CartContext";
 import { useSiteAsset } from "@/hooks/useSiteAssets";
 import { useIsMobile } from "@/hooks/useMobile";
@@ -73,7 +72,7 @@ export default function Navbar() {
   const [shopOpen, setShopOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { totalQuantity } = useCart();
+  const { totalQuantity, openCart } = useCart();
   const [location] = useLocation();
   const { asset: logo } = useSiteAsset("logo-navbar");
   const isMobile = useIsMobile();
@@ -376,23 +375,16 @@ export default function Navbar() {
           <AccountMenu compact={isMobile} />
 
           {/*
-            A button, not a link. /cart was never a route, so this icon has
-            been sending every click to "Page not found" — the worst
-            possible answer, because it reads as the site being broken
-            rather than the feature being unfinished. It now says so
-            plainly. The real cart arrives with checkout and payments; this
-            becomes a Link again then.
+            A button, not a link: the cart is a slide-over, not a page.
+            /cart was never a route and this icon used to send every click
+            to "Page not found"; it now opens CartDrawer. The badge counts
+            total items across all lines.
           */}
           <button
             type="button"
-            onClick={() =>
-              toast("Cart coming soon", {
-                description:
-                  "Checkout is on the way. Browse the shop meanwhile.",
-              })
-            }
-            aria-label="Cart — coming soon"
-            title="Cart coming soon"
+            onClick={openCart}
+            aria-label="Open cart"
+            title="Cart"
             style={{
               position: "relative",
               color: "white",

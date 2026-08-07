@@ -10,6 +10,7 @@ import AnnouncementBar from "./components/AnnouncementBar";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import PromoPopup from "./components/PromoPopup";
+import CartDrawer from "./components/CartDrawer";
 import Home from "./pages/Home";
 import ShopPage from "./pages/ShopPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
@@ -94,6 +95,9 @@ function StorefrontLayout() {
       {/* Mounted here rather than in App so it can only ever appear on the
           storefront — never over /admin, /login, /signup or /verify-email. */}
       <PromoPopup />
+      {/* The cart lives in the storefront layout, like the popup: it is
+          never wanted over /admin or the account pages. */}
+      <CartDrawer />
     </div>
   );
 }
