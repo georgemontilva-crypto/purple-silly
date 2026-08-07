@@ -18,6 +18,18 @@ const VIEW_H = 120;
 const PERIOD = 240;
 
 /**
+ * Amplitudes in viewBox units. At the desktop container height of 48px the
+ * vertical scale is 48/120, so the front wave renders at AMP_FRONT * 0.4
+ * pixels — 20 units gives 8px.
+ *
+ * These came down from 32 and 26 (12.8px and 10.4px), which read as too
+ * pronounced. PERIOD is deliberately untouched, so the crests keep their
+ * width and count and only get shallower: five per screen either way.
+ */
+const AMP_FRONT = 20;
+const AMP_BACK = 16;
+
+/**
  * A sine-like wave built from cubic Béziers, C1-continuous.
  *
  * Each half-period is one cubic arch with both control points offset by
@@ -78,7 +90,7 @@ export function NavbarWave() {
         focusable="false"
       >
         <path
-          d={wave(72, 26, false)}
+          d={wave(72, AMP_BACK, false)}
           fill="none"
           stroke="oklch(0.62 0.28 295)"
           strokeWidth={7}
@@ -94,11 +106,11 @@ export function NavbarWave() {
       >
         {/* Same colour as the header above it, so the join is invisible and
             the bar simply has a wavy bottom. */}
-        <path d={wave(52, 32, true)} fill="oklch(0.10 0.04 295)" />
+        <path d={wave(52, AMP_FRONT, true)} fill="oklch(0.10 0.04 295)" />
         {/* A soft magenta line riding the fill's own edge, so the wave has
             a defined crest against the hero rather than fading out. */}
         <path
-          d={wave(52, 32, false)}
+          d={wave(52, AMP_FRONT, false)}
           fill="none"
           stroke="oklch(0.72 0.22 320 / 55%)"
           strokeWidth={3}
